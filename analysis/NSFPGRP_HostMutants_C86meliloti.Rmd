@@ -1,0 +1,91 @@
+---
+title: "NSFPGRP_HostMutant_C86Meliloti"
+output: html_notebook
+#Authors: Regina B. Bledsoe, Liana T. Burghardt, ... 
+---
+
+This file is the analysis of data gathered for the NSF Host Mutant C86 Ensifer meliloti select and resequence project. 
+
+```{r, setup, include=FALSE}
+#This chunk is for setting global options for all chunks
+knitr::opts_knit$set(root.dir = '/GitHub')
+knitr::opts_chunk$set(message = FALSE)
+
+#Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+#When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+#The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```
+
+```{r load require libraries, echo=FALSE, results='hide'}
+require(tidyverse)
+
+```
+
+```{r load data files, include=FALSE}
+getwd()
+all_data <- read.table("data_nsfpgrp_hostmutants_C86meliloti.txt", sep = "\t", header=TRUE)
+geno_name <- read.table("genotype_name.txt", sep = "\t", header=TRUE)
+
+#genotype_id imports as a chr... not sure why but it is int in the all_data table
+geno_name$genotype_id = as.integer(geno_name$genotype_id)
+#Calculate cfu per plant - divide by 4ml (this is the amount added to nodules to homogenize) then divide by number of plants picked nodules from to get cfu/ml to cfu/plant
+all_data <- all_data %>% inner_join(geno_name, by="genotype_id") %>% drop_na(num_plants_picked_nods) %>% mutate(cfu_plant = cfu_ml/4/num_plants_picked_nods)
+all_data <- slice_min(all_data, order_by = cfu_plant, n=135)
+#set genotype_id as a factor so will group in plots
+all_data$genotype_id = as.factor(all_data$genotype_id)
+
+```
+
+<b>Results for dilution plating of nodule homogenate.</b> <br/>
+(1)Variation among genotypes. (2) Sunn1, Sunn4 are highly numerated with nodules. (3) A17 and R108 wild types show trend that A17 has higher rhizobial load than R108.
+
+This plot depicts cfu per ml/plant for each genotype. Boxplot per genotype and point color host background. 
+```{r plate counts by name, echo=FALSE}
+#By host genotype
+p_name<-ggplot(all_data, aes(x=name, y=cfu_plant)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter(aes(x=name, y=cfu_plant, color=background)) +
+        coord_flip() +
+        scale_color_brewer(palette='Set2')
+p_name 
+```
+
+This plot depicts cfu per ml/plant for each host background which could be Medicago truncatula A17 or R108 or A17 & DZA hybrid. This confirms what we seen in the last plot and also that... size does matter. That is generally even though A17 typically has smaller nodules than R108, A17 tends to have higher (and more variable) rhizobial presence. 
+```{r counts by host background, echo=FALSE}
+#By host background
+p_bckgrnd<-ggplot(all_data, aes(x=background, y=cfu_plant)) + 
+        geom_boxplot(aes(x=background, y=cfu_plant, fill=background)) +
+        geom_jitter(aes(x=background, y=cfu_plant, color=background)) +
+        scale_fill_brewer(palette='Set3') +
+        scale_color_brewer(palette='Set2')
+p_bckgrnd 
+```
+
+Above ground biomass in grams per genotype colored by host background. At first glance it appears that there are host background differneces in above ground biomas and within mutated versions of A17 (more so than R108). This is interesting bc it indicates the host mutation maybe indireclty responsible for reduced host performance by reducing symbiotic benefit.  
+```{r plot above ground, echo=FALSE}
+#By host genotype
+p_name<-ggplot(all_data, aes(x=name, y=above_biomass_g)) + 
+        geom_boxplot() +
+        geom_jitter(aes(x=name, y=above_biomass_g, color=background)) +
+        coord_flip() +
+        scale_color_brewer(palette='Set2')
+p_name 
+
+```
+
+Below ground biomass by genotype, colored by host background. A similar trend to above ground in that there seems to be host background differneces in belowgorund biomass but definitley more variation... this could be attributed to loss of fine root hars in the harvest and nodule picking processes, partly due to large quantities of substrate in some samples due to differences in cleaning effort. 
+```{r plot below ground, echo=FALSE}
+#By host genotype
+p_name<-ggplot(all_data, aes(x=name, y=below_biomass_g)) + 
+        geom_boxplot(aes(x=name, y=below_biomass_g, color=background)) +
+        geom_jitter(aes(x=name, y=below_biomass_g, color=background)) +
+        coord_flip() +
+        scale_color_brewer(palette='Set2')
+p_name 
+```
+
+
+
+
