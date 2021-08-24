@@ -1,7 +1,7 @@
 ---
 title: "NSFPGRP_HostMutant_C86Meliloti"
+author: Regina B. Bledsoe, Liana T. Burghardt, ... 
 output: html_notebook
-#Authors: Regina B. Bledsoe, Liana T. Burghardt, ... 
 ---
 
 This file is the analysis of data gathered for the NSF Host Mutant C86 Ensifer meliloti select and resequence project. 
@@ -16,6 +16,10 @@ knitr::opts_chunk$set(message = FALSE)
 #When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
 
 #The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+#To display output in the plots pane Preferences>> OR Tools>>Global_Options>> RMarkdown>>uncheck "Show output inline...")
+
+#Searchable R Markdown reference: https://bookdown.org/yihui/rmarkdown-cookbook/
 ```
 
 ```{r load require libraries, echo=FALSE, results='hide'}
@@ -25,8 +29,8 @@ require(tidyverse)
 
 ```{r load data files, include=FALSE}
 getwd()
-all_data <- read.table("data_nsfpgrp_hostmutants_C86meliloti.txt", sep = "\t", header=TRUE)
-geno_name <- read.table("genotype_name.txt", sep = "\t", header=TRUE)
+all_data <- read.table("../data/data_nsfpgrp_hostmutants_C86meliloti.txt", sep = "\t", header=TRUE)
+geno_name <- read.table("../data/genotype_name.txt", sep = "\t", header=TRUE)
 
 #genotype_id imports as a chr... not sure why but it is int in the all_data table
 geno_name$genotype_id = as.integer(geno_name$genotype_id)
@@ -52,7 +56,7 @@ p_name<-ggplot(all_data, aes(x=name, y=cfu_plant)) +
 p_name 
 ```
 
-This plot depicts cfu per ml/plant for each host background which could be Medicago truncatula A17 or R108 or A17 & DZA hybrid. This confirms what we seen in the last plot and also that... size does matter. That is generally even though A17 typically has smaller nodules than R108, A17 tends to have higher (and more variable) rhizobial presence. 
+<b>This plot depicts</b> cfu per ml/plant for each host background which could be Medicago truncatula A17 or R108 or A17 & DZA hybrid. This confirms what we seen in the last plot and also that... size does matter. That is generally even though A17 typically has smaller nodules than R108, A17 tends to have higher (and more variable) rhizobial presence. 
 ```{r counts by host background, echo=FALSE}
 #By host background
 p_bckgrnd<-ggplot(all_data, aes(x=background, y=cfu_plant)) + 
