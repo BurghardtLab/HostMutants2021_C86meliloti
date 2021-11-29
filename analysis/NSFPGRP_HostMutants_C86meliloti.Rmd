@@ -4,7 +4,7 @@ author: Regina B. Bledsoe, Liana T. Burghardt, ...
 output: html_notebook
 ---
 
-This file is the analysis of data gathered for the NSF Host Mutant C86 Ensifer meliloti select and resequence project. 
+Analysis file for NSF Host Mutant C86 Ensifer meliloti select and resequence project. 
 
 ```{r, setup, include=FALSE}
 #This chunk is for setting global options for all chunks
@@ -20,11 +20,25 @@ knitr::opts_chunk$set(message = FALSE)
 #To display output in the plots pane Preferences>> OR Tools>>Global_Options>> RMarkdown>>uncheck "Show output inline...")
 
 #Searchable R Markdown reference: https://bookdown.org/yihui/rmarkdown-cookbook/
+
+#Code that may once again be useful
+
+#Combining plots
+#require(ggpubr)
+#cfu_combo <- ggarrange(p_cfu_A17, p_cfu_R108, common.legend = TRUE)
+
+#facet zoom
+#facet_grid(. ~ background) 
+#facet_zoom(ylim = c(1000000, 10000000)) #require(ggforce)) 
 ```
 
 ```{r load require libraries, echo=FALSE, results='hide'}
 require(tidyverse)
+require(ggpubr)
 
+#color palettes - colorblind friendly
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+cbbPalette <- c("#E69F00", "#D55E00","56B4E9" , "#CC79A7", "#009E73", "#0072B2","#F0E442" , "#000000")
 ```
 
 ```{r load data files, include=FALSE}
@@ -35,61 +49,129 @@ geno_name <- read.table("../data/genotype_name.txt", sep = "\t", header=TRUE)
 #genotype_id imports as a chr... not sure why but it is int in the all_data table
 geno_name$genotype_id = as.integer(geno_name$genotype_id)
 #Calculate cfu per plant - divide by 4ml (this is the amount added to nodules to homogenize) then divide by number of plants picked nodules from to get cfu/ml to cfu/plant
-all_data <- all_data %>% inner_join(geno_name, by="genotype_id") %>% drop_na(num_plants_picked_nods) %>% mutate(cfu_plant = cfu_ml/4/num_plants_picked_nods)
-all_data <- slice_min(all_data, order_by = cfu_plant, n=135)
+#drop_na(num_plants_picked_nods) %>%
+all_data <- all_data %>% inner_join(geno_name, by="genotype_id") %>%  mutate(cfu_plant = cfu_ml/4/num_plants_picked_nods, above_plant = above_biomass_g/num_plants, below_plant = below_biomass_g/num_plants, root_shoot = below_plant/above_plant)
+#Filter out unwanted samples hybrids and unknown genotypes
+all_data <- all_data %>% filter(type!="A18") %>% filter(type!="UN") 
 #set genotype_id as a factor so will group in plots
 all_data$genotype_id = as.factor(all_data$genotype_id)
-
 ```
+<b>Summary</b>
+
 
 <b>Results for dilution plating of nodule homogenate.</b> <br/>
 (1)Variation among genotypes. (2) Sunn1, Sunn4 are highly numerated with nodules. (3) A17 and R108 wild types show trend that A17 has higher rhizobial load than R108.
 
-This plot depicts cfu per ml/plant for each genotype. Boxplot per genotype and point color host background. 
+This plot depicts cfu per plant for each genotype. 
 ```{r plate counts by name, echo=FALSE}
 #By host genotype
-p_name<-ggplot(all_data, aes(x=name, y=cfu_plant)) + 
+p_cfu<-ggplot(all_data, aes(x=reorder(name,order), y=cfu_plant)) +
         geom_boxplot(outlier.shape=NA) +
-        geom_jitter(aes(x=name, y=cfu_plant, color=background)) +
+        geom_jitter(aes(x=name, y=cfu_plant, color=type)) +
+        scale_y_continuous(trans='log10') +
+        labs(x="Plant Genotype",y="log(cfus per plant)")+
         coord_flip() +
-        scale_color_brewer(palette='Set2')
-p_name 
+        scale_color_manual(values = cbPalette) +
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+p_cfu
+
+#If want separate plots for plant backgrounds. Copy and paste plot code from above below the data line here.
+#p_cfu_A17<-ggplot(filter(all_data, background!="R108"), aes(x=reorder(name,order), y=cfu_plant)) +
+#p_cfu_R108<-ggplot(filter(all_data, background=="R108"), aes(x=reorder(name,order), y=cfu_plant)) + 
+
+ggsave(plot = p_cfu , width = 10, height = 7, dpi = 600, filename = "../figures/cfu_geno.png")
 ```
 
-<b>This plot depicts</b> cfu per ml/plant for each host background which could be Medicago truncatula A17 or R108 or A17 & DZA hybrid. This confirms what we seen in the last plot and also that... size does matter. That is generally even though A17 typically has smaller nodules than R108, A17 tends to have higher (and more variable) rhizobial presence. 
+<b>This plot depicts</b> cfu per plant for each host background which could be Medicago truncatula A17 or R108.  
 ```{r counts by host background, echo=FALSE}
 #By host background
-p_bckgrnd<-ggplot(all_data, aes(x=background, y=cfu_plant)) + 
+p_bg_cfu<-ggplot(all_data, aes(x=background, y=cfu_plant)) + 
         geom_boxplot(aes(x=background, y=cfu_plant, fill=background)) +
-        geom_jitter(aes(x=background, y=cfu_plant, color=background)) +
-        scale_fill_brewer(palette='Set3') +
-        scale_color_brewer(palette='Set2')
-p_bckgrnd 
+        geom_jitter(aes(x=background, y=cfu_plant, color=type)) +
+        scale_y_continuous(trans='log10') +
+        scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
+        scale_color_manual(values=cbPalette, ) +
+        labs(x="Plant Host",y="log(cfus per plant)") +
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+p_bg_cfu 
+
+ggsave(plot = p_bg_cfu , width = 5.3, height = 5.5, dpi = 600, filename = "../figures/bg_cfu.png")
 ```
 
-Above ground biomass in grams per genotype colored by host background. At first glance it appears that there are host background differneces in above ground biomas and within mutated versions of A17 (more so than R108). This is interesting bc it indicates the host mutation maybe indireclty responsible for reduced host performance by reducing symbiotic benefit.  
+Above ground biomass in grams per plant by genotype and colored by host background.   
 ```{r plot above ground, echo=FALSE}
 #By host genotype
-p_name<-ggplot(all_data, aes(x=name, y=above_biomass_g)) + 
-        geom_boxplot() +
-        geom_jitter(aes(x=name, y=above_biomass_g, color=background)) +
+p_aBiomass<-ggplot(all_data, aes(x=reorder(name,order), y=above_biomass_g)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter(aes(x=name, y=above_biomass_g, color=type)) +
         coord_flip() +
-        scale_color_brewer(palette='Set2')
-p_name 
+        scale_color_manual(values=cbPalette)  +
+        labs(x="Plant Host",y="Per Plant Above Biomass (g)") +
+        theme_classic() + theme(legend.position="", text = element_text(size=18))
+p_aBiomass 
+
+p_bg_aBiomass<-ggplot(all_data, aes(x=background, y=above_biomass_g)) + 
+        geom_boxplot(aes(x=background, y=above_biomass_g, fill=background)) +
+        geom_jitter(aes(x=background, y=above_biomass_g, color=type)) +
+        scale_color_manual(values=cbPalette) +
+        scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
+        labs(x="Plant Host",y="Per Plant Above Biomass (g)")+
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+p_bg_aBiomass 
 
 ```
 
-Below ground biomass by genotype, colored by host background. A similar trend to above ground in that there seems to be host background differneces in belowgorund biomass but definitley more variation... this could be attributed to loss of fine root hars in the harvest and nodule picking processes, partly due to large quantities of substrate in some samples due to differences in cleaning effort. 
+Below ground biomass in grams per plant by genotype and colored by host background.  
 ```{r plot below ground, echo=FALSE}
 #By host genotype
-p_name<-ggplot(all_data, aes(x=name, y=below_biomass_g)) + 
-        geom_boxplot(aes(x=name, y=below_biomass_g, color=background)) +
-        geom_jitter(aes(x=name, y=below_biomass_g, color=background)) +
+p_bBiomass<-ggplot(all_data, aes(x=reorder(name,order), y=below_biomass_g)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter(aes(x=name, y=below_biomass_g, color=type)) +
         coord_flip() +
-        scale_color_brewer(palette='Set2')
-p_name 
+        scale_color_manual(values=cbPalette)  +
+        labs(x="Plant Host",y="Per Plant Below Biomass (g)") +
+        theme_classic() + theme(legend.position="", text = element_text(size=16))
+p_bBiomass 
+
+p_bg_bBiomass<-ggplot(all_data, aes(x=background, y=below_biomass_g)) + 
+        geom_boxplot(aes(x=background, y=below_biomass_g, fill=background)) +
+        geom_jitter(aes(x=background, y=below_biomass_g, color=type)) +
+        scale_color_manual(values=cbPalette) +
+        scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
+        labs(x="Plant Host",y="Per Plant Below Biomass (g)")+
+        theme_classic() + theme(legend.position="", text = element_text(size=16))
+p_bg_bBiomass
+
+
+#ggsave(plot = biomass_combo , width = 10, height = 10, dpi = 600, filename = "../figures/biomass_combo.png")
+
+
+
 ```
 
+Root to Shoot ratio in grams per plant by genotype and colored by host background.  
+```{r plot root_shoot, echo=FALSE}
+#By host genotype
+p_bBiomass<-ggplot(all_data, aes(x=reorder(name,order), y=root_shoot)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter(aes(x=name, y=root_shoot, color=type)) +
+        coord_flip() +
+        scale_color_manual(values=cbPalette)  +
+        labs(x="Plant Host",y="Root:Shoot") +
+        theme_classic() + theme(legend.position="", text = element_text(size=16))
+p_bBiomass 
+
+p_bg_bBiomass<-ggplot(all_data, aes(x=background, y=root_shoot)) + 
+        geom_boxplot(aes(x=background, y=root_shoot, fill=background)) +
+        geom_jitter(aes(x=background, y=root_shoot, color=type)) +
+        scale_color_manual(values=cbPalette) +
+        scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
+        labs(x="Plant Host",y="Root:Shoot")+
+        theme_classic() + theme(legend.position="", text = element_text(size=16))
+p_bg_bBiomass
 
 
+#ggsave(plot = biomass_combo , width = 10, height = 10, dpi = 600, filename = "../figures/biomass_combo.png")
 
+
+```

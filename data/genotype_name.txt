@@ -1,68 +1,68 @@
-genotype_id	name	background
-833	dnf1	A17
-834	dnf2	A17
-836	dnf3	A17
-837	dnf4	A17
-838	dnf5	A17
-839	dnf6	A17
-840	dnf7	A17
-841	sunn1	A17
-842	sunn4	A17
-843	rdn1	A17
-844	latd	A17
-845	hcl	A17
-846	nad1	R108
-847	ipd3	A17
-848	dmi1-2	A17
-849	dmi2-3	A17
-850	dmi3-1	A17
-851	dnf5/dnf2	A17
-852	dnf1/dnf2	A17
-853	skl1	A17
-854	npd2/4	R108
-855	npd1/2/4	R108
-856	npd1/2/4/5	R108
-857	 npd2/4/5	R108
-858	npd1/2/3/4/5	R108
-859	npd2	R108
-860	A17	A17
-869	R108	R108
-883	npd1	R108
-891	NFS1+	A17&DZA315?
-892	NFS1- 	A17&DZA315?
-893	NFS2+	A17&DZA315?
-894	NFS2-	A17&DZA315?
-888	Vernal	Medicago sativa
-889	Onieda	Medicago sativa
-890	SW4107	Medicago sativa
-884	w1-1	R108
-885	l1-1	R108
-886	w1-4	R108
-887	l1-4	R108
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-https://plantae.org/nodule-shape/		
+genotype_id	name	background	type	order
+833	dnf1	A17	Late	7
+834	dnf2	A17	Late	8
+836	dnf3	A17	Late	9
+837	dnf4	A17	Late	10
+838	dnf5	A17	Late	11
+839	dnf6	A17	Late	12
+840	dnf7	A17	Late	13
+841	sunn1	A17	AOR	16
+842	sunn4	A17	AOR	17
+843	rdn1	A17	AOR	18
+844	latd	A17	AOR	6
+845	hcl	A17	Early	5
+846	nad1	A17	Late	20
+847	ipd3	A17	Early	4.5
+848	dmi1-2	A17	Early	2
+849	dmi2-3	A17	Early	3
+850	dmi3-1	A17	Early	4
+851	dnf5/dnf2	A17	Late	14
+852	dnf1/dnf2	A17	Late	15
+853	skl1	A17	Early	1
+854	npd2/4	R108	Late	23
+855	npd1/2/4	R108	Late	24
+856	npd1/2/4/5	R108	Late	26
+857	npd2/4/5	R108	Late	25
+858	npd1/2/3/4/5	R108	Late	27
+859	npd2	R108	Late	22
+860	A17	A17	WT	0
+869	R108	R108	WT	19
+883	npd1	R108	Late	21
+891	NFS1+	A17&DZA315?	A18	NA
+892	NFS1- 	A17&DZA315?	A18	NA
+893	NFS2+	A17&DZA315?	A18	NA
+894	NFS2-	A17&DZA315?	A18	NA
+888	Vernal	MS	MS	28
+889	Onieda	MS	MS	29
+890	SW4107	MS	MS	30
+884	w1-1	R108	UN	NA
+885	l1-1	R108	UN	NA
+886	w1-4	R108	UN	NA
+887	l1-4	R108	UN	NA
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+https://plantae.org/nodule-shape/				
