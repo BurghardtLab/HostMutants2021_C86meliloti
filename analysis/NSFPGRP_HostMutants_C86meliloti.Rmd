@@ -50,7 +50,10 @@ geno_name <- read.table("../data/genotype_name.txt", sep = "\t", header=TRUE)
 geno_name$genotype_id = as.integer(geno_name$genotype_id)
 #Calculate cfu per plant - divide by 4ml (this is the amount added to nodules to homogenize) then divide by number of plants picked nodules from to get cfu/ml to cfu/plant
 #drop_na(num_plants_picked_nods) %>%
-all_data <- all_data %>% inner_join(geno_name, by="genotype_id") %>%  mutate(cfu_plant = cfu_ml/4/num_plants_picked_nods, above_plant = above_biomass_g/num_plants, below_plant = below_biomass_g/num_plants, root_shoot = below_plant/above_plant)
+all_data <- all_data %>% inner_join(geno_name, by="genotype_id") %>%  mutate(cfu_plant = cfu_ml/4/num_plants_picked_nods, above_plant = above_biomass_g/num_plants, below_plant = below_biomass_g/num_plants, root_shoot = below_plant/above_plant, nod_wt_plant = nodule_weight_g/num_plants)
+
+#####NOD PER PLANT ___ NOD PICKED PLANTS --- make sure usign correct one#####
+
 #Filter out unwanted samples hybrids and unknown genotypes
 all_data <- all_data %>% filter(type!="A18") %>% filter(type!="UN") 
 #set genotype_id as a factor so will group in plots
@@ -86,7 +89,7 @@ ggsave(plot = p_cfu , width = 10, height = 7, dpi = 600, filename = "../figures/
 ```{r counts by host background, echo=FALSE}
 #By host background
 p_bg_cfu<-ggplot(all_data, aes(x=background, y=cfu_plant)) + 
-        geom_boxplot(aes(x=background, y=cfu_plant, fill=background)) +
+        geom_boxplot(aes(x=background, y=cfu_plant)) +
         geom_jitter(aes(x=background, y=cfu_plant, color=type)) +
         scale_y_continuous(trans='log10') +
         scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
@@ -111,7 +114,7 @@ p_aBiomass<-ggplot(all_data, aes(x=reorder(name,order), y=above_biomass_g)) +
 p_aBiomass 
 
 p_bg_aBiomass<-ggplot(all_data, aes(x=background, y=above_biomass_g)) + 
-        geom_boxplot(aes(x=background, y=above_biomass_g, fill=background)) +
+        geom_boxplot(aes(x=background, y=above_biomass_g)) +
         geom_jitter(aes(x=background, y=above_biomass_g, color=type)) +
         scale_color_manual(values=cbPalette) +
         scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
@@ -134,7 +137,7 @@ p_bBiomass<-ggplot(all_data, aes(x=reorder(name,order), y=below_biomass_g)) +
 p_bBiomass 
 
 p_bg_bBiomass<-ggplot(all_data, aes(x=background, y=below_biomass_g)) + 
-        geom_boxplot(aes(x=background, y=below_biomass_g, fill=background)) +
+        geom_boxplot(aes(x=background, y=below_biomass_g)) +
         geom_jitter(aes(x=background, y=below_biomass_g, color=type)) +
         scale_color_manual(values=cbPalette) +
         scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
@@ -162,7 +165,7 @@ p_bBiomass<-ggplot(all_data, aes(x=reorder(name,order), y=root_shoot)) +
 p_bBiomass 
 
 p_bg_bBiomass<-ggplot(all_data, aes(x=background, y=root_shoot)) + 
-        geom_boxplot(aes(x=background, y=root_shoot, fill=background)) +
+        geom_boxplot(aes(x=background, y=root_shoot)) +
         geom_jitter(aes(x=background, y=root_shoot, color=type)) +
         scale_color_manual(values=cbPalette) +
         scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
@@ -174,4 +177,70 @@ p_bg_bBiomass
 #ggsave(plot = biomass_combo , width = 10, height = 10, dpi = 600, filename = "../figures/biomass_combo.png")
 
 
+```
+
+```{r}
+nod_data <- read.table("../data/data_nod_img_measurements.txt", sep = "\t", header=TRUE)
+#nod_data$genotype_id = as.factor(nod_data$genotype_id)
+all_data <- all_data %>% full_join(nod_data, by="sample_id") %>% mutate(nod_cnt_plant = nod_count/num_plants, tot_area_plant = nod_total_area_cm2/num_plants )
+
+```
+
+```{r}
+p_nod_cnt <-ggplot(all_data, aes(x=reorder(name,order), y=nod_cnt_plant)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter(aes(x=name, y=nod_cnt_plant, color=type)) +
+        coord_flip() +
+        scale_color_manual(values=cbPalette)  +
+        labs(x="Plant Host",y="Nods per plant") +
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+p_nod_cnt 
+
+p_bg_nod_cnt <-ggplot(all_data, aes(x=background, y=nod_cnt_plant)) + 
+        geom_boxplot(aes(x=background, y=nod_cnt_plant)) +
+        geom_jitter(aes(x=background, y=nod_cnt_plant, color=type)) +
+        scale_color_manual(values=cbPalette) +
+        scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
+        labs(x="Plant Host",y="Nods per plant")+
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+p_bg_nod_cnt
+```
+
+```{r}
+p_tot_area <-ggplot(all_data, aes(x=reorder(name,order), y=tot_area_plant)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter(aes(x=name, y=tot_area_plant, color=type)) +
+        coord_flip() +
+        scale_color_manual(values=cbPalette)  +
+        labs(x="Plant Host",y="Total Nod Area per plant") +
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+p_tot_area 
+
+p_bg_tot_area <-ggplot(all_data, aes(x=background, y=tot_area_plant)) + 
+        geom_boxplot(aes(x=background, y=tot_area_plant)) +
+        geom_jitter(aes(x=background, y=tot_area_plant, color=type)) +
+        scale_color_manual(values=cbPalette) +
+        scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
+        labs(x="Plant Host",y="Total Nod area per plant")+
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+p_bg_tot_area
+```
+```{r}
+p_nod_wt <-ggplot(all_data, aes(x=reorder(name,order), y=nod_wt_plant)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter(aes(x=name, y=nod_wt_plant, color=type)) +
+        coord_flip() +
+        scale_color_manual(values=cbPalette)  +
+        labs(x="Plant Host",y="Nod gram per plant") +
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+p_nod_wt 
+
+p_bg_nod_wt <-ggplot(all_data, aes(x=background, y=nod_wt_plant)) + 
+        geom_boxplot(aes(x=background, y=nod_wt_plant)) +
+        geom_jitter(aes(x=background, y=nod_wt_plant, color=type)) +
+        scale_color_manual(values=cbPalette) +
+        scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
+        labs(x="Plant Host",y="Nod gram per plant")+
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+p_bg_nod_wt
 ```

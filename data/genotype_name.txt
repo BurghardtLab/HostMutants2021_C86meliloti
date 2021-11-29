@@ -9,7 +9,7 @@ genotype_id	name	background	type	order
 841	sunn1	A17	AOR	16
 842	sunn4	A17	AOR	17
 843	rdn1	A17	AOR	18
-844	latd	A17	AOR	6
+844	latd	A17	Early	6
 845	hcl	A17	Early	5
 846	nad1	A17	Late	20
 847	ipd3	A17	Early	4.5
@@ -28,10 +28,10 @@ genotype_id	name	background	type	order
 860	A17	A17	WT	0
 869	R108	R108	WT	19
 883	npd1	R108	Late	21
-891	NFS1+	A17&DZA315?	A18	NA
-892	NFS1- 	A17&DZA315?	A18	NA
-893	NFS2+	A17&DZA315?	A18	NA
-894	NFS2-	A17&DZA315?	A18	NA
+891	NFS1+	A18	A18	NA
+892	NFS1- 	A18	A18	NA
+893	NFS2+	A18	A18	NA
+894	NFS2-	A18	A18	NA
 888	Vernal	MS	MS	28
 889	Onieda	MS	MS	29
 890	SW4107	MS	MS	30
