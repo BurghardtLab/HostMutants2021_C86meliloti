@@ -32,7 +32,7 @@ knitr::opts_chunk$set(message = FALSE)
 #facet_zoom(ylim = c(1000000, 10000000)) #require(ggforce)) 
 ```
 
-```{r load require libraries, echo=FALSE, results='hide'}
+```{r load require libraries, echo=FALSE, results='hide',include=FALSE}
 require(tidyverse)
 require(ggpubr)
 
@@ -50,9 +50,10 @@ geno_name <- read.table("../data/genotype_name.txt", sep = "\t", header=TRUE)
 geno_name$genotype_id = as.integer(geno_name$genotype_id)
 #Calculate cfu per plant - divide by 4ml (this is the amount added to nodules to homogenize) then divide by number of plants picked nodules from to get cfu/ml to cfu/plant
 #drop_na(num_plants_picked_nods) %>%
-all_data <- all_data %>% inner_join(geno_name, by="genotype_id") %>%  mutate(cfu_plant = cfu_ml/4/num_plants_picked_nods, above_plant = above_biomass_g/num_plants, below_plant = below_biomass_g/num_plants, root_shoot = below_plant/above_plant, nod_wt_plant = nodule_weight_g/num_plants)
+all_data <- all_data %>% inner_join(geno_name, by="genotype_id") %>%  mutate(cfu_plant = cfu_ml/4/num_plants_picked_nods, above_plant = above_biomass_g/num_plants, below_plant = below_biomass_g/num_plants, root_shoot = below_plant/above_plant, nod_wt_plant = nodule_weight_g/num_plants_picked_nods, tot_biomass = above_biomass_g + below_biomass_g)
 
-#####NOD PER PLANT ___ NOD PICKED PLANTS --- make sure usign correct one#####
+#num_plants_picked_nods for nodule metrics and 
+#num_plants for whole plant metrics ie biomass
 
 #Filter out unwanted samples hybrids and unknown genotypes
 all_data <- all_data %>% filter(type!="A18") %>% filter(type!="UN") 
@@ -63,7 +64,7 @@ all_data$genotype_id = as.factor(all_data$genotype_id)
 
 
 <b>Results for dilution plating of nodule homogenate.</b> <br/>
-(1)Variation among genotypes. (2) Sunn1, Sunn4 are highly numerated with nodules. (3) A17 and R108 wild types show trend that A17 has higher rhizobial load than R108.
+(1)Variation among backgrounds and genotypes. (2) Sunn1, Sunn4 are highly numerated with nodules. (3) A17 and R108 wild types show trend that A17 has higher rhizobial load than R108.
 
 This plot depicts cfu per plant for each genotype. 
 ```{r plate counts by name, echo=FALSE}
@@ -98,7 +99,7 @@ p_bg_cfu<-ggplot(all_data, aes(x=background, y=cfu_plant)) +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 p_bg_cfu 
 
-ggsave(plot = p_bg_cfu , width = 5.3, height = 5.5, dpi = 600, filename = "../figures/bg_cfu.png")
+#ggsave(plot = p_bg_cfu , width = 5.3, height = 5.5, dpi = 600, filename = "../figures/bg_cfu.png")
 ```
 
 Above ground biomass in grams per plant by genotype and colored by host background.   
@@ -133,7 +134,7 @@ p_bBiomass<-ggplot(all_data, aes(x=reorder(name,order), y=below_biomass_g)) +
         coord_flip() +
         scale_color_manual(values=cbPalette)  +
         labs(x="Plant Host",y="Per Plant Below Biomass (g)") +
-        theme_classic() + theme(legend.position="", text = element_text(size=16))
+        theme_classic() + theme(legend.position="", text = element_text(size=18))
 p_bBiomass 
 
 p_bg_bBiomass<-ggplot(all_data, aes(x=background, y=below_biomass_g)) + 
@@ -142,7 +143,7 @@ p_bg_bBiomass<-ggplot(all_data, aes(x=background, y=below_biomass_g)) +
         scale_color_manual(values=cbPalette) +
         scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
         labs(x="Plant Host",y="Per Plant Below Biomass (g)")+
-        theme_classic() + theme(legend.position="", text = element_text(size=16))
+        theme_classic() + theme(legend.position="", text = element_text(size=18))
 p_bg_bBiomass
 
 
@@ -151,42 +152,61 @@ p_bg_bBiomass
 
 
 ```
+```{r total biomass, echo=FALSE}
+p_tot_biomass<-ggplot(all_data, aes(x=reorder(name,order), y=tot_biomass)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter(aes(x=name, y=tot_biomass, color=type)) +
+        coord_flip() +
+        scale_color_manual(values=cbPalette)  +
+        labs(x="Plant Host",y="Total Biomass (g)") +
+        theme_classic() + theme(legend.position="", text = element_text(size=18))
+p_tot_biomass 
 
-Root to Shoot ratio in grams per plant by genotype and colored by host background.  
-```{r plot root_shoot, echo=FALSE}
+p_bg_tot_biomass<-ggplot(all_data, aes(x=background, y=tot_biomass)) + 
+        geom_boxplot(aes(x=background, y=tot_biomass)) +
+        geom_jitter(aes(x=background, y=tot_biomass, color=type)) +
+        scale_color_manual(values=cbPalette) +
+        scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
+        labs(x="Plant Host",y="Total Biomass (g)")+
+        theme_classic() + theme(legend.position="", text = element_text(size=18))
+p_bg_tot_biomass
+```
+
+Root to shoot ratio in grams per plant by genotype and colored by host background.  
+```{r plot shoot_root, echo=FALSE}
 #By host genotype
-p_bBiomass<-ggplot(all_data, aes(x=reorder(name,order), y=root_shoot)) + 
+p_root_shoot<-ggplot(all_data, aes(x=reorder(name,order), y=root_shoot)) + 
         geom_boxplot(outlier.shape=NA) +
         geom_jitter(aes(x=name, y=root_shoot, color=type)) +
         coord_flip() +
         scale_color_manual(values=cbPalette)  +
         labs(x="Plant Host",y="Root:Shoot") +
-        theme_classic() + theme(legend.position="", text = element_text(size=16))
-p_bBiomass 
+        theme_classic() + theme(legend.position="", text = element_text(size=18))
+p_root_shoot 
 
-p_bg_bBiomass<-ggplot(all_data, aes(x=background, y=root_shoot)) + 
+p_bg_root_shoot<-ggplot(all_data, aes(x=background, y=root_shoot)) + 
         geom_boxplot(aes(x=background, y=root_shoot)) +
         geom_jitter(aes(x=background, y=root_shoot, color=type)) +
         scale_color_manual(values=cbPalette) +
         scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
         labs(x="Plant Host",y="Root:Shoot")+
-        theme_classic() + theme(legend.position="", text = element_text(size=16))
-p_bg_bBiomass
+        theme_classic() + theme(legend.position="", text = element_text(size=18))
+p_bg_root_shoot
 
 
-#ggsave(plot = biomass_combo , width = 10, height = 10, dpi = 600, filename = "../figures/biomass_combo.png")
+ggsave(plot = p_root_shoot , width = 10, height = 10, dpi = 600, filename = "../figures/root_shoot.png")
 
 
 ```
 
-```{r}
+```{r nodule data load, include=FALSE}
 nod_data <- read.table("../data/data_nod_img_measurements.txt", sep = "\t", header=TRUE)
 #nod_data$genotype_id = as.factor(nod_data$genotype_id)
 all_data <- all_data %>% full_join(nod_data, by="sample_id") %>% mutate(nod_cnt_plant = nod_count/num_plants, tot_area_plant = nod_total_area_cm2/num_plants )
 
 ```
 
-```{r}
+```{r nod count per plant, echo=FALSE}
 p_nod_cnt <-ggplot(all_data, aes(x=reorder(name,order), y=nod_cnt_plant)) + 
         geom_boxplot(outlier.shape=NA) +
         geom_jitter(aes(x=name, y=nod_cnt_plant, color=type)) +
@@ -206,7 +226,7 @@ p_bg_nod_cnt <-ggplot(all_data, aes(x=background, y=nod_cnt_plant)) +
 p_bg_nod_cnt
 ```
 
-```{r}
+```{r total area of nodules, echo=FALSE}
 p_tot_area <-ggplot(all_data, aes(x=reorder(name,order), y=tot_area_plant)) + 
         geom_boxplot(outlier.shape=NA) +
         geom_jitter(aes(x=name, y=tot_area_plant, color=type)) +
@@ -225,7 +245,7 @@ p_bg_tot_area <-ggplot(all_data, aes(x=background, y=tot_area_plant)) +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 p_bg_tot_area
 ```
-```{r}
+```{r nodule weight, echo=FALSE}
 p_nod_wt <-ggplot(all_data, aes(x=reorder(name,order), y=nod_wt_plant)) + 
         geom_boxplot(outlier.shape=NA) +
         geom_jitter(aes(x=name, y=nod_wt_plant, color=type)) +
