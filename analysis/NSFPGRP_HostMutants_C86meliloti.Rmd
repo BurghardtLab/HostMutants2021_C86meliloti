@@ -67,6 +67,10 @@ all_data$genotype_id = as.factor(all_data$genotype_id)
 (1)Variation among backgrounds and genotypes. (2) Sunn1, Sunn4 are highly numerated with nodules. (3) A17 and R108 wild types show trend that A17 has higher rhizobial load than R108.
 
 This plot depicts cfu per plant for each genotype. 
+
+***
+STATS ARE ORDERED BY: BACKGROUND; A17 TYPE THEN TUKEY; R108 TYPE (ONLY TWO wt & early so no tukey)
+***
 ```{r plate counts by name, echo=FALSE}
 #By host genotype
 p_cfu<-ggplot(all_data, aes(x=reorder(name,order), y=cfu_plant)) +
@@ -85,10 +89,15 @@ p_cfu
 
 ggsave(plot = p_cfu , width = 10, height = 7, dpi = 600, filename = "../figures/cfu_geno.png")
 
-
 res.aov <- aov(cfu_plant ~ background, data = all_data) #filter(all_data, background=="A17"))
 summary(res.aov)
-TukeyHSD
+
+res.aov <- aov(cfu_plant ~ type, data = filter(all_data, background=="A17"))
+summary(res.aov)
+TukeyHSD(res.aov)
+
+res.aov <- aov(cfu_plant ~ type, data = filter(all_data, background=="R108"))
+summary(res.aov)
 ###Since we know that A17 and R108 are diff would it make sense to test type within each back ground
 ```
 
@@ -131,23 +140,33 @@ p_bg_aBiomass
 
 ggsave(plot = p_aBiomass, width = 10, height = 10, dpi = 600, filename = "../figures/above_biomass.png")
 
+res.aov <- aov(above_plant ~ background, data = all_data) #filter(all_data, background=="A17"))
+summary(res.aov)
+
+res.aov <- aov(above_plant ~ type, data = filter(all_data, background=="A17"))
+summary(res.aov)
+TukeyHSD(res.aov)
+
+res.aov <- aov(above_plant ~ type, data = filter(all_data, background=="R108"))
+summary(res.aov)
+
 ```
 
 Below ground biomass in grams per plant by genotype and colored by host background.  
 ```{r plot below ground, echo=FALSE}
 #By host genotype
-p_bBiomass<-ggplot(all_data, aes(x=reorder(name,order), y=below_biomass_g)) + 
+p_bBiomass<-ggplot(all_data, aes(x=reorder(name,order), y=below_plant)) + 
         geom_boxplot(outlier.shape=NA) +
-        geom_jitter(aes(x=name, y=below_biomass_g, color=type)) +
+        geom_jitter(aes(x=name, y=below_plant, color=type)) +
         coord_flip() +
         scale_color_manual(values=cbPalette)  +
         labs(x="Plant Host",y="Per Plant Below Biomass (g)") +
         theme_classic() + theme(legend.position="", text = element_text(size=18))
 p_bBiomass 
 
-p_bg_bBiomass<-ggplot(all_data, aes(x=background, y=below_biomass_g)) + 
-        geom_boxplot(aes(x=background, y=below_biomass_g)) +
-        geom_jitter(aes(x=background, y=below_biomass_g, color=type)) +
+p_bg_bBiomass<-ggplot(all_data, aes(x=background, y=below_plant)) + 
+        geom_boxplot(aes(x=background, y=below_plant)) +
+        geom_jitter(aes(x=background, y=below_plant, color=type)) +
         scale_color_manual(values=cbPalette) +
         scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
         labs(x="Plant Host",y="Per Plant Below Biomass (g)")+
@@ -157,7 +176,15 @@ p_bg_bBiomass
 
 ggsave(plot = p_bBiomass, width = 10, height = 10, dpi = 600, filename = "../figures/below_biomass.png")
 
+res.aov <- aov(below_plant ~ background, data = all_data) #filter(all_data, background=="A17"))
+summary(res.aov)
 
+res.aov <- aov(below_plant ~ type, data = filter(all_data, background=="A17"))
+summary(res.aov)
+TukeyHSD(res.aov)
+
+res.aov <- aov(below_plant ~ type, data = filter(all_data, background=="R108"))
+summary(res.aov)
 
 ```
 ```{r total biomass, echo=FALSE}
@@ -178,6 +205,16 @@ p_bg_tot_biomass<-ggplot(all_data, aes(x=background, y=tot_biomass)) +
         labs(x="Plant Host",y="Total Biomass (g)")+
         theme_classic() + theme(legend.position="", text = element_text(size=18))
 p_bg_tot_biomass
+
+res.aov <- aov(tot_biomass ~ background, data = all_data) #filter(all_data, background=="A17"))
+summary(res.aov)
+
+res.aov <- aov(tot_biomass ~ type, data = filter(all_data, background=="A17"))
+summary(res.aov)
+TukeyHSD(res.aov)
+
+res.aov <- aov(tot_biomass ~ type, data = filter(all_data, background=="R108"))
+summary(res.aov)
 ```
 
 Root to shoot ratio in grams per plant by genotype and colored by host background.  
@@ -203,6 +240,16 @@ p_bg_root_shoot
 
 
 ggsave(plot = p_root_shoot , width = 10, height = 10, dpi = 600, filename = "../figures/root_shoot.png")
+
+res.aov <- aov(root_shoot ~ background, data = all_data) #filter(all_data, background=="A17"))
+summary(res.aov)
+
+res.aov <- aov(root_shoot ~ type, data = filter(all_data, background=="A17"))
+summary(res.aov)
+TukeyHSD(res.aov)
+
+res.aov <- aov(root_shoot ~ type, data = filter(all_data, background=="R108"))
+summary(res.aov)
 
 
 ```
@@ -235,6 +282,15 @@ p_bg_nod_cnt
 
 ggsave(plot = p_bg_nod_cnt , width = 5, height = 5, dpi = 600, filename = "../figures/bg_nod_cnt.png")
 
+res.aov <- aov(nod_cnt_plant ~ background, data = all_data) #filter(all_data, background=="A17"))
+summary(res.aov)
+
+res.aov <- aov(nod_cnt_plant ~ type, data = filter(all_data, background=="A17"))
+summary(res.aov)
+TukeyHSD(res.aov)
+
+res.aov <- aov(nod_cnt_plant ~ type, data = filter(all_data, background=="R108"))
+summary(res.aov)
 ```
 
 ```{r total area of nodules, echo=FALSE}
@@ -257,6 +313,16 @@ p_bg_tot_area <-ggplot(all_data, aes(x=background, y=tot_area_plant)) +
 p_bg_tot_area
 
 ggsave(plot = p_bg_tot_area , width = 5, height = 5, dpi = 600, filename = "../figures/bg_tot_area.png")
+
+res.aov <- aov(tot_area_plant ~ background, data = all_data) #filter(all_data, background=="A17"))
+summary(res.aov)
+
+res.aov <- aov(tot_area_plant ~ type, data = filter(all_data, background=="A17"))
+summary(res.aov)
+TukeyHSD(res.aov)
+
+res.aov <- aov(tot_area_plant ~ type, data = filter(all_data, background=="R108"))
+summary(res.aov)
 ```
 ```{r nodule weight, echo=FALSE}
 p_nod_wt <-ggplot(all_data, aes(x=reorder(name,order), y=nod_wt_plant)) + 
@@ -278,4 +344,15 @@ p_bg_nod_wt <-ggplot(all_data, aes(x=background, y=nod_wt_plant)) +
 p_bg_nod_wt
 
 ggsave(plot = p_bg_nod_wt , width = 5, height =5, dpi = 600, filename = "../figures/nod_wt_plant.png")
+
+res.aov <- aov(nod_wt_plant ~ background, data = all_data) #filter(all_data, background=="A17"))
+summary(res.aov)
+
+res.aov <- aov(nod_wt_plant ~ type, data = filter(all_data, background=="A17"))
+summary(res.aov)
+TukeyHSD(res.aov)
+
+res.aov <- aov(nod_wt_plant ~ type, data = filter(all_data, background=="R108"))
+summary(res.aov)
+
 ```
