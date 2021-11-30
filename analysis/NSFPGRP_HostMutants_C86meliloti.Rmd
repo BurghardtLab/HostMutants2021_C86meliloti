@@ -84,6 +84,12 @@ p_cfu
 #p_cfu_R108<-ggplot(filter(all_data, background=="R108"), aes(x=reorder(name,order), y=cfu_plant)) + 
 
 ggsave(plot = p_cfu , width = 10, height = 7, dpi = 600, filename = "../figures/cfu_geno.png")
+
+
+res.aov <- aov(cfu_plant ~ background, data = all_data) #filter(all_data, background=="A17"))
+summary(res.aov)
+TukeyHSD
+###Since we know that A17 and R108 are diff would it make sense to test type within each back ground
 ```
 
 <b>This plot depicts</b> cfu per plant for each host background which could be Medicago truncatula A17 or R108.  
@@ -99,29 +105,31 @@ p_bg_cfu<-ggplot(all_data, aes(x=background, y=cfu_plant)) +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 p_bg_cfu 
 
-#ggsave(plot = p_bg_cfu , width = 5.3, height = 5.5, dpi = 600, filename = "../figures/bg_cfu.png")
+ggsave(plot = p_bg_cfu , width = 5.3, height = 5.5, dpi = 600, filename = "../figures/bg_cfu.png")
 ```
 
 Above ground biomass in grams per plant by genotype and colored by host background.   
 ```{r plot above ground, echo=FALSE}
 #By host genotype
-p_aBiomass<-ggplot(all_data, aes(x=reorder(name,order), y=above_biomass_g)) + 
+p_aBiomass<-ggplot(all_data, aes(x=reorder(name,order), y=above_plant)) + 
         geom_boxplot(outlier.shape=NA) +
-        geom_jitter(aes(x=name, y=above_biomass_g, color=type)) +
+        geom_jitter(aes(x=name, y=above_plant, color=type)) +
         coord_flip() +
         scale_color_manual(values=cbPalette)  +
         labs(x="Plant Host",y="Per Plant Above Biomass (g)") +
         theme_classic() + theme(legend.position="", text = element_text(size=18))
 p_aBiomass 
 
-p_bg_aBiomass<-ggplot(all_data, aes(x=background, y=above_biomass_g)) + 
-        geom_boxplot(aes(x=background, y=above_biomass_g)) +
-        geom_jitter(aes(x=background, y=above_biomass_g, color=type)) +
+p_bg_aBiomass<-ggplot(all_data, aes(x=background, y=above_plant)) + 
+        geom_boxplot(aes(x=background, y=above_plant)) +
+        geom_jitter(aes(x=background, y=above_plant, color=type)) +
         scale_color_manual(values=cbPalette) +
         scale_fill_manual(values=c("#D55E00", "#CC79A7")) +
         labs(x="Plant Host",y="Per Plant Above Biomass (g)")+
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 p_bg_aBiomass 
+
+ggsave(plot = p_aBiomass, width = 10, height = 10, dpi = 600, filename = "../figures/above_biomass.png")
 
 ```
 
@@ -147,7 +155,7 @@ p_bg_bBiomass<-ggplot(all_data, aes(x=background, y=below_biomass_g)) +
 p_bg_bBiomass
 
 
-#ggsave(plot = biomass_combo , width = 10, height = 10, dpi = 600, filename = "../figures/biomass_combo.png")
+ggsave(plot = p_bBiomass, width = 10, height = 10, dpi = 600, filename = "../figures/below_biomass.png")
 
 
 
@@ -224,6 +232,9 @@ p_bg_nod_cnt <-ggplot(all_data, aes(x=background, y=nod_cnt_plant)) +
         labs(x="Plant Host",y="Nods per plant")+
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 p_bg_nod_cnt
+
+ggsave(plot = p_bg_nod_cnt , width = 5, height = 5, dpi = 600, filename = "../figures/bg_nod_cnt.png")
+
 ```
 
 ```{r total area of nodules, echo=FALSE}
@@ -244,6 +255,8 @@ p_bg_tot_area <-ggplot(all_data, aes(x=background, y=tot_area_plant)) +
         labs(x="Plant Host",y="Total Nod area per plant")+
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 p_bg_tot_area
+
+ggsave(plot = p_bg_tot_area , width = 5, height = 5, dpi = 600, filename = "../figures/bg_tot_area.png")
 ```
 ```{r nodule weight, echo=FALSE}
 p_nod_wt <-ggplot(all_data, aes(x=reorder(name,order), y=nod_wt_plant)) + 
@@ -263,4 +276,6 @@ p_bg_nod_wt <-ggplot(all_data, aes(x=background, y=nod_wt_plant)) +
         labs(x="Plant Host",y="Nod gram per plant")+
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 p_bg_nod_wt
+
+ggsave(plot = p_bg_nod_wt , width = 5, height =5, dpi = 600, filename = "../figures/nod_wt_plant.png")
 ```
