@@ -343,7 +343,7 @@ p_bg_nod_wt <-ggplot(all_data, aes(x=background, y=nod_wt_plant)) +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 p_bg_nod_wt
 
-ggsave(plot = p_bg_nod_wt , width = 5, height =5, dpi = 600, filename = "../figures/nod_wt_plant.png")
+ggsave(plot = p_nod_wt , width = 5, height =5, dpi = 600, filename = "../figures/nod_wt_plant.png")
 
 res.aov <- aov(nod_wt_plant ~ background, data = all_data) #filter(all_data, background=="A17"))
 summary(res.aov)
