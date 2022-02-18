@@ -11,17 +11,7 @@ Analysis file for NSF Host Mutant C86 Ensifer meliloti select and resequence pro
 knitr::opts_knit$set(root.dir = '/GitHub')
 knitr::opts_chunk$set(message = FALSE)
 
-#Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
-
-#When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
-
-#The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
-
-#To display output in the plots pane Preferences>> OR Tools>>Global_Options>> RMarkdown>>uncheck "Show output inline...")
-
 #Searchable R Markdown reference: https://bookdown.org/yihui/rmarkdown-cookbook/
-
-#Code that may once again be useful
 
 #Combining plots
 #require(ggpubr)
