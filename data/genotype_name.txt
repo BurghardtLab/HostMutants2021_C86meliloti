@@ -24,9 +24,9 @@ genotype_id	name	background	type	order
 892	NFS1- 	A18	A18	NA
 893	NFS2+	A18	A18	NA
 894	NFS2-	A18	A18	NA
-888	Vernal	MS	MS	28
-889	Onieda	MS	MS	29
-890	SW4107	MS	MS	30
+888	Vernal	MS	WT	28
+889	Onieda	MS	WT	29
+890	SW4107	MS	WT	30
 854	npd2/4	R108	Late	23
 855	npd1/2/4	R108	Late	24
 856	npd1/2/4/5	R108	Late	26

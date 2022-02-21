@@ -174,10 +174,11 @@ p<-ggplot(df_long, aes(x=value)) +
   geom_histogram(color="black", fill="white")
 p
 
-p<- ggplot(filter(df_long, background=="A17"), aes(x = sample_id, y = name, fill = value)) +
+a17 <- df_long %>% filter(background=="A17")
+p<- ggplot(a17, aes(x = genotype_id, y = name.x, fill = value)) +
   geom_tile(color = "black") +
-  scale_fill_gradient(low = "#353436",
-                      high = "#f6f805",
+  scale_fill_gradient(low = "blue",
+                      high = "red",
                       guide = "colorbar") 
 
 #ggsave(plot = p , width = 12, height = 12, dpi = 600, filename = "wild.png")
@@ -185,4 +186,53 @@ p<- ggplot(filter(df_long, background=="A17"), aes(x = sample_id, y = name, fill
 #scale_fill_gradientn(colors = hcl.colors(20, "RdYlGn")) 
 
 #coord_fixed()
+
+
+
+###RDA - borrowing code from mesocosom_C68meliloti
+# RDA analysis for fitness and plot RDA1 vs RDA2 and RDA3 vs RDA4
+fit_details <- inner_join(fit, geno_name, by="genotype_id")
+# Run a few different RDA Models
+rda1<-rda(fit_details[,c(2:87)]~Trt*Time,meso_fit, scale=TRUE) #Full Model w/ interactions
+rda2<-rda(fit_details[,c(2:87)]~Trt+Time,meso_fit, scale=TRUE) # Additive Model
+rda3<-rda(fit_details[,c(2:87)]~Trt,meso_fit, scale=TRUE) # Treatment only
+rda4<-rda(fit_details[,c(2:87)]~Time,meso_fit, scale=TRUE) # Time only
+
+# Rsquared gives you an overall idea of well the overall model adjusted for the number of predictors you have
+mymodels<-data.frame(data=c("all"),model=c("Trt*Time","Trt+Time","Trt","Time"),
+                     Radj=c(RsquareAdj(rda1)$adj.r.squared,RsquareAdj(rda2)$adj.r.squared,RsquareAdj(rda3)$adj.r.squared,RsquareAdj(rda4)$adj.r.squared),
+                     Prop.Exp=c(summary(rda1)$constr.chi/summary(rda1)$tot.chi,summary(rda2)$constr.chi/summary(rda2)$tot.chi,summary(rda3)$constr.chi/summary(rda3)$tot.chi,summary(rda4)$constr.chi/summary(rda4)$tot.chi))
+mymodels
+# The adjusted r-squared for the model allowing for an interaction between Time and Treatment has the highest rsquared even when penalized for the additional predictors
+# Run a permutational significance test for the explanatory variables in the full model
+# In this case the inference from the anova aligns with the inference from the adjusted R squared 
+
+rda.model.all<-anova(rda1, step=1000, perm.max=1000, by= "terms") # The interaction is significant, but temperature has the largest effect
+write.table(rda.model.all,file = "../tables/RDA_All_TimexTrt.tsv",sep="\t",col.names = NA,row.names=TRUE)
+
+#Plot the FULL model with the interaction #
+
+#Make the window view wider
+par(mfrow=c(1,1),mar=c(3, 3, 2.1, 1))
+
+# Initiate the plot (Save format:FigX_Analysis_Data_Model)
+pdf(file = "../figures/Fig2_RDA_All_TimexTrt.pdf",useDingbats = FALSE, height=4, width=4)
+rdaplot <- ordiplot(rda1, display=c("wa"),cex=.5,cex.axis=.8,cex.lab=.9, tck=.02,mgp=c(1.7,.5,0),type="none",
+                    xlim=c(-2,2),ylim=c(-3,6),scaling=1, xlab=paste("RDA 1 (",round(summary(rda1)$cont$importance[2,1],2)*100,"% var.)",sep=""), 
+                    ylab=paste("RDA 2 (",round(summary(rda1)$cont$importance[2,2],2)*100,"% var.)",sep=""))
+points(rda1,"wa", cex=0.8,col=paste(mycols[meso_fit$Trt,]$cols),pch=myshapes[meso_fit$Time,]$shapes)
+legend("topright", legend = levels(meso_fit$Trt), bty = "n",
+       col = paste(mycols$cols),pt.bg = paste(mycols$cols),pch=15, title= "Trt")
+legend("topleft", legend = levels(meso_fit$Time), bty = "n",
+       pch = myshapes$shapes, title="Time")
+
+rdaplot <- ordiplot(rda1,display=c("wa"),cex=.5,cex.axis=.8,cex.lab=.9, tck=.02,mgp=c(1.7,.5,0),type="none",
+                    xlim=c(-2,2),ylim=c(-3,6),scaling=1, xlab=paste("RDA 3 (",round(summary(rda1)$cont$importance[2,3],2)*100,"% var.)",sep=""), 
+                    ylab=paste("RDA 4 (",round(summary(rda1)$cont$importance[2,4],2)*100,"% var.)",sep=""))
+points(rda1,"wa",choices = c(3,4), cex=0.8,col=paste(mycols[meso_fit$Trt,]$cols),pch=myshapes[meso_fit$Time,]$shapes)
+
+dev.off()
+
+
+
 
