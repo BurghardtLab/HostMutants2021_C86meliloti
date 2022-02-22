@@ -461,9 +461,9 @@ rda2<-rda(meta_fit_r108[,c(2:87)]~name,meta_fit_r108, scale=TRUE) # Time only
 rda3<-rda(meta_fit_r108[,c(2:87)]~type*name,meta_fit_r108, scale=TRUE) # Time only
 rda4<-rda(meta_fit_r108[,c(2:87)]~type+name,meta_fit_r108, scale=TRUE) # Time only
 # Rsquared gives you an overall idea of well the overall model adjusted for the number of predictors you have
-mymodels<-data.frame(data=c("all"),model=c("type","genotype","type*genotype","type+genotype"),
-           Radj=c(RsquareAdj(rda1)$adj.r.squared,RsquareAdj(rda2)$adj.r.squared,RsquareAdj(rda3)$adj.r.squared,RsquareAdj(rda4)$adj.r.squared),
-           Prop.Exp=c(summary(rda1)$constr.chi/summary(rda1)$tot.chi,summary(rda2)$constr.chi/summary(rda2)$tot.chi,summary(rda3)$constr.chi/summary(rda3)$tot.chi,summary(rda4)$constr.chi/summary(rda4)$tot.chi))
+mymodels<-data.frame(data=c("R108"),model=c("genotype"),
+           Radj=c(RsquareAdj(rda1)$adj.r.squared),
+           Prop.Exp=c(summary(rda1)$constr.chi/summary(rda1)$tot.chi))
 mymodels
 # The adjusted r-squared for the model allowing for an interaction between Time and Treatment has the highest rsquared even when penalized for the additional predictors
 # Run a permutational significance test for the explanatory variables in the full model
@@ -504,9 +504,9 @@ rda2<-rda(meta_fit_a17[,c(2:87)]~name,meta_fit_a17, scale=TRUE) # Time only
 rda3<-rda(meta_fit_a17[,c(2:87)]~type*name,meta_fit_a17, scale=TRUE) # Time only
 rda4<-rda(meta_fit_a17[,c(2:87)]~type+name,meta_fit_a17, scale=TRUE) # Time only
 # Rsquared gives you an overall idea of well the overall model adjusted for the number of predictors you have
-mymodels<-data.frame(data=c("all"),model=c("type","genotype","type*genotype","type+genotype"),
-           Radj=c(RsquareAdj(rda1)$adj.r.squared,RsquareAdj(rda2)$adj.r.squared,RsquareAdj(rda3)$adj.r.squared,RsquareAdj(rda4)$adj.r.squared),
-           Prop.Exp=c(summary(rda1)$constr.chi/summary(rda1)$tot.chi,summary(rda2)$constr.chi/summary(rda2)$tot.chi,summary(rda3)$constr.chi/summary(rda3)$tot.chi,summary(rda4)$constr.chi/summary(rda4)$tot.chi))
+mymodels<-data.frame(data=c("A17"),model=c("type"),
+           Radj=c(RsquareAdj(rda1)$adj.r.squared),
+           Prop.Exp=c(summary(rda1)$constr.chi/summary(rda1)$tot.chi))
 mymodels
 # The adjusted r-squared for the model allowing for an interaction between Time and Treatment has the highest rsquared even when penalized for the additional predictors
 # Run a permutational significance test for the explanatory variables in the full model
