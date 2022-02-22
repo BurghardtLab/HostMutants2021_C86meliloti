@@ -623,3 +623,34 @@ rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) +
 rda.plot
 ggsave("../figures/rda_A18.png", rda.plot, height = 15 , width = 10, dpi=300)
 ```
+```{r freq_diversity, echo=FALSE}
+#freq table with sample info
+#Separate sample_id 
+freq <- freq_filtered %>% mutate(genotype_id = substr(sample_id, 3,5), rep = substr(sample_id, 6,6))
+freq <- inner_join(freq, geno_name, by="genotype_id")
+
+freq_div <-data.frame(shannon=diversity(as.matrix(freq[,c(-1:-1,-87:-93)]), index = "shannon"),Trt=factor(freq$background),Type=factor(freq$type), Genotype=factor(freq$genotype_id))
+
+invsimpson = diversity(as.matrix(freq[,c(-1:-1,-87:-93)]), index = "invsimpson")
+freq_div <- freq_div %>% add_column(invsimp = invsimpson)
+
+anova(lm(shannon~Trt*Type,data=freq_div)) # First pass anova shows 
+summary(lm(shannon~Trt*Type,data=freq_div)) # Examination of coeffecients suggests T
+
+anova(lm(invsimpson~Trt*Type,data=freq_div)) # First pass anova shows 
+summary(lm(invsimpson~Trt*Type,data=freq_div)) # Examination of coeffecients suggests T
+
+p<-ggplot(data=freq_div, aes(x=Trt, y=shannon, fill=Type)) +
+  geom_boxplot() +
+  geom_point() + 
+  theme_classic()
+p
+ggsave("../figures/shannon.png", p, height = 10 , width = 10, dpi=300)
+
+p<-ggplot(data=freq_div, aes(x=Trt, y=invsimpson, fill=Type)) +
+  geom_boxplot() +
+  geom_point() + 
+  theme_classic()
+p
+ggsave("../figures/invsimpson.png", p, height = 10 , width = 10, dpi=300)
+```
