@@ -438,7 +438,6 @@ rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) +
   geom_hline(yintercept=0, linetype="dotted") +
   geom_vline(xintercept=0, linetype="dotted") +
   coord_fixed() +
-  #scale_color_manual(values=cbPalette, ) +
   labs(x=paste("RDA 1 (",round(rda1_ev[1],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[2],2),"%)")) +
   theme_classic() + theme(legend.position="top", text = element_text(size=14))
 rda.plot
@@ -638,8 +637,9 @@ ggsave("../figures/rda_NILS.png", rda.plot, height = 15 , width = 10, dpi=300)
 ```{r freq_diversity, echo=FALSE}
 #freq table with sample info
 #Separate sample_id 
-freq <- freq_filtered %>% mutate(genotype_id = substr(sample_id, 3,5), rep = substr(sample_id, 6,6))
-freq <- inner_join(freq, geno_name, by="genotype_id")
+freq <- freq_filtered %>% mutate(genotype_id = substr(sample_id, 3,5), rep = substr(sample_id, 6,6)) 
+freq <- inner_join(freq, geno_name, by="genotype_id") 
+freq<- freq %>% filter(type!="UN")
 
 freq_div <-data.frame(shannon=diversity(as.matrix(freq[,c(-1:-1,-87:-93)]), index = "shannon"),Trt=factor(freq$background),Type=factor(freq$type), genotype_id=factor(freq$genotype_id))
 
@@ -654,18 +654,21 @@ summary(lm(shannon~Trt*Type,data=freq_div)) # Examination of coeffecients sugges
 anova(lm(invsimpson~Trt*Type,data=freq_div)) # First pass anova shows 
 summary(lm(invsimpson~Trt*Type,data=freq_div)) # Examination of coeffecients suggests T
 
-p<-ggplot(data=freq_div, aes(x=name, y=shannon, fill=)) +
+p<-ggplot(data=freq_div, aes(x=reorder(name, order), y=shannon, fill=type)) +
   geom_boxplot() +
   geom_point() + 
   coord_flip() +
+  scale_color_manual(values=cbPalette, ) +
   theme_classic()
   #facet_grid(~.Trt)
 p
 ggsave("../figures/shannon.png", p, height = 10 , width = 10, dpi=300)
 
-p<-ggplot(data=freq_div, aes(x=Trt, y=invsimpson, fill=Type)) +
+p<-ggplot(data=freq_div, aes(x=reorder(name, order), y=invsimpson, fill=Type)) +
   geom_boxplot() +
-  geom_point() + 
+  geom_point() +
+  scale_color_manual(values=cbPalette, ) +
+  coord_flip() +
   theme_classic()
 p
 ggsave("../figures/invsimpson.png", p, height = 10 , width = 10, dpi=300)
