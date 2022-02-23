@@ -486,7 +486,7 @@ df1 <- df1 %>% add_column(m_name, m_type)
 
 rda1_ev <-as.vector(eigenvals(rda1, constrained=TRUE))
 
-rda.plot <- ggplot(df1, aes(x=RDA1, y=PC1)) + 
+rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) + 
   geom_point(aes(color=type), size=4)+
   scale_shape_manual(values=c(15, 16, 17, 18))+
   geom_text(aes(label=name),size=4) +
@@ -494,12 +494,12 @@ rda.plot <- ggplot(df1, aes(x=RDA1, y=PC1)) +
   geom_vline(xintercept=0, linetype="dotted") +
   coord_fixed() +
   labs(x=paste("RDA 1 (",round(rda1_ev[1],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[2],2),"%)")) +
-  theme_classic() + theme(legend.position="top", text = element_text(size=22))
+  theme_classic() + theme(legend.position="top", text = element_text(size=14))
 rda.plot
-ggsave("../figures/rda_r108.png", rda.plot, height = 9 , width = 8, dpi=300)
+ggsave("../figures/rda_r108.png", rda.plot, height = 6 , width = 8, dpi=300)
 ```
 
-```{r fit_rda_a17, echo=FALSE, fig.width=8, fig.height=8}
+```{r fit_rda_a17, echo=FALSE}
 # RDA analysis for fitness and plot RDA1 vs RDA2 and RDA3 vs RDA4
 meta_fit_a17 <- meta_fit %>% filter(background=="A17")
 # Run a few different RDA Models
@@ -541,7 +541,7 @@ rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) +
   labs(x=paste("RDA 1 (",round(rda1_ev[1],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[2],2),"%)")) +
   theme_classic() + theme(legend.position="top", text = element_text(size=14))
 rda.plot
-ggsave("../figures/rda_a17.png", rda.plot, height = 15 , width = 10, dpi=300)
+ggsave("../figures/rda_a17.png", rda.plot, height = 6 , width = 8, dpi=300)
 ```
 
 ```{r fit_rda_MS, echo=FALSE}
@@ -598,7 +598,7 @@ rda1<-rda(meta_fit_A18[,c(2:87)]~name,meta_fit_A18, scale=TRUE) # Time only
 #rda3<-rda(meta_fit_A18[,c(2:87)]~type*name,meta_fit_A18, scale=TRUE) # Time only
 #rda4<-rda(meta_fit_A18[,c(2:87)]~type+name,meta_fit_A18, scale=TRUE) # Time only
 # Rsquared gives you an overall idea of well the overall model adjusted for the number of predictors you have
-mymodels<-data.frame(data=c("all"),model=c("genotype"),
+mymodels<-data.frame(data=c("NILS"),model=c("genotype"),
            Radj=c(RsquareAdj(rda1)$adj.r.squared),
            Prop.Exp=c(summary(rda1)$constr.chi/summary(rda1)$tot.chi))
 mymodels
@@ -631,7 +631,7 @@ rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) +
   labs(x=paste("RDA 1 (",round(rda1_ev[1],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[2],2),"%)")) +
   theme_classic() + theme(legend.position="top", text = element_text(size=14))
 rda.plot
-ggsave("../figures/rda_NILS.png", rda.plot, height = 15 , width = 10, dpi=300)
+ggsave("../figures/rda_NILS.png", rda.plot, height = 6 , width = 8, dpi=300)
 ```
 ```{r freq_diversity, echo=FALSE}
 #freq table with sample info
