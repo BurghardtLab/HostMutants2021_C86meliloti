@@ -33,7 +33,7 @@ cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 cbbPalette <- c("#E69F00", "#D55E00","56B4E9" , "#CC79A7", "#009E73", "#0072B2","#F0E442" , "#000000")
 
 # Define a color and shape scheme for the whole manuscript
-#mycols<-data.frame(Trt=c("FS","32C","4C","Na+","Dry","La","Sm","Clay"), cols=c("#666666","#D95F02", "#7570B3", "#E7298A", "#66A61E", "#E6AB02", "#A6761D", "#1B9E77"))
+mycols<-data.frame(type=c("AOR","32C","4C","Na+","Dry","La","Sm","Clay"), cols=c("#666666","#D95F02", "#7570B3", "#E7298A", "#66A61E", "#E6AB02", "#A6761D", "#1B9E77"))
 #mycols$Trt <- factor(mycols$Trt, ordered=TRUE)
 
 #myshapes<-data.frame(Time=c("2wk","10wk","24wk"),shapes=c(1,12,19))
@@ -499,24 +499,69 @@ rda.plot
 ggsave("../figures/rda_r108.png", rda.plot, height = 6 , width = 8, dpi=300)
 ```
 
+```{r fit_rda_a17_dnf, echo=FALSE}
+# RDA analysis for fitness and plot RDA1 vs RDA2 and RDA3 vs RDA4
+meta_fit_a17_dnf <- meta_fit %>% filter(background=="A17") %>% filter(str_detect(name,"dnf")|name=)
+# Run a few different RDA Models
+rda1<-rda(meta_fit_a17_dnf[,c(2:87)]~name,meta_fit_a17_dnf, scale=TRUE) # Time only
+#rda2<-rda(meta_fit_a17[,c(2:87)]~type,meta_fit_a17, scale=TRUE) # Time only
+#rda3<-rda(meta_fit_a17[,c(2:87)]~type+name,meta_fit_a17, scale=TRUE) # Time only
+#rda4<-rda(meta_fit_a17[,c(2:87)]~type+name,meta_fit_a17, scale=TRUE) # Time only
+# Rsquared gives you an overall idea of well the overall model adjusted for the number of predictors you have
+mymodels<-data.frame(data=c("dnf"),model=c("genotype","type","type+genotype"),
+          Radj=c(RsquareAdj(rda1)$adj.r.squared),
+           Prop.Exp=c(summary(rda1)$constr.chi/summary(rda1)$tot.chi))
+mymodels
+# The adjusted r-squared for the model allowing for an interaction between Time and Treatment has the highest rsquared even when penalized for the additional predictors
+# Run a permutational significance test for the explanatory variables in the full model
+# In this case the inference from the anova aligns with the inference from the adjusted R squared 
+
+rda.model.all<-anova(rda1, step=1000, perm.max=1000, by= "terms") # The interaction is significant, but temperature has the largest effect
+rda.model.all
+write.table(rda.model.all,file = "../tables/RDA_a17_type.tsv",sep="\t",col.names = NA,row.names=TRUE)
+
+#Plot the FULL model with the interaction #
+smry <- summary(rda1)
+df1  <- data.frame(smry$sites[,1:2])       # PC1 and PC2
+#df2  <- data.frame(smry$species[,1:2])     # loadings for PC1 and PC2
+
+#copy sample_id(substring(right, 4)) in to a new column called sample_id
+m_name <- select(meta_fit_a17_dnf, name)
+m_type <- select(meta_fit_a17_dnf, type)
+df1 <- df1 %>% add_column(m_name, m_type)
+
+rda1_ev <-as.vector(eigenvals(rda1, constrained=TRUE))
+
+rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) + 
+  geom_point(aes(color=type), size=4)+
+  scale_shape_manual(values=c(15, 16, 17, 18))+
+  geom_text(aes(label=name),size=4) +
+  geom_hline(yintercept=0, linetype="dotted") +
+  geom_vline(xintercept=0, linetype="dotted") +
+  coord_fixed() +
+  labs(x=paste("RDA 1 (",round(rda1_ev[1],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[2],2),"%)")) +
+  theme_classic() + theme(legend.position="top", text = element_text(size=14))
+rda.plot
+ggsave("../figures/rda_a17_dnf.png", rda.plot, height = 6 , width = 8, dpi=300)
+```
 ```{r fit_rda_a17, echo=FALSE}
 # RDA analysis for fitness and plot RDA1 vs RDA2 and RDA3 vs RDA4
 meta_fit_a17 <- meta_fit %>% filter(background=="A17")
 # Run a few different RDA Models
 rda1<-rda(meta_fit_a17[,c(2:87)]~name,meta_fit_a17, scale=TRUE) # Time only
 rda2<-rda(meta_fit_a17[,c(2:87)]~type,meta_fit_a17, scale=TRUE) # Time only
-rda3<-rda(meta_fit_a17[,c(2:87)]~type*name,meta_fit_a17, scale=TRUE) # Time only
-rda4<-rda(meta_fit_a17[,c(2:87)]~type+name,meta_fit_a17, scale=TRUE) # Time only
+rda3<-rda(meta_fit_a17[,c(2:87)]~type+name,meta_fit_a17, scale=TRUE) # Time only
+#rda4<-rda(meta_fit_a17[,c(2:87)]~type+name,meta_fit_a17, scale=TRUE) # Time only
 # Rsquared gives you an overall idea of well the overall model adjusted for the number of predictors you have
-mymodels<-data.frame(data=c("A17"),model=c("genotype","type","t*n","t+n"),
-          Radj=c(RsquareAdj(rda1)$adj.r.squared,RsquareAdj(rda2)$adj.r.squared,RsquareAdj(rda3)$adj.r.squared,RsquareAdj(rda4)$adj.r.squared),
-           Prop.Exp=c(summary(rda1)$constr.chi/summary(rda1)$tot.chi,summary(rda2)$constr.chi/summary(rda2)$tot.chi,summary(rda3)$constr.chi/summary(rda3)$tot.chi,summary(rda4)$constr.chi/summary(rda4)$tot.chi))
+mymodels<-data.frame(data=c("A17"),model=c("genotype","type","type+genotype"),
+          Radj=c(RsquareAdj(rda1)$adj.r.squared,RsquareAdj(rda2)$adj.r.squared,RsquareAdj(rda3)$adj.r.squared),
+           Prop.Exp=c(summary(rda1)$constr.chi/summary(rda1)$tot.chi,summary(rda2)$constr.chi/summary(rda2)$tot.chi,summary(rda3)$constr.chi/summary(rda3)$tot.chi))
 mymodels
 # The adjusted r-squared for the model allowing for an interaction between Time and Treatment has the highest rsquared even when penalized for the additional predictors
 # Run a permutational significance test for the explanatory variables in the full model
 # In this case the inference from the anova aligns with the inference from the adjusted R squared 
 
-rda.model.all<-anova(rda4, step=1000, perm.max=1000, by= "terms") # The interaction is significant, but temperature has the largest effect
+rda.model.all<-anova(rda1, step=1000, perm.max=1000, by= "terms") # The interaction is significant, but temperature has the largest effect
 write.table(rda.model.all,file = "../tables/RDA_a17_type.tsv",sep="\t",col.names = NA,row.names=TRUE)
 
 #Plot the FULL model with the interaction #
@@ -687,7 +732,7 @@ rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA3)) +
   geom_hline(yintercept=0, linetype="dotted") +
   geom_vline(xintercept=0, linetype="dotted") +
   coord_fixed() +
-  labs(x=paste("RDA 1 (",round(rda1_ev[1],3),"%)"),y=paste("RDA 3 (",round(rda1_ev[2],3),"%)")) +
+  labs(x=paste("RDA 1 (",round(rda1_ev[1],1),"%)"),y=paste("RDA 3 (",round(rda1_ev[2],3),"%)")) +
   theme_classic() + theme(legend.position="top", text = element_text(size=14))
 rda.plot
 ```
