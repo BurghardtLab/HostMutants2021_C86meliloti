@@ -799,5 +799,8 @@ p<- ggplot(df_long, aes(x = name, y = Mag, fill = value)) +
   scale_fill_viridis_b()
 p
 
+
 ggsave(plot = p , width = 12, height = 12, dpi = 600, filename = "../figures/heat_a17_dnf.png")
+
+
 ```
