@@ -60,4 +60,4 @@ sample_id	genotype_id	rep	image	pixels_cm	date_of_photo	nod_count	nod_total_area
 886E	886	E	img_0165	534.0833	14-May	177	3.989	0.023	
 841E	841	E	img_0175	499.0251	15-May	157	4.478	0.029	
 869E	869	E	img_0144	507.001	14-May	102	3.998	0.039	
-	884	E	img_0147	503.647	14-May	190	3.942	0.021	
+884E	884	E	img_0147	503.647	14-May	190	3.942	0.021	

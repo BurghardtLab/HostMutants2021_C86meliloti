@@ -56,7 +56,7 @@ all_data <- all_data %>% inner_join(geno_name, by="genotype_id") %>%  mutate(cfu
 #num_plants for whole plant metrics ie biomass
 
 #Filter out unwanted samples hybrids and unknown genotypes
-all_data <- all_data %>% filter(type!="A18") %>% filter(type!="UN") 
+all_data <- all_data %>% filter(background!="MS") 
 #set genotype_id as a factor so will group in plots
 all_data$genotype_id = as.factor(all_data$genotype_id)
 ```
@@ -73,21 +73,21 @@ STATS ARE ORDERED BY: BACKGROUND; A17 TYPE THEN TUKEY; R108 TYPE (ONLY TWO wt & 
 ***
 ```{r counts_by_nname, echo=FALSE}
 #By host genotype
-p_cfu<-ggplot(all_data, aes(x=reorder(name,order), y=cfu_plant)) +
-        geom_boxplot(outlier.shape=NA) +
-        geom_jitter(aes(x=name, y=cfu_plant, color=type)) +
+p_cfu<-ggplot(all_data, aes(x=reorder(name,order), y=cfu_plant, fill=type)) +
         scale_y_continuous(trans='log10') +
         labs(x="Plant Genotype",y="log(cfus per plant)")+
+        geom_boxplot() +
+        geom_point() + 
         coord_flip() +
-        scale_color_manual(values = cbPalette) +
-        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+        scale_color_manual(values=cbPalette) +
+        theme_classic() + theme(legend.position="top", text = element_text(size=22))
 p_cfu
 
 #If want separate plots for plant backgrounds. Copy and paste plot code from above below the data line here.
 #p_cfu_A17<-ggplot(filter(all_data, background!="R108"), aes(x=reorder(name,order), y=cfu_plant)) +
 #p_cfu_R108<-ggplot(filter(all_data, background=="R108"), aes(x=reorder(name,order), y=cfu_plant)) + 
 
-ggsave(plot = p_cfu , width = 10, height = 7, dpi = 600, filename = "../figures/cfu_geno.png")
+ggsave(plot = p_cfu , width = 8, height = 9, dpi = 600, filename = "../figures/cfu_geno.png")
 
 res.aov <- aov(cfu_plant ~ background, data = all_data) #filter(all_data, background=="A17"))
 summary(res.aov)
@@ -120,13 +120,13 @@ ggsave(plot = p_bg_cfu , width = 5.3, height = 5.5, dpi = 600, filename = "../fi
 Above ground biomass in grams per plant by genotype and colored by host background.   
 ```{r aboveground, echo=FALSE}
 #By host genotype
-p_aBiomass<-ggplot(all_data, aes(x=reorder(name,order), y=above_plant)) + 
-        geom_boxplot(outlier.shape=NA) +
-        geom_jitter(aes(x=name, y=above_plant, color=type)) +
-        coord_flip() +
-        scale_color_manual(values=cbPalette)  +
+p_aBiomass<-ggplot(all_data, aes(x=reorder(name,order), y=above_plant, fill=type)) + 
         labs(x="Plant Host",y="Per Plant Above Biomass (g)") +
-        theme_classic() + theme(legend.position="", text = element_text(size=18))
+        geom_boxplot() +
+        geom_point() + 
+        coord_flip() +
+        scale_color_manual(values=cbPalette) +
+        theme_classic() + theme(legend.position="top", text = element_text(size=22))
 p_aBiomass 
 
 p_bg_aBiomass<-ggplot(all_data, aes(x=background, y=above_plant)) + 
@@ -138,7 +138,7 @@ p_bg_aBiomass<-ggplot(all_data, aes(x=background, y=above_plant)) +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 p_bg_aBiomass 
 
-ggsave(plot = p_aBiomass, width = 10, height = 10, dpi = 600, filename = "../figures/above_biomass.png")
+ggsave(plot = p_aBiomass, width = 8, height = 9, dpi = 600, filename = "../figures/above_biomass.png")
 
 res.aov <- aov(above_plant ~ background, data = all_data) #filter(all_data, background=="A17"))
 summary(res.aov)
@@ -221,13 +221,13 @@ summary(res.aov)
 Shoot to root ratio in grams per plant by genotype and colored by host background.  
 ```{r shoot_root, echo=FALSE}
 #By host genotype
-p_shoot_root <-ggplot(all_data, aes(x=reorder(name,order), y=shoot_root)) + 
-        geom_boxplot(outlier.shape=NA) +
-        geom_jitter(aes(x=name, y=shoot_root, color=type)) +
-        coord_flip() +
-        scale_color_manual(values=cbPalette)  +
+p_shoot_root <-ggplot(all_data, aes(x=reorder(name,order), y=shoot_root, fill=type)) + 
         labs(x="Plant Host",y="Shoot:Root") +
-        theme_classic() + theme(legend.position="", text = element_text(size=18))
+        geom_boxplot() +
+        geom_point() + 
+        coord_flip() +
+        scale_color_manual(values=cbPalette) +
+        theme_classic() + theme(legend.position="top", text = element_text(size=22))
 p_shoot_root 
 
 p_bg_shoot_root<-ggplot(all_data, aes(x=background, y=shoot_root)) + 
@@ -240,7 +240,7 @@ p_bg_shoot_root<-ggplot(all_data, aes(x=background, y=shoot_root)) +
 p_bg_shoot_root
 
 
-ggsave(plot = p_shoot_root , width = 10, height = 10, dpi = 600, filename = "../figures/shoot_root.png")
+ggsave(plot = p_shoot_root , width = 8, height = 9, dpi = 600, filename = "../figures/shoot_root.png")
 
 res.aov <- aov(shoot_root ~ background, data = all_data) #filter(all_data, background=="A17"))
 summary(res.aov)
@@ -258,7 +258,7 @@ summary(res.aov)
 ```{r nodule_data, include=FALSE}
 nod_data <- read.table("../data/data_nod_img_measurements.txt", sep = "\t", header=TRUE)
 #nod_data$genotype_id = as.factor(nod_data$genotype_id)
-all_data <- all_data %>% full_join(nod_data, by="sample_id") %>% mutate(nod_cnt_plant = nod_count/num_plants, tot_area_plant = nod_total_area_cm2/num_plants )
+all_data <- all_data %>% full_join(nod_data, by="sample_id") %>% mutate(nod_cnt_plant = nod_data$nod_count/num_plants, tot_area_plant = nod_data$nod_total_area_cm2/num_plants )
 
 ```
 
@@ -327,13 +327,13 @@ summary(res.aov)
 ```
 
 ```{r nodule weight, echo=FALSE}
-p_nod_wt <-ggplot(all_data, aes(x=reorder(name,order), y=nod_wt_plant)) + 
-        geom_boxplot(outlier.shape=NA) +
-        geom_jitter(aes(x=name, y=nod_wt_plant, color=type)) +
-        coord_flip() +
-        scale_color_manual(values=cbPalette)  +
+p_nod_wt <-ggplot(all_data[-171,], aes(x=reorder(name,order), y=nod_wt_plant, fill=type)) + 
         labs(x="Plant Host",y="Nod gram per plant") +
-        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+        geom_boxplot() +
+        geom_point() + 
+        coord_flip() +
+        scale_color_manual(values=cbPalette) +
+        theme_classic() + theme(legend.position="top", text = element_text(size=22))
 p_nod_wt 
 
 p_bg_nod_wt <-ggplot(all_data, aes(x=background, y=nod_wt_plant)) + 
@@ -345,7 +345,7 @@ p_bg_nod_wt <-ggplot(all_data, aes(x=background, y=nod_wt_plant)) +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 p_bg_nod_wt
 
-ggsave(plot = p_nod_wt , width = 5, height =5, dpi = 600, filename = "../figures/nod_wt_plant.png")
+ggsave(plot = p_nod_wt , width = 8, height =9, dpi = 600, filename = "../figures/nod_wt_plant.png")
 
 res.aov <- aov(nod_wt_plant ~ background, data = all_data) #filter(all_data, background=="A17"))
 summary(res.aov)
@@ -437,11 +437,10 @@ rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) +
   geom_text(aes(label=name),size=4) +
   geom_hline(yintercept=0, linetype="dotted") +
   geom_vline(xintercept=0, linetype="dotted") +
-  coord_fixed() +
   labs(x=paste("RDA 1 (",round(rda1_ev[1],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[2],2),"%)")) +
   theme_classic() + theme(legend.position="top", text = element_text(size=14))
 rda.plot
-ggsave("../figures/rda_plot.png", rda.plot, height = 15 , width = 10, dpi=300)
+ggsave("../figures/rda_plot.png", rda.plot, height = 12 , width = 12, dpi=300)
 
 #rda.biplot <- rda.plot +
 #  geom_segment(data=df2, aes(x=0, xend=RDA1, y=0, yend=RDA2), 
@@ -455,7 +454,7 @@ ggsave("../figures/rda_plot.png", rda.plot, height = 15 , width = 10, dpi=300)
 ```
 
 
-```{r fit_rda_r108, echo=FALSE, fig.width=8, fig.height=8}
+```{r fit_rda_r108, echo=FALSE}
 # RDA analysis for fitness and plot RDA1 vs RDA2 and RDA3 vs RDA4
 meta_fit_r108 <- meta_fit %>% filter(background=="R108") %>% filter(type!="UN")
 # Run a few different RDA Models
@@ -495,9 +494,9 @@ rda.plot <- ggplot(df1, aes(x=RDA1, y=PC1)) +
   geom_vline(xintercept=0, linetype="dotted") +
   coord_fixed() +
   labs(x=paste("RDA 1 (",round(rda1_ev[1],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[2],2),"%)")) +
-  theme_classic() + theme(legend.position="top", text = element_text(size=14))
+  theme_classic() + theme(legend.position="top", text = element_text(size=22))
 rda.plot
-ggsave("../figures/rda_r108.png", rda.plot, height = 15 , width = 10, dpi=300)
+ggsave("../figures/rda_r108.png", rda.plot, height = 9 , width = 8, dpi=300)
 ```
 
 ```{r fit_rda_a17, echo=FALSE, fig.width=8, fig.height=8}
@@ -639,7 +638,7 @@ ggsave("../figures/rda_NILS.png", rda.plot, height = 15 , width = 10, dpi=300)
 #Separate sample_id 
 freq <- freq_filtered %>% mutate(genotype_id = substr(sample_id, 3,5), rep = substr(sample_id, 6,6)) 
 freq <- inner_join(freq, geno_name, by="genotype_id") 
-freq<- freq %>% filter(type!="UN")
+freq<- freq %>% filter(type!="UN") %>% filter(background!="MS")
 
 freq_div <-data.frame(shannon=diversity(as.matrix(freq[,c(-1:-1,-87:-93)]), index = "shannon"),Trt=factor(freq$background),Type=factor(freq$type), genotype_id=factor(freq$genotype_id))
 
@@ -658,11 +657,14 @@ p<-ggplot(data=freq_div, aes(x=reorder(name, order), y=shannon, fill=type)) +
   geom_boxplot() +
   geom_point() + 
   coord_flip() +
-  scale_color_manual(values=cbPalette, ) +
-  theme_classic()
+  scale_color_manual(values=cbPalette) +
+  labs(x="Plant Host",y="Shannon diversity") +
+  theme_classic() + theme(legend.position="top", text = element_text(size=22))
+  #theme_classic() + theme(legend.position="top", text = element_text(size=18), axis.text.x = element_text(angle = 45, hjust=1)) #h=6, w=8.4
+#opts(axis.title.x = theme_text(vjust=-0.5))
   #facet_grid(~.Trt)
 p
-ggsave("../figures/shannon.png", p, height = 10 , width = 10, dpi=300)
+ggsave("../figures/shannon.png", p, height = 9 , width = 8, dpi=300)
 
 p<-ggplot(data=freq_div, aes(x=reorder(name, order), y=invsimpson, fill=Type)) +
   geom_boxplot() +
