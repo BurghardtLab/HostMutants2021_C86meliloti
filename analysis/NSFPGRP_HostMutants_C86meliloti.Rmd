@@ -33,7 +33,7 @@ cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 cbbPalette <- c("#E69F00", "#D55E00","56B4E9" , "#CC79A7", "#009E73", "#0072B2","#F0E442" , "#000000")
 
 # Define a color and shape scheme for the whole manuscript
-mycols<-data.frame(type=c("AOR","32C","4C","Na+","Dry","La","Sm","Clay"), cols=c("#666666","#D95F02", "#7570B3", "#E7298A", "#66A61E", "#E6AB02", "#A6761D", "#1B9E77"))
+#mycols<-data.frame(type=c("AOR","Early","4C","Na+","Dry","La","Sm","Clay"), cols=c("#666666","#D95F02", "#7570B3", "#E7298A", "#66A61E", "#E6AB02", "#A6761D", "#1B9E77"))
 #mycols$Trt <- factor(mycols$Trt, ordered=TRUE)
 
 #myshapes<-data.frame(Time=c("2wk","10wk","24wk"),shapes=c(1,12,19))
@@ -779,4 +779,27 @@ p<-ggplot(data=freq_div, aes(x=reorder(name, order), y=invsimpson, fill=Type)) +
   theme_classic()
 p
 ggsave("../figures/invsimpson.png", p, height = 10 , width = 10, dpi=300)
+```
+
+```{r heatmap_means, echo=FALSE}
+#HEAT MAP
+
+####NEED TO MAKE THIS MEANS
+#Calculate median fitness and plot PCA
+#Take Median of fitness
+fit.med <- meta_fit_a17_dnf %>% group_by(name) %>% summarise_if(is.numeric,median)
+df_long <- pivot_longer(fit.med[,1:87],"MAG5":"MAG761A", names_to="Mag", values_to="value")
+#!religion, names_to = "income", values_to = "count")
+#df_long <- inner_join(df_long, geno_name, by="genotype_id")
+#colnames(df) <- c("x", "y", "value")
+
+
+p<- ggplot(df_long, aes(x = Mag, y = name, fill = value)) +
+  geom_tile(color = "black") +
+  scale_fill_gradient(low = "gray",
+                      high = "yellow",
+                      guide = "colorbar") 
+p
+
+#ggsave(plot = p , width = 12, height = 12, dpi = 600, filename = "wild.png")
 ```
