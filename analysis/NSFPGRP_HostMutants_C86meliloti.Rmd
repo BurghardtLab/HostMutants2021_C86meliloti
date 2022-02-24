@@ -830,4 +830,14 @@ pdf(file="../figures/heatbase_mean.pdf",width = 8,height=8)
 h <- heatmap(as.matrix(fit.mean),col=pal,cexCol = .5,cexRow = .75)
 h <- heatmap(as.matrix(fit.med),col=pal,cexCol = .5,cexRow = .75)
 dev.off()
+
+fit.mean.all <- meta_fit %>% group_by(name) %>% summarise_if(is.numeric,mean)
+fit.mean.all <- column_to_rownames(fit.mean.all, "name")
+fit.mean.all <- fit.mean.all[,-87]
+l = length(seq(-7.9, 8, 0.1))
+pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(l)
+#pal = as.vector(c("#2166AC", "#F7F7F7", "#B2182B"))
+pdf(file="../figures/heatbase_mean_all.pdf",width = 8,height=8)
+h <- heatmap(as.matrix(fit.mean.all),col=pal,cexCol = .5,cexRow = .75)
+dev.off()
 ```
