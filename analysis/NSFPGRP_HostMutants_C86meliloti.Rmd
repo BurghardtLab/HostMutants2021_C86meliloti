@@ -800,8 +800,8 @@ ggsave(plot = p , width = 12, height = 12, dpi = 600, filename = "../figures/hea
 fit.med <- column_to_rownames(fit.med, "name")
 fit.med <- fit.med[,-87]
 #l = length(seq(-7.9, 5, 0.1))
-pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))
+pal = as.vector(c("#2166AC", "#F7F7F7", "#B2182B"))
 pdf(file="../figures/heatbase.pdf")
-h <- heatmap(t(fit.med), col=pal)
+h <- heatmap(t(fit.med))
 dev.off()
 ```
