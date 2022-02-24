@@ -789,18 +789,19 @@ ggsave("../figures/invsimpson.png", p, height = 10 , width = 10, dpi=300)
 #Take Median of fitness
 fit.med <- meta_fit_a17_dnf %>% group_by(name) %>% summarise_if(is.numeric,median)
 df_long <- pivot_longer(fit.med[,1:87],"MAG5":"MAG761A", names_to="Mag", values_to="value")
-#!religion, names_to = "income", values_to = "count")
-#df_long <- inner_join(df_long, geno_name, by="genotype_id")
-#colnames(df) <- c("x", "y", "value")
-
 
 p<- ggplot(df_long, aes(x = name, y = Mag, fill = value)) +
   geom_tile(color = "black") +
   scale_fill_viridis_b()
 p
 
-
 ggsave(plot = p , width = 12, height = 12, dpi = 600, filename = "../figures/heat_a17_dnf.png")
 
-
+fit.med <- column_to_rownames(fit.med, "name")
+fit.med <- fit.med[,-87]
+#l = length(seq(-7.9, 5, 0.1))
+pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))
+pdf(file="../figures/heatbase.pdf")
+h <- heatmap(t(fit.med), col=pal)
+dev.off()
 ```
