@@ -32,6 +32,12 @@ require(vegan)#ecological statistics
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 cbbPalette <- c("#E69F00", "#D55E00","56B4E9" , "#CC79A7", "#009E73", "#0072B2","#F0E442" , "#000000")
 
+### For emulating ggplot colors ###
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+mypal<-gg_color_hue(6)
 # Define a color and shape scheme for the whole manuscript
 #mycols<-data.frame(type=c("AOR","Early","4C","Na+","Dry","La","Sm","Clay"), cols=c("#666666","#D95F02", "#7570B3", "#E7298A", "#66A61E", "#E6AB02", "#A6761D", "#1B9E77"))
 #mycols$Trt <- factor(mycols$Trt, ordered=TRUE)
@@ -464,14 +470,14 @@ rda3<-rda(meta_fit_r108[,c(2:87)]~type*name,meta_fit_r108, scale=TRUE) # Time on
 rda4<-rda(meta_fit_r108[,c(2:87)]~type+name,meta_fit_r108, scale=TRUE) # Time only
 # Rsquared gives you an overall idea of well the overall model adjusted for the number of predictors you have
 mymodels<-data.frame(data=c("R108"),model=c("genotype"),
-           Radj=c(RsquareAdj(rda1)$adj.r.squared),
-           Prop.Exp=c(summary(rda1)$constr.chi/summary(rda1)$tot.chi))
+           Radj=c(RsquareAdj(rda2)$adj.r.squared),
+           Prop.Exp=c(summary(rda2)$constr.chi/summary(rda2)$tot.chi))
 mymodels
 # The adjusted r-squared for the model allowing for an interaction between Time and Treatment has the highest rsquared even when penalized for the additional predictors
 # Run a permutational significance test for the explanatory variables in the full model
 # In this case the inference from the anova aligns with the inference from the adjusted R squared 
 
-rda.model.all<-anova(rda1, step=1000, perm.max=1000, by= "terms") # The interaction is significant, but temperature has the largest effect
+rda.model.all<-anova(rda2, step=1000, perm.max=1000, by= "terms") # The interaction is significant, but temperature has the largest effect
 write.table(rda.model.all,file = "../tables/RDA_r108_type.tsv",sep="\t",col.names = NA,row.names=TRUE)
 
 #Plot the FULL model with the interaction #
@@ -487,8 +493,9 @@ df1 <- df1 %>% add_column(m_name, m_type)
 rda1_ev <-as.vector(eigenvals(rda2, constrained=TRUE))
 
 rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) + 
-  geom_point(aes(color=type), size=4)+
-  scale_shape_manual(values=c(15, 16, 17, 18))+
+  geom_point(aes(color=type, shape=name), size=4)+
+  scale_shape_manual(values=c(15, 8, 10, 7,17,20,18,16,19))+
+  scale_color_manual(values=mypal[c(4,6)])+
   geom_text(aes(label=name),size=4) +
   geom_hline(yintercept=0, linetype="dotted") +
   geom_vline(xintercept=0, linetype="dotted") +
@@ -496,12 +503,12 @@ rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) +
   labs(x=paste("RDA 1 (",round(rda1_ev[1],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[2],2),"%)")) +
   theme_classic() + theme(legend.position="top", text = element_text(size=14))
 rda.plot
-ggsave("../figures/rda_r108.png", rda.plot, height = 6 , width = 8, dpi=300)
+ggsave("../figures/rda_r108.png", rda.plot, height = 6 , width = 10, dpi=300)
 ```
 
 ```{r fit_rda_a17_dnf, echo=FALSE}
 # RDA analysis for fitness and plot RDA1 vs RDA2 and RDA3 vs RDA4
-meta_fit_a17_dnf <- meta_fit %>% filter(background=="A17") %>% filter(str_detect(name,"dnf")|name=)
+meta_fit_a17_dnf <- meta_fit %>% filter(background=="A17") %>% filter(str_detect(name,"dnf")|name=="A17")
 # Run a few different RDA Models
 rda1<-rda(meta_fit_a17_dnf[,c(2:87)]~name,meta_fit_a17_dnf, scale=TRUE) # Time only
 #rda2<-rda(meta_fit_a17[,c(2:87)]~type,meta_fit_a17, scale=TRUE) # Time only
@@ -533,8 +540,9 @@ df1 <- df1 %>% add_column(m_name, m_type)
 rda1_ev <-as.vector(eigenvals(rda1, constrained=TRUE))
 
 rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) + 
-  geom_point(aes(color=type), size=4)+
-  scale_shape_manual(values=c(15, 16, 17, 18))+
+  geom_point(aes(shape=name,color=type), size=4)+
+  scale_shape_manual(values=c(15, 16, 10, 18,19,20,7,8,17))+
+  scale_color_manual(values=mypal[c(4,6)])+
   geom_text(aes(label=name),size=4) +
   geom_hline(yintercept=0, linetype="dotted") +
   geom_vline(xintercept=0, linetype="dotted") +
@@ -579,6 +587,8 @@ rda1_ev <-as.vector(eigenvals(rda1, constrained=TRUE))
 rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) + 
   geom_point(aes(color=type), size=4)+
   scale_shape_manual(values=c(15, 16, 17, 18))+
+  #scale_shape_manual(values=c(15, 16, 10, 18,19,20,7,8,17))+
+  scale_color_manual(values=mypal[c(1,2,4,6)])+
   geom_text(aes(label=name),size=4) +
   geom_hline(yintercept=0, linetype="dotted") +
   geom_vline(xintercept=0, linetype="dotted") +
@@ -586,7 +596,7 @@ rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) +
   labs(x=paste("RDA 1 (",round(rda1_ev[1],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[2],2),"%)")) +
   theme_classic() + theme(legend.position="top", text = element_text(size=14))
 rda.plot
-ggsave("../figures/rda_a17.png", rda.plot, height = 6 , width = 8, dpi=300)
+ggsave("../figures/rda_a17.png", rda.plot, height = 7 , width = 12, dpi=300)
 ```
 
 ```{r fit_rda_MS, echo=FALSE}
@@ -667,8 +677,9 @@ df1 <- df1 %>% add_column(m_name, m_type)
 rda1_ev <-as.vector(eigenvals(rda1, constrained=TRUE))
 
 rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) + 
-  geom_point(aes(color=type), size=4)+
+  geom_point(aes(color=type,shape=name), size=4)+
   scale_shape_manual(values=c(15, 16, 17, 18))+
+  scale_color_manual(values=mypal[c(5)])+
   geom_text(aes(label=name),size=4) +
   geom_hline(yintercept=0, linetype="dotted") +
   geom_vline(xintercept=0, linetype="dotted") +
@@ -714,8 +725,9 @@ df1 <- df1 %>% add_column(m_name, m_type)
 rda1_ev <-as.vector(eigenvals(rda1, constrained=TRUE))
 
 rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) + 
-  geom_point(aes(color=type), size=4)+
+  geom_point(aes(color=type,shape=name), size=4)+
   scale_shape_manual(values=c(15, 16, 17, 18))+
+  scale_color_manual(values=mypal[3])+
   geom_text(aes(label=name),size=4) +
   geom_hline(yintercept=0, linetype="dotted") +
   geom_vline(xintercept=0, linetype="dotted") +
@@ -725,16 +737,18 @@ rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2)) +
 rda.plot
 ggsave("../figures/rda_ko.png", rda.plot, height = 6 , width = 8, dpi=300)
 
-rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA3)) + 
-  geom_point(aes(color=type), size=4)+
+rda.plot <- ggplot(df1, aes(x=RDA2, y=RDA3)) + 
+  geom_point(aes(color=type,shape=name), size=4)+
   scale_shape_manual(values=c(15, 16, 17, 18))+
+  scale_color_manual(values=mypal[3])+
   geom_text(aes(label=name),size=4) +
   geom_hline(yintercept=0, linetype="dotted") +
   geom_vline(xintercept=0, linetype="dotted") +
   coord_fixed() +
-  labs(x=paste("RDA 1 (",round(rda1_ev[1],1),"%)"),y=paste("RDA 3 (",round(rda1_ev[2],3),"%)")) +
+  labs(x=paste("RDA 2 (",round(rda1_ev[2],2),"%)"),y=paste("RDA 3 (",round(rda1_ev[3],2),"%)")) +
   theme_classic() + theme(legend.position="top", text = element_text(size=14))
 rda.plot
+ggsave("../figures/rda_ko_rda2&3.png", rda.plot, height = 6 , width = 8, dpi=300)
 ```
 
 
@@ -788,6 +802,7 @@ ggsave("../figures/invsimpson.png", p, height = 10 , width = 10, dpi=300)
 #Calculate median fitness and plot PCA
 #Take Median of fitness
 fit.med <- meta_fit_a17_dnf %>% group_by(name) %>% summarise_if(is.numeric,median)
+fit.mean <- meta_fit_a17_dnf %>% group_by(name) %>% summarise_if(is.numeric,mean)
 df_long <- pivot_longer(fit.med[,1:87],"MAG5":"MAG761A", names_to="Mag", values_to="value")
 
 p<- ggplot(df_long, aes(x = name, y = Mag, fill = value)) +
@@ -803,5 +818,16 @@ fit.med <- fit.med[,-87]
 pal = as.vector(c("#2166AC", "#F7F7F7", "#B2182B"))
 pdf(file="../figures/heatbase.pdf")
 h <- heatmap(t(fit.med))
+dev.off()
+
+library(RColorBrewer)
+fit.mean <- column_to_rownames(fit.mean, "name")
+fit.mean <- fit.mean[,-87]
+l = length(seq(-7.9, 8, 0.1))
+pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(l)
+#pal = as.vector(c("#2166AC", "#F7F7F7", "#B2182B"))
+pdf(file="../figures/heatbase_mean.pdf",width = 8,height=8)
+h <- heatmap(as.matrix(fit.mean),col=pal,cexCol = .5,cexRow = .75)
+h <- heatmap(as.matrix(fit.med),col=pal,cexCol = .5,cexRow = .75)
 dev.off()
 ```
