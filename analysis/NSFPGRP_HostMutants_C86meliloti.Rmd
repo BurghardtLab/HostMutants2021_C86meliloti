@@ -403,6 +403,7 @@ fit <- as.data.frame(apply(fit, 2, as.numeric))
 sample_id <- freq_filtered[,c(1:1)]
 fit<- cbind(sample_id, fit[,c(2:87)])
 
+#Lowest fitness values is Mag27 = -7.1 
 fit <- fit %>% mutate_if(is.numeric, ~ifelse(abs(.) == Inf,-8,.)) 
 
 #Separate sample_id 
@@ -412,7 +413,7 @@ geno_name$genotype_id <- as.factor(geno_name$genotype_id)
 meta_fit <- inner_join(fit, geno_name, by="genotype_id")
 
 #Remove Alfalfa
-meta_fit <- meta_fit %>% filter(background!="MS")%>% filter(background!="NILS")
+meta_fit <- meta_fit %>% filter(background!="MS")#%>% filter(background!="NILS")
 ```
 
 ```{r fit_rda_all, echo=FALSE, fig.width=10, fig.height=15}
@@ -460,7 +461,7 @@ rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2, color=type, shape=background)) +
   labs(x=paste("RDA 1 (",round(rda1_ev[1],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[2],2),"%)")) +
   theme_classic() + theme(legend.position="top", text = element_text(size=14))
 rda.plot
-##ggsave("../figures/rda_all.png", rda.plot, height = 12 , width = 12, dpi=300)
+ggsave("../figures/rda_all.png", rda.plot, height = 12 , width = 12, dpi=300)
 
 #rda.biplot <- rda.plot +
 #  geom_segment(data=df2, aes(x=0, xend=RDA1, y=0, yend=RDA2), 
@@ -470,6 +471,16 @@ rda.plot
 #                hjust=0.5*(1-sign(RDA1)),vjust=0.5*(1-sign(RDA2))), 
 #            color="red", size=4)
 #rda.biplot
+
+#HEATMAP
+#Fitness mean of all genotypes
+fit.mean <- meta_fit %>% group_by(name) %>% summarise_if(is.numeric,mean)
+
+fit.subtract <- column_to_rownames(fit.mean, "name")
+fit.subtract <- fit.subtract[,-87]
+pdf(file="../figures/heatmap_base_mean_all.pdf",width = 12,height=8)
+h<-heatmap.2(as.matrix(fit.subtract), col=pal, trace="none", scale="row", cexCol = .5,cexRow = .75)
+dev.off()
 
 ```
 Genotype: Constrained predictor explains 52% of the variance and unconstrained explain 48% of the variance.
@@ -530,22 +541,18 @@ rda.plot
 #Get mean of just R108 wildtype and subtract from mutants, then plot those values
 #Fitness mean of r108 wildtype only
 fit.mean.r108wt <- meta_fit_r108 %>% filter(type=="WT") %>% group_by(name) %>% summarise_if(is.numeric,mean)
-
 #Fitness mean of all genotypes in r108 host
 fit.mean <- meta_fit_r108 %>% group_by(name) %>% summarise_if(is.numeric,mean)
 
 #Substract mean of wildtype from mean of mutant genotypes
-
-df %>%
-  mutate_at(vars(-matches("y"), -matches("x")), list(dif = ~ . - y))
-
 fit.subtract<-as_tibble(cbind(fit.mean[,c(1:1)],mapply("-",  fit.mean[,c(-1,-88)], fit.mean.r108wt[,c(-1,-88)])))
 
 fit.subtract <- column_to_rownames(fit.subtract, "name")
 fit.subtract <- fit.subtract[,-87]
-pdf(file="../figures/heatmap_r108.pdf",width = 12,height=8)
+pdf(file="../figures/heatmap_adj_mean_r108.pdf",width = 12,height=8)
 h<-heatmap.2(as.matrix(fit.subtract), col=pal, trace="none", scale="row", cexCol = .5,cexRow = .75)
 dev.off()
+
 ```
 Genotype: Constrained predictor explains 32% of the variance and unconstrained explain 59% of the variance.
 The type (WT/Late) (Radj=0.015) explains less variance than Genotype (Radj=0.12). 
@@ -653,7 +660,7 @@ fit.subtract<-as_tibble(cbind(fit.mean[,c(1:1)],mapply("-",  fit.mean[,c(-1,-88)
 
 fit.subtract <- column_to_rownames(fit.subtract, "name")
 fit.subtract <- fit.subtract[,-87]
-pdf(file="../figures/heatmap_a17.pdf",width = 12,height=8)
+pdf(file="../figures/heatmap_adj_mean_a17.pdf",width = 12,height=8)
 h<-heatmap.2(as.matrix(fit.subtract), col=pal, trace="none", scale="row", cexCol = .5,cexRow = .75)
 dev.off()
 ```
