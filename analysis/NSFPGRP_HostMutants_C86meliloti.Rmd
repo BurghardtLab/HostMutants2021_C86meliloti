@@ -41,6 +41,9 @@ mypal<-gg_color_hue(6)
 cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#CC79A7", "#999999")
 cbbPalette <- c("#E69F00", "#D55E00","56B4E9" , "#CC79A7", "#009E73", "#0072B2","#F0E442" , "#000000", "#999999")
 
+l = length(seq(-7.9, 8, 0.1))
+pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(l)
+
 #Allows visualization of a color Palette
 #require(scales)
 #show_col(cbPalette)
@@ -532,6 +535,10 @@ fit.mean.r108wt <- meta_fit_r108 %>% filter(type=="WT") %>% group_by(name) %>% s
 fit.mean <- meta_fit_r108 %>% group_by(name) %>% summarise_if(is.numeric,mean)
 
 #Substract mean of wildtype from mean of mutant genotypes
+
+df %>%
+  mutate_at(vars(-matches("y"), -matches("x")), list(dif = ~ . - y))
+
 fit.subtract<-as_tibble(cbind(fit.mean[,c(1:1)],mapply("-",  fit.mean[,c(-1,-88)], fit.mean.r108wt[,c(-1,-88)])))
 
 fit.subtract <- column_to_rownames(fit.subtract, "name")
