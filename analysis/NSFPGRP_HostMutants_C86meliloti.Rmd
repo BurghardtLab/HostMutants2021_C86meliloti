@@ -432,7 +432,7 @@ mymodels<-data.frame(data=c("all"),model=c("geno_type","host","type","host+type+
 mymodels
 
 # Run a permutational significance test for the explanatory variables in the full model
-rda.model.all<-anova(rda4, step=1000, perm.max=1000, by= "terms")  
+rda.model.all<-anova(rda1, step=1000, perm.max=1000, by= "terms")  
 ##write.table(rda.model.all,file = "../tables/RDA_All.tsv",sep="\t",col.names = NA,row.names=TRUE)
 
 #Plot the model that explains the most: genotype
@@ -508,7 +508,7 @@ mymodels<-data.frame(data=c("R108"),model=c("type", "genotype", "type+genotype")
 mymodels
 
 # Run a permutational significance test for the explanatory variables in the full model
-rda.model.all<-anova(rda3, step=1000, perm.max=1000, by= "terms") #
+rda.model.all<-anova(rda2, step=1000, perm.max=1000, by= "terms") #
 ##write.table(rda.model.all,file = "../tables/RDA_r108.tsv",sep="\t",col.names = NA,row.names=TRUE)
 
 #Plot the FULL model
@@ -523,6 +523,8 @@ df1 <- df1 %>% add_column(m_name, m_type)
 
 rda1_ev <-as.vector(eigenvals(rda2, constrained=TRUE))
 
+
+
 rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2,color=name)) + 
   geom_point()+
   scale_color_manual(values=cbbPalette)+
@@ -534,7 +536,7 @@ rda.plot <- ggplot(df1, aes(x=RDA1, y=RDA2,color=name)) +
   theme_classic() + theme(legend.position="top", text = element_text(size=14)) 
 rda.plot
 
-##ggsave("../figures/rda_r108.png", rda.plot, height = 6 , width = 10, dpi=300)
+ggsave("../figures/rda_r108_rda1pc1.png", rda.plot, height = 6 , width = 10, dpi=300)
 
 
 #HEATMAP
@@ -549,7 +551,7 @@ fit.subtract<-as_tibble(cbind(fit.mean[,c(1:1)],mapply("-",  fit.mean[,c(-1,-88)
 
 fit.subtract <- column_to_rownames(fit.subtract, "name")
 fit.subtract <- fit.subtract[,-87]
-pdf(file="../figures/heatmap_adj_mean_r108.pdf",width = 12,height=8)
+#pdf(file="../figures/heatmap_adj_mean_r108.pdf",width = 12,height=8)
 h<-heatmap.2(as.matrix(fit.subtract), col=pal, trace="none", scale="row", cexCol = .5,cexRow = .75)
 dev.off()
 
