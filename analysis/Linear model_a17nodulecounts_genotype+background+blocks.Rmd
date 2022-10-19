@@ -1,0 +1,33 @@
+---
+title: "my first rmd"
+output: html_document
+date: '2022-10-17'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = '/Applications/Onedrive/Sohini&Liana/HostMutants2021_C86meliloti')
+knitr::opts_chunk$set(message = FALSE)
+```
+
+
+```{r the lm code, echo=TRUE}
+#import the data
+data_HostMutants2021_nod_counts <- read.delim("~/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/HostMutants2021_C86meliloti/data/data_HostMutants2021_nod_counts.csv")
+genotype_name <- read.delim("~/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/HostMutants2021_C86meliloti/data/genotype_name.txt")
+#merge the two data set by 'genotype_id'
+#require (dplyr)
+library(dplyr)
+#convert the genotype_id into integer
+genotype_name$genotype_id = as.integer(genotype_name$genotype_id)
+#merge
+all.data<- full_join (data_HostMutants2021_nod_counts, genotype_name, by = "genotype_id")
+#Select for A17 background (how can we remove all the non essential backgrounds at one go?)
+all.data2 <- all.data %>% filter(background!="R108")
+all.data3 <- all.data2 %>% filter(background!="MS")
+all.data4 <- all.data3 %>% filter(background!="NFS")
+all.data5 <- all.data4 %>% filter(background!="KO-OX")
+# running the linear model
+model <- lm(Count ~ genotype_id + rep + type, data = all.data5)
+summary(model)
+```
