@@ -39,30 +39,3 @@ genotype_id	name	background	type	order
 856	npd1/2/4/5	R108	Late	26
 858	npd1/2/3/4/5	R108	Late	27
 869	R108	R108	WT	19
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-https://plantae.org/nodule-shape/				
