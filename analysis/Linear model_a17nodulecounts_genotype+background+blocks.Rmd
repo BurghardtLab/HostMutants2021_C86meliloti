@@ -81,6 +81,7 @@ summary(model.name)
 anova(model.name)
 ```
 Sohini-- type your intertation of these model results here:
+The genotypes influence the nodule number trait significantly( Pr(>F)=1.427e-12) while the technical replicates have no significant effect( Pr(>F)=0.6444).Among the genotypes, the dmi's have the most pronounced effect on nodulation.None of the dmi nodulated during community inoculation indicating their absolute essentiality.latd also had a similar strong negative effect on nodulation. Among the genotypes which positively influenced nodule numbers, rdn1 and sunn4 were strong candidates with sunn4 emerging to be most influential among all the genotypes tested.  Lastly, among the dnfs, only dnf6 seems to positively affect the trait while the rest had minor effects.
 
 ```{r Running a Linear Model on type alone, echo=TRUE}
 # Run a model with type and replicate as predictors
@@ -94,6 +95,7 @@ anova(model.type)
 
 ```
 Sohini type your interpretation of the model results here:
+Here also the technical replicates did not affect the overall nodule numbers. The stage of nodulation strongly influenced the nodule numbers (Pr(>F) =4.916e-14),specifically the Early stage of nodulation (latd).It seems as if any mutation in the early stage of RNS negatively affects the nodule numbers. Autoregulation of nodulation pathway(AON) (rdn1,sunn4) is a significant positive influencer of nodulation.
 
 ```{r Data visualization by name, echo=TRUE}
 #Super quick base r plot!
