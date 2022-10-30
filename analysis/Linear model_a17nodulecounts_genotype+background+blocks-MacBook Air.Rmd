@@ -81,7 +81,7 @@ summary(model.name)
 anova(model.name)
 ```
 Sohini-- type your intertation of these model results here:
-The genotypes influence the nodule number trait significantly( Pr(>F)=1.427e-12) while the technical replicates have no significant effect( Pr(>F)=0.6444).Among the genotypes, the dmi's have the most pronounced effect on nodulation.None of the dmi nodulated during community inoculation indicating their absolute essentiality. latd also had a similar strong negative effect on nodulation. Among the genotypes which positively influenced nodule numbers, rdn1 and sunn4 were strong candidates with sunn4 emerging to be most influential among all the genotypes tested.  Lastly, among the dnfs, only dnf6 seems to positively affect the trait while the rest had minor/non-significant effects.
+The genotypes influence the nodule number trait significantly( Pr(>F)=1.427e-12) while the technical replicates have no significant effect( Pr(>F)=0.6444).Among the genotypes, the dmi's have the most pronounced effect on nodulation.None of the dmi nodulated during community inoculation indicating their absolute essentiality.latd also had a similar strong negative effect on nodulation. Among the genotypes which positively influenced nodule numbers, rdn1 and sunn4 were strong candidates with sunn4 emerging to be most influential among all the genotypes tested.  Lastly, among the dnfs, only dnf6 seems to positively affect the trait while the rest had minor effects.
 
 ```{r Running a Linear Model on type alone, echo=TRUE}
 # Run a model with type and replicate as predictors
