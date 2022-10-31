@@ -1,4 +1,10 @@
 ---
+title: "Linear model_a17nodulecounts1"
+author: "sohini guha"
+date: '2022-10-31'
+output: html_document
+---
+---
 title: "Sohini's first rmd"
 output: html_document
 date: '2022-10-17'
@@ -64,7 +70,7 @@ all.data.A17$type<-factor(all.data.A17$type, levels = c("WT","Early","Late","AON
 
 # Now run the model
 model1 <- lm(Count ~ name + rep + type, data = all.data.A17)
-summary(model)
+summary(model1)
 ```
 Hmmm that is weird why do you think we are getting NA's for type?
 
@@ -78,8 +84,13 @@ model.name <- lm(Count ~ name + rep, data = all.data.A17)
 summary(model.name)
 
 #Examine the Analysis of Variance table
-anova(model.name)
+q<-anova(model.name)
+q
+# percentage of variance explained
+q<-q$"Sum Sq"
+print(cbind(PctExp=q/sum(q)*100))
 ```
+
 Sohini-- type your intertation of these model results here:
 The genotypes influence the nodule number trait significantly( Pr(>F)=1.427e-12) while the technical replicates have no significant effect( Pr(>F)=0.6444).Among the genotypes, the dmi's have the most pronounced effect on nodulation.None of the dmi nodulated during community inoculation indicating their absolute essentiality. latd also had a similar strong negative effect on nodulation. Among the genotypes which positively influenced nodule numbers, rdn1 and sunn4 were strong candidates with sunn4 emerging to be most influential among all the genotypes tested.  Lastly, among the dnfs, only dnf6 seems to positively affect the trait while the rest had minor/non-significant effects.
 
@@ -91,8 +102,11 @@ model.type <- lm(Count ~ type + rep, data = all.data.A17)
 summary(model.type)
 
 #Examine the Analysis of Variance table
-anova(model.type)
-
+p<-anova(model.type)
+p
+# percentage of variance explained
+p<-p$"Sum Sq"
+print(cbind(PctExp=p/sum(p)*100))
 ```
 Sohini type your interpretation of the model results here:
 Here also the technical replicates did not affect the overall nodule numbers. The stage of nodulation strongly influenced the nodule numbers (Pr(>F) =4.916e-14),specifically the Early stage of nodulation (latd).It seems as if any mutation in the early stage of RNS negatively affects the nodule numbers. Autoregulation of nodulation pathway(AON) (rdn1,sunn4) is a significant positive influencer of nodulation.
