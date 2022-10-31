@@ -474,17 +474,7 @@ summary(model2)</code></pre>
 ## F-statistic: 1.812 on 8 and 77 DF,  p-value: 0.0875</code></pre>
 <pre class="r"><code>#Examine the Analysis of Variance table
 p&lt;-anova(model2)
-p</code></pre>
-<pre><code>## Analysis of Variance Table
-## 
-## Response: average_size
-##           Df     Sum Sq    Mean Sq F value  Pr(&gt;F)  
-## type       3 0.00015146 5.0486e-05  2.8541 0.04261 *
-## rep        5 0.00010497 2.0993e-05  1.1868 0.32349  
-## Residuals 77 0.00136204 1.7689e-05                  
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<pre class="r"><code># percentage of variance explained
+# percentage of variance explained
 p&lt;-p$&quot;Sum Sq&quot;
 print(cbind(PctExp=p/sum(p)*100))</code></pre>
 <pre><code>##         PctExp

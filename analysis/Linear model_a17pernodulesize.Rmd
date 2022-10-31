@@ -58,7 +58,6 @@ model2 <- lm(average_size ~ type + rep, data = all.data.A17)
 summary(model2)
 #Examine the Analysis of Variance table
 p<-anova(model2)
-p
 # percentage of variance explained
 p<-p$"Sum Sq"
 print(cbind(PctExp=p/sum(p)*100))
