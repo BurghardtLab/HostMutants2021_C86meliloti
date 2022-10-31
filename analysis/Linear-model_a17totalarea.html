@@ -438,17 +438,7 @@ anova(model1)</code></pre>
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 <pre class="r"><code>#Examine the Analysis of Variance table
 q&lt;-anova(model1)
-q</code></pre>
-<pre><code>## Analysis of Variance Table
-## 
-## Response: total_area
-##           Df Sum Sq Mean Sq F value    Pr(&gt;F)    
-## name      18 99.460  5.5255  7.6117 6.953e-10 ***
-## rep        5  0.696  0.1391  0.1917    0.9646    
-## Residuals 62 45.008  0.7259                      
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<pre class="r"><code># percentage of variance explained
+# percentage of variance explained
 q&lt;-q$&quot;Sum Sq&quot;
 print(cbind(PctExp=q/sum(q)*100))</code></pre>
 <pre><code>##          PctExp
