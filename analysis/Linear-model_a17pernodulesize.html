@@ -425,7 +425,8 @@ summary(model1)</code></pre>
 ## Multiple R-squared:  0.6579, Adjusted R-squared:  0.531 
 ## F-statistic: 5.184 on 23 and 62 DF,  p-value: 1.183e-07</code></pre>
 <pre class="r"><code>#Examine the Analysis of Variance table
-anova(model1)</code></pre>
+q&lt;-anova(model1)
+q</code></pre>
 <pre><code>## Analysis of Variance Table
 ## 
 ## Response: average_size
@@ -435,10 +436,17 @@ anova(model1)</code></pre>
 ## Residuals 62 0.00055369 8.9300e-06                      
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code># percentage of variance explained
+q&lt;-q$&quot;Sum Sq&quot;
+print(cbind(PctExp=q/sum(q)*100))</code></pre>
+<pre><code>##         PctExp
+## [1,] 62.932916
+## [2,]  2.856392
+## [3,] 34.210692</code></pre>
 <pre class="r"><code># Running the model2
-model1 &lt;- lm(average_size ~ type + rep, data = all.data.A17)
+model2 &lt;- lm(average_size ~ type + rep, data = all.data.A17)
 #Examine the summary
-summary(model1)</code></pre>
+summary(model2)</code></pre>
 <pre><code>## 
 ## Call:
 ## lm(formula = average_size ~ type + rep, data = all.data.A17)
@@ -465,7 +473,8 @@ summary(model1)</code></pre>
 ## Multiple R-squared:  0.1584, Adjusted R-squared:  0.071 
 ## F-statistic: 1.812 on 8 and 77 DF,  p-value: 0.0875</code></pre>
 <pre class="r"><code>#Examine the Analysis of Variance table
-anova(model1)</code></pre>
+p&lt;-anova(model2)
+p</code></pre>
 <pre><code>## Analysis of Variance Table
 ## 
 ## Response: average_size
@@ -475,6 +484,13 @@ anova(model1)</code></pre>
 ## Residuals 77 0.00136204 1.7689e-05                  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code># percentage of variance explained
+p&lt;-p$&quot;Sum Sq&quot;
+print(cbind(PctExp=p/sum(p)*100))</code></pre>
+<pre><code>##         PctExp
+## [1,]  9.358152
+## [2,]  6.485501
+## [3,] 84.156348</code></pre>
 
 
 
