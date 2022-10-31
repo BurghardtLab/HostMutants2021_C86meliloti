@@ -106,3 +106,4 @@ plot(Count~name, data=all.data.A17)
 #Super quick base r plot!
 plot(Count~type, data=all.data.A17)
 ```
+
