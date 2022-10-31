@@ -436,6 +436,25 @@ anova(model1)</code></pre>
 ## Residuals 62 45.008  0.7259                      
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>#Examine the Analysis of Variance table
+q&lt;-anova(model1)
+q</code></pre>
+<pre><code>## Analysis of Variance Table
+## 
+## Response: total_area
+##           Df Sum Sq Mean Sq F value    Pr(&gt;F)    
+## name      18 99.460  5.5255  7.6117 6.953e-10 ***
+## rep        5  0.696  0.1391  0.1917    0.9646    
+## Residuals 62 45.008  0.7259                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code># percentage of variance explained
+q&lt;-q$&quot;Sum Sq&quot;
+print(cbind(PctExp=q/sum(q)*100))</code></pre>
+<pre><code>##          PctExp
+## [1,] 68.5158289
+## [2,]  0.4792704
+## [3,] 31.0049006</code></pre>
 <pre class="r"><code>#Running the model2
 model2 &lt;- lm(total_area ~ type + rep, data = all.data.A17)
 #Examine the summary
@@ -476,6 +495,15 @@ anova(model2)</code></pre>
 ## Residuals 77 89.451  1.1617                      
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>#Examine the Analysis of Variance table
+p&lt;-anova(model2)
+# percentage of variance explained
+p&lt;-p$&quot;Sum Sq&quot;
+print(cbind(PctExp=p/sum(p)*100))</code></pre>
+<pre><code>##         PctExp
+## [1,] 36.496477
+## [2,]  1.882383
+## [3,] 61.621140</code></pre>
 
 
 

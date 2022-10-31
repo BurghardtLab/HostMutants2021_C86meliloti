@@ -546,17 +546,7 @@ summary(model.name)</code></pre>
 ## F-statistic: 8.153 on 23 and 63 DF,  p-value: 1.78e-11</code></pre>
 <pre class="r"><code>#Examine the Analysis of Variance table
 q&lt;-anova(model.name)
-q</code></pre>
-<pre><code>## Analysis of Variance Table
-## 
-## Response: Count
-##           Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
-## name      18 4380111  243340 10.2303 1.427e-12 ***
-## rep        5   80202   16040  0.6744    0.6444    
-## Residuals 63 1498525   23786                      
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<pre class="r"><code># percentage of variance explained
+# percentage of variance explained
 q&lt;-q$&quot;Sum Sq&quot;
 print(cbind(PctExp=q/sum(q)*100))</code></pre>
 <pre><code>##         PctExp
@@ -606,17 +596,7 @@ summary(model.type)</code></pre>
 ## F-statistic:    13 on 8 and 78 DF,  p-value: 1.015e-11</code></pre>
 <pre class="r"><code>#Examine the Analysis of Variance table
 p&lt;-anova(model.type)
-p</code></pre>
-<pre><code>## Analysis of Variance Table
-## 
-## Response: Count
-##           Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
-## type       3 3297098 1099033 33.5629 4.916e-14 ***
-## rep        5  107595   21519  0.6572     0.657    
-## Residuals 78 2554147   32745                      
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<pre class="r"><code># percentage of variance explained
+# percentage of variance explained
 p&lt;-p$&quot;Sum Sq&quot;
 print(cbind(PctExp=p/sum(p)*100))</code></pre>
 <pre><code>##         PctExp

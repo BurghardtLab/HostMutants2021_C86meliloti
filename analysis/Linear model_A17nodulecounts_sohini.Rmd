@@ -85,7 +85,6 @@ summary(model.name)
 
 #Examine the Analysis of Variance table
 q<-anova(model.name)
-q
 # percentage of variance explained
 q<-q$"Sum Sq"
 print(cbind(PctExp=q/sum(q)*100))
@@ -103,7 +102,6 @@ summary(model.type)
 
 #Examine the Analysis of Variance table
 p<-anova(model.type)
-p
 # percentage of variance explained
 p<-p$"Sum Sq"
 print(cbind(PctExp=p/sum(p)*100))
