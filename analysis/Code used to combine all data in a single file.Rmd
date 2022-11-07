@@ -26,5 +26,5 @@ all.data <-full_join (data_HostMutants2021_nod_counts,data_nsfpgrp_hostmutants_C
 all.data2 <-full_join (all.data,genotype_name,by = "genotype_id")
 #remove 847F
 all.data3<-filter(all.data2, sample_id!= "847F")
-write.table (all.data3,file="Traits_MedicagoMutants6.txt",sep = "\t",row.names = FALSE)
+write.table (all.data3,file="Traits_MedicagoMutants.txt",sep = "\t",row.names = FALSE)
 ```
