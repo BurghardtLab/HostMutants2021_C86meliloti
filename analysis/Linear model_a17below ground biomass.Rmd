@@ -48,6 +48,11 @@ summary(model1)
 
 #Examine the Analysis of Variance table
 anova(model1)
+q<-anova(model1)
+q
+# percentage of variance explained
+q<-q$"Sum Sq"
+print(cbind(PctExp=q/sum(q)*100))
 ```
 ```{r Running a Linear Model with type, echo=TRUE}
 # Running the model1
@@ -57,4 +62,9 @@ summary(model2)
 
 #Examine the Analysis of Variance table
 anova(model2)
+p<-anova(model2)
+p
+# percentage of variance explained
+p<-p$"Sum Sq"
+print(cbind(PctExp=p/sum(p)*100))
 ```
