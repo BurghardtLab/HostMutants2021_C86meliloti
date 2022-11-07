@@ -27,7 +27,7 @@ genotype_name$genotype_id = as.integer(genotype_name$genotype_id)
 #merge the two data set by 'genotype_id'
 all.data<- full_join (data_HostMutants2021_nod_counts, genotype_name, by = "genotype_id")
 
-#Select for only the A17 background 
+#Select for only the A17 background
 all.data.A17 <- all.data %>% filter(background=="A17")
 
 # Remove two genotypes that did not survive/form nodules... Use the '!=' this time which says to grab all of the them BUT the named genotype ID.
@@ -36,16 +36,19 @@ all.data.A17 <- all.data.A17 %>% filter(genotype_id!="838")
 # Remove 833B
 all.data.A17 <- all.data.A17 %>% filter(sample_id!="833B")
 ```
-```{r Running a Linear Model, echo=TRUE}
+Nodule size statistical analysis
+```{r Running a Linear Model on nodule size, echo=TRUE}
 #Turning all.data.A17$name  into a factor.
 all.data.A17$name<-factor(all.data.A17$name)
 #Turning all.data.A17$Type into a factor.
 all.data.A17$type<-factor(all.data.A17$type, levels = c("WT","Early","Late","AON"))
 # Running the model1
-model1 <- lm(average_size ~ name + rep, data = all.data.A17)
+model.NodSize.G <- lm(average_size ~ name + rep, data = all.data.A17)
 #Examine the summary
-summary(model1)
+summary(model.NodSize.G)
+#summary(model.NodSize.G)$adj.r.squared
 #Examine the Analysis of Variance table
+<<<<<<< HEAD
 q<-anova(model1)
 q
 # percentage of variance explained
@@ -61,5 +64,40 @@ p<-anova(model2)
 # percentage of variance explained
 p<-p$"Sum Sq"
 print(cbind(PctExp=p/sum(p)*100))
+=======
+anv.NodSize.G<-anova(model.NodSize.G)
+# To calculate Proportion Variance
+## anv.NodSize.G$`Sum Sq`[1]/sum(anv.NodSize.G$`Sum Sq`)
+
+# Running the model2
+model.NodSize.T <- lm(average_size ~ type + rep, data = all.data.A17)
+#Examine the summary
+summary(model.NodSize.T)
+#Examine the Analysis of Variance table
+anova(model.NodSize.T)
+```
+Trying with population...
+```{r Running a Linear Model, echo=TRUE}
+
+# Running the model1
+model.Nodtot.G <- lm(total_area ~ name + rep, data = all.data.A17)
+#Examine the summary
+summary(model.Nodtot.G)
+#Examine the Analysis of Variance table
+anova(model.Nodtot.G)
+# Running the model2
+model.Nodtot.T <- lm(total_area ~ type + rep, data = all.data.A17)
+#Examine the summary
+summary(model.Nodtot.T)
+#Examine the Analysis of Variance table
+anova(model.Nodtot.T)
 ```
 
+```{Create Adj.R table}
+
+mytable<-data.frame(trait=c("nodule.avg.area","Nod.tot.area"),
+  type=c(round(summary(model.NodSize.G)$adj.r.squared,2),summary(model.NodSize.G)$adj.r.squared), geno=c(summary(model.Nodtot.T)$adj.r.squared,summary(model.Nodtot.T)$adj.r.squared))
+
+write_tsv(mytable,file="../tables/traits.rsq.tsv")
+
+```
