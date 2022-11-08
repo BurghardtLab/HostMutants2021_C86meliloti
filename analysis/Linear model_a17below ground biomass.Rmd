@@ -1,0 +1,70 @@
+---
+title: "belowground biomass"
+author: "sohini guha"
+date: '2022-10-30'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+#
+knitr::opts_chunk$set(echo = TRUE)
+
+#Set up all the packages you will need. Tidyverse include dplyer
+require(tidyverse)
+require(ggpubr)
+
+knitr::opts_chunk$set(message = FALSE)
+```
+```{r Importing Data and Running a Linear Model, echo=TRUE}
+# Import the text file of biomass data (remove any # sign from the data or else the data will not import)
+biomass  <- read.table("../data/data_nsfpgrp_hostmutants_C86meliloti_sg_biomass ratio added.txt",sep = "\t",header=TRUE)
+# Import the genotype information data
+genotype_name <- read.table("../data/genotype_name.txt",sep = "\t",header=TRUE)
+#convert the genotype_id into integer
+genotype_name$genotype_id = as.integer(genotype_name$genotype_id)
+
+#merge the two data set by 'genotype_id'
+all.data<- full_join (biomass, genotype_name, by = "genotype_id")
+
+#Select for only the A17 background 
+all.data.A17 <- all.data %>% filter(background=="A17")
+
+# Remove two genotypes that did not survive/form nodules... Use the '!=' this time which says to grab all of the them BUT the named genotype ID.
+all.data.A17 <- all.data.A17 %>% filter(genotype_id!="853")
+all.data.A17 <- all.data.A17 %>% filter(genotype_id!="838")
+#remove the samples with missing data (845C, 847F)
+all.data.A17 <- all.data.A17 %>% filter(sample_id!="845C")
+all.data.A17 <- all.data.A17 %>% filter(sample_id!="847F")
+```
+```{r Running a Linear Model, echo=TRUE}
+#Turning all.data.A17$name  into a factor.
+all.data.A17$name<-factor(all.data.A17$name)
+#Turning all.data.A17$Type into a factor.
+all.data.A17$type<-factor(all.data.A17$type, levels = c("WT","Early","Late","AON"))
+# Running the model1
+model1 <- lm(below_biomass_g ~ name + rep, data = all.data.A17)
+#Examine the summary
+summary(model1)
+
+#Examine the Analysis of Variance table
+anova(model1)
+q<-anova(model1)
+q
+# percentage of variance explained
+q<-q$"Sum Sq"
+print(cbind(PctExp=q/sum(q)*100))
+```
+```{r Running a Linear Model with type, echo=TRUE}
+# Running the model1
+model2 <- lm(below_biomass_g ~ type + rep, data = all.data.A17)
+#Examine the summary
+summary(model2)
+
+#Examine the Analysis of Variance table
+anova(model2)
+p<-anova(model2)
+p
+# percentage of variance explained
+p<-p$"Sum Sq"
+print(cbind(PctExp=p/sum(p)*100))
+```
