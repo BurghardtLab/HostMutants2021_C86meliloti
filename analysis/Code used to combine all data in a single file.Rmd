@@ -28,6 +28,7 @@ all.data2 <-full_join (all.data,genotype_name,by = "genotype_id")
 all.data3<-filter(all.data2, sample_id!= "847F")
 #removing columns marked "X","batch","start","end","num_alive_apr15"
 all.data3<-subset (all.data3, select=-c(X,batch,start,end,num_alive_apr15))
-                  
+#adding the above_biomass_g/plant,below_biomass_g/plant, total_biomass,ratio of above_biomass_g and below_biomass
+all.data3 %>% select(above_biomass_g,num_plants) %>% mutate(above_biomass_perplant=above_biomass_g/num_plants)
 write.table (all.data3,file="Traits_MedicagoMutants.txt",sep = "\t",row.names = FALSE)
 ```
