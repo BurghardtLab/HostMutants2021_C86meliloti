@@ -20,11 +20,14 @@ data_HostMutants2021_nod_counts <- read.table("../data/data_HostMutants2021_nod_
 genotype_name <- read.table("../data/genotype_name.txt",sep = "\t",header=TRUE)
 #import the text file with the CFU data
 data_nsfpgrp_hostmutants_C86meliloti <- read.table("../data/data_nsfpgrp_hostmutants_C86meliloti.txt",sep = "\t",header=TRUE)
-#merge  data_HostMutants2021_nod_counts.txt,data_nsfpgrp_hostmutants_C86meliloti.txt, by 'sample_id"
+#merge  data_HostMutants2021_nod_counts.txt,data_nsfpgrp_hostmutants_C86meliloti.txt, by 'sample_id","genotype_id" and "rep"
 all.data <-full_join (data_HostMutants2021_nod_counts,data_nsfpgrp_hostmutants_C86meliloti,by=c("sample_id","genotype_id","rep"))
-# merge the newly created table with the genotype table
+# merge the newly created table with the "genotype_name"
 all.data2 <-full_join (all.data,genotype_name,by = "genotype_id")
 #remove 847F
 all.data3<-filter(all.data2, sample_id!= "847F")
+#removing columns marked "X","batch","start","end","num_alive_apr15"
+all.data3<-subset (all.data3, select=-c(X,batch,start,end,num_alive_apr15))
+                  
 write.table (all.data3,file="Traits_MedicagoMutants.txt",sep = "\t",row.names = FALSE)
 ```

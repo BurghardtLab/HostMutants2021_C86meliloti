@@ -361,13 +361,16 @@ data_HostMutants2021_nod_counts &lt;- read.table(&quot;../data/data_HostMutants2
 genotype_name &lt;- read.table(&quot;../data/genotype_name.txt&quot;,sep = &quot;\t&quot;,header=TRUE)
 #import the text file with the CFU data
 data_nsfpgrp_hostmutants_C86meliloti &lt;- read.table(&quot;../data/data_nsfpgrp_hostmutants_C86meliloti.txt&quot;,sep = &quot;\t&quot;,header=TRUE)
-#merge  data_HostMutants2021_nod_counts.txt,data_nsfpgrp_hostmutants_C86meliloti.txt, by &#39;sample_id&quot;
+#merge  data_HostMutants2021_nod_counts.txt,data_nsfpgrp_hostmutants_C86meliloti.txt, by &#39;sample_id&quot;,&quot;genotype_id&quot; and &quot;rep&quot;
 all.data &lt;-full_join (data_HostMutants2021_nod_counts,data_nsfpgrp_hostmutants_C86meliloti,by=c(&quot;sample_id&quot;,&quot;genotype_id&quot;,&quot;rep&quot;))
-# merge the newly created table with the genotype table
+# merge the newly created table with the &quot;genotype_name&quot;
 all.data2 &lt;-full_join (all.data,genotype_name,by = &quot;genotype_id&quot;)
 #remove 847F
 all.data3&lt;-filter(all.data2, sample_id!= &quot;847F&quot;)
-write.table (all.data3,file=&quot;Traits_MedicagoMutants6.txt&quot;,sep = &quot;\t&quot;,row.names = FALSE)</code></pre>
+#removing columns marked &quot;X&quot;,&quot;batch&quot;,&quot;start&quot;,&quot;end&quot;,&quot;num_alive_apr15&quot;
+all.data3&lt;-subset (all.data3, select=-c(X,batch,start,end,num_alive_apr15))
+                  
+write.table (all.data3,file=&quot;Traits_MedicagoMutants.txt&quot;,sep = &quot;\t&quot;,row.names = FALSE)</code></pre>
 
 
 
