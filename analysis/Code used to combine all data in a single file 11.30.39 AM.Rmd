@@ -30,9 +30,11 @@ all.data3<-filter(all.data2, sample_id!= "847F")
 all.data3<-filter(all.data3,sample_id!= "833A")
 #removing columns marked "X","batch","start","end","num_alive_apr15"
 all.data3<-subset (all.data3, select=-c(X,batch,start,end,num_alive_apr15))
-#adding the above_biomass_g/plant
+#adding above_biomass_g/plant,below_biomass_g/plant,ratio and total_biomass
 all.data3<-all.data3%>% mutate(above_biomass_perplant=above_biomass_g/num_plants,below_biomass_perplant=below_biomass_g/num_plants,ratio=above_biomass_perplant/below_biomass_perplant,total_biomass=above_biomass_perplant+below_biomass_perplant)
-#adding cfu/ml/pernodule
-
+#adding nodules/plant
+all.data3<-all.data3%>% mutate(nodules_perplant=Count/num_plants_picked_nods)
+#adding total_nodulated area_perplant and Nodulesize_perplant
+all.data3<-all.data3%>% mutate(total_nodulated_area_perplant=total_area/num_plants_picked_nods,Nodulesizeperplant=total_nodulated_area_perplant/nodules_perplant)
 write.table (all.data3,file="Traits_MedicagoMutants.txt",sep = "\t",row.names = FALSE)
 ```
