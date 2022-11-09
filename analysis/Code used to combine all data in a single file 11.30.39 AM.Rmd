@@ -34,6 +34,8 @@ all.data3<-subset (all.data3, select=-c(X,batch,start,end,num_alive_apr15))
 all.data3<-all.data3%>% mutate(above_biomass_perplant=above_biomass_g/num_plants,below_biomass_perplant=below_biomass_g/num_plants,ratio=above_biomass_perplant/below_biomass_perplant,total_biomass=above_biomass_perplant+below_biomass_perplant)
 #adding nodules/plant
 all.data3<-all.data3%>% mutate(nodules_perplant=Count/num_plants_picked_nods)
+#adding cfu per plant - divide by 4ml (this is the amount added to nodules to homogenize) then divide by number of plants picked nodules from to get cfu/ml to cfu/plant;cfupernodule
+all.data3<-all.data3%>% mutate(CFUperplant=cfu_ml/num_plants_picked_nods/4, CFUpernodule=CFUperplant/nodules_perplant)
 #adding total_nodulated area_perplant and Nodulesize_perplant
 all.data3<-all.data3%>% mutate(total_nodulated_area_perplant=total_area/num_plants_picked_nods,Nodulesizeperplant=total_nodulated_area_perplant/nodules_perplant)
 write.table (all.data3,file="Traits_MedicagoMutants.txt",sep = "\t",row.names = FALSE)
