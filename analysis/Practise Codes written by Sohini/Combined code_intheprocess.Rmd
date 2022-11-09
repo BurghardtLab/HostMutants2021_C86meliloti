@@ -1,0 +1,42 @@
+---
+title: "NSFPGRP_HostMutants_C86meliloti"
+author: Sohini Guha,Liana T. Burghardt
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+Analysis file for NSF Host Mutant C86 Ensifer meliloti select and resequence project. 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#Load packages needed. Tidyverse include dplyer
+require(tidyverse)
+require(ggpubr)
+
+knitr::opts_chunk$set(message = FALSE)
+```
+```{r Importing Data and Running a Linear Model, echo=TRUE}
+# Importing the data
+Traits_MedicagoMutants<- read.table("../data/Traits_MedicagoMutants.txt",sep = "\t",header=TRUE)
+#convert the genotype_id into integer
+Traits_MedicagoMutants$genotype_id = as.integer(Traits_MedicagoMutants$genotype_id)
+#Select for only the A17 background
+all.data.A17 <- all.data %>% filter(background=="A17")
+# Removing two genotypes that did not survive/form nodules.
+all.data.A17 <- all.data.A17 %>% filter(genotype_id!="853")
+all.data.A17 <- all.data.A17 %>% filter(genotype_id!="838")
+# Remove 833B
+all.data.A17 <- all.data.A17 %>% filter(sample_id!="833B")
+#Turning all.data.A17$name  into a factor.
+all.data.A17$name<-factor(all.data.A17$name)
+#Turning all.data.A17$Type into a factor.
+all.data.A17$type<-factor(all.data.A17$type, levels = c("WT","Early","Late","AON"))
+```
+Nodule size statistical analysis
+
+```{r Running a Linear Model on nodule size, echo=TRUE}
+# Running the model1
+model.NodSize.G <- lm(average_size ~ name + rep, data = all.data.A17)
+#Examine the summary
+summary(model.NodSize.G)
+```
