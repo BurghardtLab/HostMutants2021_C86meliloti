@@ -6,37 +6,93 @@ output: html_document
 ---
 
 Analysis file for NSF Host Mutant C86 Ensifer meliloti select and resequence project. 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 #Load packages needed. Tidyverse include dplyer
 require(tidyverse)
 require(ggpubr)
-
+require(ggplot2)
+require(RColorBrewer)
 knitr::opts_chunk$set(message = FALSE)
 ```
-```{r Importing Data and Running a Linear Model, echo=TRUE}
+
+```{r merging all data sets, echo=TRUE}
+# Import the text file of nodule data
+data_HostMutants2021_nod_counts <- read.table("../data/data_HostMutants2021_nod_counts.txt",sep = "\t",header=TRUE)
+# Import the genotype information data
+genotype_name <- read.table("../data/genotype_name.txt",sep = "\t",header=TRUE)
+#import the text file with the CFU data
+data_nsfpgrp_hostmutants_C86meliloti <- read.table("../data/data_nsfpgrp_hostmutants_C86meliloti.txt",sep = "\t",header=TRUE)
+#merge  data_HostMutants2021_nod_counts.txt,data_nsfpgrp_hostmutants_C86meliloti.txt, by 'sample_id","genotype_id" and "rep"
+all.data <-full_join (data_HostMutants2021_nod_counts,data_nsfpgrp_hostmutants_C86meliloti,by=c("sample_id","genotype_id","rep"))
+# merge the newly created table with the "genotype_name"
+all.data2 <-full_join (all.data,genotype_name,by = "genotype_id")
+#remove 847F
+all.data3<-filter(all.data2, sample_id!= "847F")
+#remove 833A
+all.data3<-filter(all.data3,sample_id!= "833A")
+# Remove 833B
+all.data.A17 <- all.data.A17 %>% filter(sample_id!="833B")
+#removing columns marked "X","batch","start","end","num_alive_apr15"
+all.data3<-subset (all.data3, select=-c(X,batch,start,end,num_alive_apr15))
+#adding above_biomass_g/plant,below_biomass_g/plant,ratio and total_biomass
+all.data3<-all.data3%>% mutate(above_biomass_perplant=above_biomass_g/num_plants,below_biomass_perplant=below_biomass_g/num_plants,ratio=above_biomass_perplant/below_biomass_perplant,total_biomass=above_biomass_perplant+below_biomass_perplant)
+#adding nodules/plant
+all.data3<-all.data3%>% mutate(nodules_perplant=Count/num_plants_picked_nods)
+#adding cfu per plant - divide by 4ml (this is the amount added to nodules to homogenize) then divide by number of plants picked nodules from to get cfu/ml to cfu/plant;cfupernodule
+all.data3<-all.data3%>% mutate(CFUperplant=cfu_ml/num_plants_picked_nods/4, CFUpernodule=CFUperplant/nodules_perplant)
+#adding total_nodulated area_perplant and Nodulesize_perplant
+all.data3<-all.data3%>% mutate(total_nodulated_area_perplant=total_area/num_plants_picked_nods,Nodulesizeperplant=total_nodulated_area_perplant/nodules_perplant)
+write.table (all.data3,file="Traits_MedicagoMutants.txt",sep = "\t",row.names = FALSE)
+```
+
+```{r Importing Data and polishing the table, echo=TRUE}
 # Importing the data
 Traits_MedicagoMutants<- read.table("../data/Traits_MedicagoMutants.txt",sep = "\t",header=TRUE)
 #convert the genotype_id into integer
 Traits_MedicagoMutants$genotype_id = as.integer(Traits_MedicagoMutants$genotype_id)
 #Select for only the A17 background
-all.data.A17 <- all.data %>% filter(background=="A17")
+all.data.A17 <- Traits_MedicagoMutants %>% filter(background=="A17")
 # Removing two genotypes that did not survive/form nodules.
 all.data.A17 <- all.data.A17 %>% filter(genotype_id!="853")
 all.data.A17 <- all.data.A17 %>% filter(genotype_id!="838")
-# Remove 833B
-all.data.A17 <- all.data.A17 %>% filter(sample_id!="833B")
 #Turning all.data.A17$name  into a factor.
 all.data.A17$name<-factor(all.data.A17$name)
 #Turning all.data.A17$Type into a factor.
 all.data.A17$type<-factor(all.data.A17$type, levels = c("WT","Early","Late","AON"))
 ```
-Nodule size statistical analysis
 
-```{r Running a Linear Model on nodule size, echo=TRUE}
-# Running the model1
-model.NodSize.G <- lm(average_size ~ name + rep, data = all.data.A17)
-#Examine the summary
-summary(model.NodSize.G)
+```{r Boxplots, echo=TRUE}
+### For emulating ggplot colors ###
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+mypal<-gg_color_hue(6)
+
+#color palette for standard plots - colorblind friendly
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
+
+
+l = length(seq(-7.9, 8, 0.1))
+pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(l)
+
+#Allows visualization of a color Palette
+#require(scales)
+#show_col(cbPalette)
+
+# Define a color and shape scheme for the whole manuscript
+#mycols<-data.frame(type=c("AON","Early","Late","WT"), cols=cbPalette)
+#mycols$type <- factor(mycols$type, ordered=TRUE)
+
+p_nod_cnt <-ggplot(all.data.A17,aes(x=reorder(name,order), y=nodules_perplant,fill=type)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter() +
+        coord_flip() +
+        scale_color_manual(values=cbPalette)  +
+        labs(x="Plant Host",y="Nodules per plant") +
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+p_nod_cnt 
 ```
