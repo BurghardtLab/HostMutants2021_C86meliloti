@@ -29,14 +29,8 @@ data_nsfpgrp_hostmutants_C86meliloti <- read.table("../data/data_nsfpgrp_hostmut
 all.data <-full_join (data_HostMutants2021_nod_counts,data_nsfpgrp_hostmutants_C86meliloti,by=c("sample_id","genotype_id","rep"))
 # merge the newly created table with the "genotype_name"
 all.data2 <-full_join (all.data,genotype_name,by = "genotype_id")
-#remove 847F
-all.data3<-filter(all.data2, sample_id!= "847F")
-#remove 833A
-all.data3<-filter(all.data3,sample_id!= "833A")
-# Remove 833B
-all.data3 <- all.data3%>% filter(sample_id!="833B")
-#removing columns marked "X","batch","start","end","num_alive_apr15"
-all.data3<-subset (all.data3, select=-c(X,batch,start,end,num_alive_apr15))
+#removing columns marked "batch","start","end","num_alive_apr15"
+all.data3<-subset (all.data2, select=-c(X,batch,start,end,num_alive_apr15))
 #adding above_biomass_g/plant,below_biomass_g/plant,ratio and total_biomass
 all.data3<-all.data3%>% mutate(above_biomass_perplant=above_biomass_g/num_plants,below_biomass_perplant=below_biomass_g/num_plants,ratio=above_biomass_perplant/below_biomass_perplant,total_biomass=above_biomass_perplant+below_biomass_perplant)
 #adding nodules/plant
@@ -58,6 +52,12 @@ all.data.A17 <- Traits_MedicagoMutants %>% filter(background=="A17")
 # Removing two genotypes that did not survive/form nodules.
 all.data.A17 <- all.data.A17 %>% filter(genotype_id!="853")
 all.data.A17 <- all.data.A17 %>% filter(genotype_id!="838")
+#remove 847F
+all.data.A17<-all.data.A17%>%filter(sample_id!= "847F")
+#remove 833A
+all.data.A17<-all.data.A17%>%filter(sample_id!= "833A")
+# Remove 833B
+all.data.A17<-all.data.A17%>%filter(sample_id!="833B")
 #Turning all.data.A17$name  into a factor.
 all.data.A17$name<-factor(all.data.A17$name)
 #Turning all.data.A17$Type into a factor.
@@ -88,12 +88,182 @@ pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(l)
 #mycols$type <- factor(mycols$type, ordered=TRUE)
 
 #Boxplot depicting nodulation per plant 
-p_nod_cnt <-ggplot(all.data.A17,aes(x=reorder(name,order), y=nodules_perplant,fill=type)) + 
+nod_cnt <-ggplot(all.data.A17,aes(x=reorder(name,order), y=nodules_perplant,fill=type)) + 
         geom_boxplot(outlier.shape=NA) +
         geom_jitter() +
         coord_flip() +
         scale_color_manual(values=cbPalette)  +
         labs(x="Plant Host",y="Nodules per plant") +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
-p_nod_cnt 
+nod_cnt 
+#Boxplot depicting average nodule size per plant
+nod_size<-ggplot(all.data.A17,aes(x=reorder(name,order), y=Nodulesizeperplant,fill=type)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter() +
+        coord_flip() +
+        scale_color_manual(values=cbPalette)  +
+        labs(x="Plant Host",y="Average NoduleSize per plant") +
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+nod_size
+#Boxplot depicting total nodulated area per plant
+tot_nod_area<-ggplot(all.data.A17,aes(x=reorder(name,order), y=total_nodulated_area_perplant,fill=type)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter() +
+        coord_flip() +
+        scale_color_manual(values=cbPalette)  +
+        labs(x="Plant Host",y="Total Nodulated Area per plant") +
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+tot_nod_area
+
+#Boxplot depicting CFU per plant
+cfu_per_plant<-ggplot(all.data.A17,aes(x=reorder(name,order), y=CFUperplant,fill=type)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter() +
+        coord_flip() +
+        scale_color_manual(values=cbPalette)  +
+        labs(x="Plant Host",y="CFU per plant") +
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+cfu_per_plant
+#Boxplot depicting CFU per nodule
+cfu_per_nodule<-ggplot(all.data.A17,aes(x=reorder(name,order), y=CFUpernodule,fill=type)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter() +
+        coord_flip() +
+        scale_color_manual(values=cbPalette)  +
+        labs(x="Plant Host",y="CFU per nodule") +
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+cfu_per_nodule
+#Boxplot depicting ratio of above and below ground biomass
+biomass_ratio<-ggplot(all.data.A17,aes(x=reorder(name,order), y=ratio,fill=type)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter() +
+        coord_flip() +
+        scale_color_manual(values=cbPalette)  +
+        labs(x="Plant Host",y="Aboveground:Belowground") +
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+biomass_ratio
+
+
+```
+
+```{r Running a Linear Model for nodule number, echo=TRUE}
+# Run a model with name and replicate as predictors
+NodNum.G <- lm(nodules_perplant ~ name + rep, data = all.data.A17)
+# Run a model with type and replicate as predictors
+NodNum.T<-lm(nodules_perplant ~ type + rep, data = all.data.A17)
+#Examine the summaries
+summary(NodNum.G)
+summary(NodNum.T)
+#Examine the Analysis of Variance tables
+p<-anova(NodNum.G)
+p
+q<-anova(NodNum.T)
+q
+# percentage of variance explained
+p<-p$"Sum Sq"
+print(cbind(PctExp=p/sum(p)*100))
+q<-q$"Sum.Sq"
+print(cbind(PctExp=q/sum(q)*100))
+```
+
+```{r Running a Linear Model for nodule size, echo=TRUE}
+# Run a model with name and replicate as predictors
+NodSize.G<-lm(Nodulesizeperplant ~ name + rep, data = all.data.A17)
+# Run a model with type and replicate as predictors
+NodSize.T<-lm(Nodulesizeperplant ~type+rep,data=all.data.A17)
+#Examine the summaries
+summary(NodSize.G)
+summary(NodSize.T)
+#Examine the Analysis of Variance tables
+p<-anova(NodNum.G)
+p
+q<-anova(NodNum.T)
+q
+# percentage of variance explained
+p<-p$"Sum Sq"
+print(cbind(PctExp=p/sum(p)*100))
+q<-q$"Sum.Sq"
+print(cbind(PctExp=q/sum(q)*100))
+```
+
+```{r Running a Linear Model for total nodulated area per plant, echo=TRUE}
+# Run a model with name and replicate as predictors
+TotNodArea.G<-lm(total_nodulated_area_perplant ~ name + rep, data = all.data.A17)
+# Run a model with type and replicate as predictors
+TotNodArea.T<-lm(total_nodulated_area_perplant ~type+rep,data=all.data.A17)
+#Examine the summaries
+summary(TotNodArea.G)
+summary(TotNodArea.T)
+#Examine the Analysis of Variance tables
+p<-anova(TotNodArea.G)
+p
+q<-anova(TotNodArea.T)
+q
+# percentage of variance explained
+p<-p$"Sum Sq"
+print(cbind(PctExp=p/sum(p)*100))
+q<-q$"Sum.Sq"
+print(cbind(PctExp=q/sum(q)*100))
+```
+
+```{r Running a Linear Model for CFU per plant, echo=TRUE}
+# Run a model with name and replicate as predictors
+CFUperplant.G<-lm(CFUperplant ~ name + rep, data = all.data.A17)
+# Run a model with type and replicate as predictors
+CFUperplant.T<-lm(CFUperplant ~ type + rep, data = all.data.A17)
+#Examine the summaries
+summary(CFUperplant.G)
+summary(CFUperplant.T)
+#Examine the Analysis of Variance tables
+p<-anova(CFUperplant.G)
+p
+q<-anova(CFUperplant.T)
+q
+# percentage of variance explained
+p<-p$"Sum Sq"
+print(cbind(PctExp=p/sum(p)*100))
+q<-q$"Sum.Sq"
+print(cbind(PctExp=q/sum(q)*100))
+```
+
+```{r Running a Linear Model for CFU per nodule, echo=TRUE}
+#replacing  'inf' with 'NA'(the sample 846A needs to be removed)
+all.data.A17[is.na(all.data.A17) | all.data.A17 == "Inf"] <- NA
+# Run a model with name and replicate as predictors
+pernodule.G<-lm(CFUpernodule ~ name + rep,data = all.data.A17)
+# Run a model with type and replicate as predictors
+pernodule.T<-lm(CFUpernodule ~ type + rep,data = all.data.A17)
+#Examine the summaries
+summary(pernodule.G)
+summary(pernodule.T)
+#Examine the Analysis of Variance tables
+p<-anova(pernodule.G)
+p
+q<-anova(pernodule.T)
+q
+# percentage of variance explained
+p<-p$"Sum Sq"
+print(cbind(PctExp=p/sum(p)*100))
+q<-q$"Sum.Sq"
+print(cbind(PctExp=q/sum(q)*100))
+```
+
+```{r Running a Linear Model for ratio of above ground and below ground biomass, echo=TRUE}
+# Run a model with name and replicate as predictors
+ratio.G<-lm(ratio ~ name + rep,data = all.data.A17)
+# Run a model with type and replicate as predictors
+ratio.T<-lm(ratio ~ type + rep,data = all.data.A17)
+#Examine the summaries
+summary(ratio.G)
+summary(ratio.T)
+#Examine the Analysis of Variance tables
+p<-anova(ratio.G)
+p
+q<-anova(ratio.T)
+q
+# percentage of variance explained
+p<-p$"Sum Sq"
+print(cbind(PctExp=p/sum(p)*100))
+q<-q$"Sum.Sq"
+print(cbind(PctExp=q/sum(q)*100))
 ```
