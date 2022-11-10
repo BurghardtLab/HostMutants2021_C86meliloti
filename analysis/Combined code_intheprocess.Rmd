@@ -1,6 +1,6 @@
 ---
 title: "NSFPGRP_HostMutants_C86meliloti"
-author: Sohini Guha,Liana T. Burghardt
+author: Sohini Guha,Gina Bledsoe,Liana T. Burghardt
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -34,7 +34,7 @@ all.data3<-filter(all.data2, sample_id!= "847F")
 #remove 833A
 all.data3<-filter(all.data3,sample_id!= "833A")
 # Remove 833B
-all.data.A17 <- all.data.A17 %>% filter(sample_id!="833B")
+all.data3 <- all.data3%>% filter(sample_id!="833B")
 #removing columns marked "X","batch","start","end","num_alive_apr15"
 all.data3<-subset (all.data3, select=-c(X,batch,start,end,num_alive_apr15))
 #adding above_biomass_g/plant,below_biomass_g/plant,ratio and total_biomass
@@ -87,6 +87,7 @@ pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(l)
 #mycols<-data.frame(type=c("AON","Early","Late","WT"), cols=cbPalette)
 #mycols$type <- factor(mycols$type, ordered=TRUE)
 
+#Boxplot depicting nodulation per plant 
 p_nod_cnt <-ggplot(all.data.A17,aes(x=reorder(name,order), y=nodules_perplant,fill=type)) + 
         geom_boxplot(outlier.shape=NA) +
         geom_jitter() +
