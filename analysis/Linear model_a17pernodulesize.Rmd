@@ -64,7 +64,7 @@ p<-anova(model2)
 # percentage of variance explained
 p<-p$"Sum Sq"
 print(cbind(PctExp=p/sum(p)*100))
-=======
+=====
 anv.NodSize.G<-anova(model.NodSize.G)
 # To calculate Proportion Variance
 ## anv.NodSize.G$`Sum Sq`[1]/sum(anv.NodSize.G$`Sum Sq`)
