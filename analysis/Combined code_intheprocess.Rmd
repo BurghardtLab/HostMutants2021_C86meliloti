@@ -39,6 +39,9 @@ all.data<-all.data%>% mutate(nodules_perplant=Count/num_plants_picked_nods)
 all.data<-all.data%>% mutate(CFUperplant=cfu_ml/num_plants_picked_nods/4, CFUpernodule=CFUperplant/nodules_perplant)
 #adding total_nodulated area_perplant and Nodulesize_perplant
 all.data<-all.data%>% mutate(total_nodulated_area_perplant=total_area/num_plants_picked_nods,Nodulesizeperplant=total_nodulated_area_perplant/nodules_perplant)
+#adding weight pernodule and totalnodule weight per plant
+all.data<-all.data%>% mutate(Nodule_weight_perplant=nodule_weight_g/num_plants_picked_nods,Weight_pernodule=Nodule_weight_perplant/nodules_perplant)
+        
 write.table (all.data,file="Traits_MedicagoMutants.txt",sep = "\t",row.names = FALSE)
 ```
 
@@ -266,4 +269,44 @@ p<-p$"Sum Sq"
 print(cbind(PctExp=p/sum(p)*100))
 q<-q$"Sum.Sq"
 print(cbind(PctExp=q/sum(q)*100))
+```
+#
+```{r Creating the tables for the manuscript, echo=TRUE}
+#extracting adjusted R-squared values across traits
+mod_summary_NodNum.G<-summary(NodNum.G)
+
+mod_summary_NodNum.T<-summary(NodNum.T)
+
+
+mod_summary_TotNodArea.G<-summary(TotNodArea.G)
+mod_summary_TotNodArea.T<-summary(TotNodArea.T)
+mod_summary_CFUperplant.G<-summary(CFUperplant.G)
+mod_summary_CFUperplant.T<-summary(CFUperplant.T)
+mod_summary_NodSize.G<-summary(NodSize.G)
+mod_summary_NodSize.T<-summary(NodSize.T)
+mod_summary_ratio.G<-summary(ratio.G)
+mod_summary_ratio.T<-summary(ratio.T)
+mod_summary_pernodule.G<-summary(pernodule.G)
+mod_summary_pernodule.T<-summary(pernodule.T)
+
+a<-mod_summary_NodNum.G$adj.r.squared 
+b<-mod_summary_NodNum.T$adj.r.squared 
+c<-mod_summary_TotNodArea.G$adj.r.squared 
+d<-mod_summary_TotNodArea.T$adj.r.squared 
+e<-mod_summary_NodSize.G$adj.r.squared 
+f<-mod_summary_NodSize.T$adj.r.squared 
+g<-mod_summary_CFUperplant.G$adj.r.squared 
+h<-mod_summary_CFUperplant.T$adj.r.squared 
+i<-mod_summary_pernodule.G$adj.r.squared 
+j<-mod_summary_pernodule.T$adj.r.squared 
+k<-mod_summary_ratio.G$adj.r.squared 
+l<-mod_summary_ratio.T$adj.r.squared 
+
+df<-data.frame(Traits=c('Nodule Number','Total Nodulated Area','Size per Nodule','CFUperplant','CFUpernodule','Biomass Ratio'),Type=c(b,d,f,h,j,l),
+               Genotype=c(a,c,e,g,i,k))
+#create the table
+tab1 <- table(df$Traits,df$Type,df$Genotype)
+tab1
+#write the table
+write.table (tab1,file="adj.r.squared values across traits.txt",sep = "\t",row.names =FALSE)
 ```
