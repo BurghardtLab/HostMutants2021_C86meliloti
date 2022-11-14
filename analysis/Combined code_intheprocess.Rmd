@@ -158,14 +158,15 @@ NodNum.T<-lm(nodules_perplant ~ type + rep, data = all.data.A17)
 summary(NodNum.G)
 summary(NodNum.T)
 #Examine the Analysis of Variance tables
-p<-anova(NodNum.G)
-p
-q<-anova(NodNum.T)
-q
+a.G<-anova(NodNum.G)
+a.G
+a.T<-anova(NodNum.T)
+a.T
 # percentage of variance explained
-p<-p$"Sum Sq"
-print(cbind(PctExp=p/sum(p)*100))
-q<-q$"Sum.Sq"
+p<-a.G$"Sum Sq"
+myresults<-data.frame(Response=c("Nod.Num"),Predictor=c("Genotype","Replicate","Residual"),Sum.Sq=p,PctExp=p/sum(p)*100)
+myresults
+q<-a.T$"Sum.Sq"
 print(cbind(PctExp=q/sum(q)*100))
 ```
 
