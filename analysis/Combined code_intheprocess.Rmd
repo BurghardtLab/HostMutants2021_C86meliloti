@@ -75,7 +75,7 @@ all.data.A17$name<-factor(all.data.A17$name)
 #Turning all.data.A17$Type into a factor.
 all.data.A17$type<-factor(all.data.A17$type, levels = c("WT","Early","Late","AON"))
 #Changing the order of the genotypes
-all.data.A17$type<-factor(all.data.A17$type,levels=c("WT","Early","Late","AON"))
+all.data.A17$name<-factor(all.data.A17$name,levels=c("A17", "dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd", "nad1", "dnf1", "dnf2","dnf3", "dnf4","dnf6","dnf7", "dnf1/dnf2", "dnf5/dnf2", "rdn1", "sunn1","sunn4"))
 ```
 
 ```{r Boxplots, echo=TRUE}
@@ -101,8 +101,10 @@ pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(l)
 #mycols<-data.frame(type=c("AON","Early","Late","WT"), cols=cbPalette)
 #mycols$type <- factor(mycols$type, ordered=TRUE)
 
+all.data.A17$name<-factor(all.data.A17$name,levels = rev(levels(all.data.A17$name)))
+
 #Boxplot depicting nodulation per plant 
-nod_cnt <-ggplot(all.data.A17,aes(x=reorder(name,type), y=nodules_perplant,fill=type)) + 
+nod_cnt <-ggplot(all.data.A17,aes(x=name, y=nodules_perplant,fill=type)) + 
         geom_boxplot(outlier.shape=NA) +
         geom_jitter() +
         coord_flip() +
@@ -110,6 +112,9 @@ nod_cnt <-ggplot(all.data.A17,aes(x=reorder(name,type), y=nodules_perplant,fill=
         labs(x="Plant Host",y="Nodules per plant") +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 nod_cnt 
+```
+
+```{r}
 #Boxplot depicting average nodule size per plant
 nod_size<-ggplot(all.data.A17,aes(x=reorder(name,type), y=Nodulesizeperplant,fill=type)) + 
         geom_boxplot(outlier.shape=NA) +
