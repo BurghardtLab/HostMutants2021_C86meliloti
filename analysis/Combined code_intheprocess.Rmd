@@ -177,7 +177,7 @@ biomass_ratio
 
 ```
 
-```{r Running a Linear Model for nodule number, echo=TRUE}
+```{r Linear model code Nod Num , echo=TRUE}
 # Run a model with name and replicate as predictors
 NodNum.G <- lm(nodules_perplant ~ name + rep, data = all.data.A17)
 # Run a model with type and replicate as predictors
@@ -199,6 +199,41 @@ myresults<-data.frame(Response=c("Nod.Num"),Predictor=c("Genotype","Replicate","
 myresults
 write.table (myresults,file="../tables/SG_Variance_nodulenumber.txt",sep = "\t",row.names = FALSE)
 ```
+
+
+
+
+```{r Write Function to run anova and summarize results each Phenotype, echo=TRUE}
+
+extract.anova<- function(trait) {
+
+# Run a model with name and replicate as predictors
+NodNum.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
+# Run a model with type and replicate as predictors
+NodNum.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
+
+#Examine the Analysis of Variance tables and save output
+a.G<-anova(NodNum.G)
+a.T<-anova(NodNum.T)
+
+#Compile results into a dataframe
+myresults<-data.frame(Response=c(paste(trait)),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(a.G$"Sum Sq",a.T$"Sum Sq"),PctExp=c(p/sum(p)*100,q/sum(q)*100),Df=c(a.G$"Df",a.T$"Df"),Fval=c(a.G$"F value",a.T$"F value"), Pval=c(a.G$"Pr(>F)",a.T$"Pr(>F)"),R.adj=c(summary(NodNum.G)$adj.r.squared,"NA","NA",summary(NodNum.T)$adj.r.squared,"NA","NA"))
+
+return(myresults)
+
+}
+
+```
+
+```{r Compile across Phenotypes, echo=TRUE}
+ANOVA.Trait.Summary<-rbind(extract.anova("nodules_perplant"),
+extract.anova("average_size"),
+extract.anova("total_area"))
+
+write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = "\t",row.names = FALSE)
+
+```
+
 
 ```{r Running a Linear Model for nodule size, echo=TRUE}
 # Run a model with name and replicate as predictors
