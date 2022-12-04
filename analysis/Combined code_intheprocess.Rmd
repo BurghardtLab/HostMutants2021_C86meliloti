@@ -50,6 +50,9 @@ all.data<-all.data%>% mutate(log_CFUperplant=log10(CFUperplant),log_CFUpernodule
 all.data<-all.data%>% mutate(total_nodulated_area_perplant=total_area/num_plants_picked_nods,Nodulesizeperplant=total_nodulated_area_perplant/nodules_perplant)
 #adding weight pernodule and totalnodule weight per plant
 all.data<-all.data%>% mutate(Nodule_weight_perplant=nodule_weight_g/num_plants_picked_nods,Weight_pernodule=Nodule_weight_perplant/nodules_perplant)
+#replacing Inf with NA
+#replacing  'inf' with 'NA'(the sample 846A needs to be removed)
+all.data[is.na(all.data) | all.data == "Inf"] <- NA
         
 write.table (all.data,file="../data/Traits_MedicagoMutants.txt",sep = "\t",row.names = FALSE)
 ```
@@ -209,9 +212,8 @@ extract.anova<- function(trait) {
 
 # Run a model with name and replicate as predictors
 NodNum.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
-# Run a model with type and replicate as predictors
+# Run a model with type and replicate as predictors (why the ,?)
 NodNum.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
-
 #Examine the Analysis of Variance tables and save output
 a.G<-anova(NodNum.G)
 a.T<-anova(NodNum.T)
@@ -229,7 +231,7 @@ return(myresults)
 ```{r Compile across Phenotypes, echo=TRUE}
 ANOVA.Trait.Summary<-rbind(extract.anova("nodules_perplant"),
 extract.anova("average_size"),
-extract.anova("total_area"))
+extract.anova("total_area"),extract.anova("total_nodulated_area_perplant"),extract.anova("log_CFUperplant"),extract.anova("log_CFUpernodule"),extract.anova("total_biomass"),extract_anova("ratio"),extract_anova("Nodule_weight_perplant"))
 
 write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = "\t",row.names = FALSE)
 
@@ -326,8 +328,6 @@ print(cbind(PctExp=q/sum(q)*100))
 ```
 
 ```{r Running a Linear Model for CFU per nodule, echo=TRUE}
-#replacing  'inf' with 'NA'(the sample 846A needs to be removed)
-all.data.A17[is.na(all.data.A17) | all.data.A17 == "Inf"] <- NA
 # Run a model with name and replicate as predictors
 pernodule.G<-lm(CFUpernodule ~ name + rep,data = all.data.A17)
 # Run a model with type and replicate as predictors
