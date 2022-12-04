@@ -50,10 +50,8 @@ all.data<-all.data%>% mutate(log_CFUperplant=log10(CFUperplant),log_CFUpernodule
 all.data<-all.data%>% mutate(total_nodulated_area_perplant=total_area/num_plants_picked_nods,Nodulesizeperplant=total_nodulated_area_perplant/nodules_perplant)
 #adding weight pernodule and totalnodule weight per plant
 all.data<-all.data%>% mutate(Nodule_weight_perplant=nodule_weight_g/num_plants_picked_nods,Weight_pernodule=Nodule_weight_perplant/nodules_perplant)
-#replacing Inf with NA
 #replacing  'inf' with 'NA'(the sample 846A needs to be removed)
 all.data[is.na(all.data) | all.data == "Inf"] <- NA
-        
 write.table (all.data,file="../data/Traits_MedicagoMutants.txt",sep = "\t",row.names = FALSE)
 ```
 
@@ -182,25 +180,25 @@ biomass_ratio
 
 ```{r Linear model code Nod Num , echo=TRUE}
 # Run a model with name and replicate as predictors
-NodNum.G <- lm(nodules_perplant ~ name + rep, data = all.data.A17)
+#NodNum.G <- lm(nodules_perplant ~ name + rep, data = all.data.A17)
 # Run a model with type and replicate as predictors
-NodNum.T<-lm(nodules_perplant ~ type + rep, data = all.data.A17)
+#NodNum.T<-lm(nodules_perplant ~ type + rep, data = all.data.A17)
 #Examine the summaries
-summary(NodNum.G)
-summary(NodNum.T)
+#summary(NodNum.G)
+#summary(NodNum.T)
 #Examine the Analysis of Variance tables
-a.G<-anova(NodNum.G)
-a.G
-a.T<-anova(NodNum.T)
-a.T
+#a.G<-anova(NodNum.G)
+#a.G
+#a.T<-anova(NodNum.T)
+#a.T
 # percentage of variance explained
-p<-a.G$"Sum Sq"
+#p<-a.G$"Sum Sq"
 #myresults<-data.frame(Response=c("Nod.Num"),Predictor=c("Genotype","Replicate","Residual"),Sum.Sq=p,PctExp=p/sum(p)*100)
 #myresults
-q<-a.T$"Sum Sq"
-myresults<-data.frame(Response=c("Nod.Num"),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(p,q),PctExp=c(p/sum(p)*100,q/sum(q)*100))
-myresults
-write.table (myresults,file="../tables/SG_Variance_nodulenumber.txt",sep = "\t",row.names = FALSE)
+#q<-a.T$"Sum Sq"
+#myresults<-data.frame(Response=c("Nod.Num"),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(p,q),PctExp=c(p/sum(p)*100,q/sum(q)*100))
+#myresults
+#write.table (myresults,file="../tables/SG_Variance_nodulenumber.txt",sep = "\t",row.names = FALSE)
 ```
 
 
@@ -209,7 +207,8 @@ write.table (myresults,file="../tables/SG_Variance_nodulenumber.txt",sep = "\t",
 ```{r Write Function to run anova and summarize results each Phenotype, echo=TRUE}
 
 extract.anova<- function(trait) {
-
+#Dropping rows with NA
+all.data.A17 <- all.data.A17 [complete.cases(all.data.A17), ]
 # Run a model with name and replicate as predictors
 NodNum.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
 # Run a model with type and replicate as predictors (why the ,?)
@@ -231,7 +230,7 @@ return(myresults)
 ```{r Compile across Phenotypes, echo=TRUE}
 ANOVA.Trait.Summary<-rbind(extract.anova("nodules_perplant"),
 extract.anova("average_size"),
-extract.anova("total_area"),extract.anova("total_nodulated_area_perplant"),extract.anova("log_CFUperplant"),extract.anova("log_CFUpernodule"),extract.anova("total_biomass"),extract_anova("ratio"),extract_anova("Nodule_weight_perplant"))
+extract.anova("total_area"),extract.anova("total_nodulated_area_perplant"),extract.anova("total_biomass"),extract.anova("ratio"),extract.anova("Nodule_weight_perplant"))
 
 write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = "\t",row.names = FALSE)
 
