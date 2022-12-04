@@ -43,6 +43,10 @@ all.data<-all.data%>% mutate(above_biomass_perplant=above_biomass_g/num_plants,b
 #adding nodules/plant
 all.data<-all.data%>% mutate(nodules_perplant=Count/num_plants_picked_nods)
 #adding cfu per plant - divide by 4ml (this is the amount added to nodules to homogenize) then divide by number of plants picked nodules from to get cfu/ml to cfu/plant;cfupernodule
+table(is.na(all.data$cfu_ml)) # 27 NA's
+table(all.data$cfu_ml==0) # No Zeros. 
+#There are two reasons it could be a zero either there were no nodules picked and thus no rhizobia or there was a problem with the estimation of cfu. In the first case the 0 is meaningful but from an analysis standpoint we probably still want to ommit them becuase the model won't behave well.
+
 all.data<-all.data%>% mutate(CFUperplant=cfu_ml/num_plants_picked_nods/4, CFUpernodule=CFUperplant/nodules_perplant)
 #converting CFUperplant and CFUpernodule to log(CFUperplant),log(CFUpernodule)
 all.data<-all.data%>% mutate(log_CFUperplant=log10(CFUperplant),log_CFUpernodule=log10(CFUpernodule))
@@ -208,7 +212,9 @@ biomass_ratio
 
 extract.anova<- function(trait) {
 #Dropping rows with NA
-all.data.A17 <- all.data.A17 [complete.cases(all.data.A17), ]
+#all.data.A17 <- all.data.A17 [complete.cases(all.data.A17), ] # This needs to be made specific to the trait! See below
+all.data.A17<-all.data.A17[!is.na(all.data.A17[,trait]),] 
+
 # Run a model with name and replicate as predictors
 NodNum.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
 # Run a model with type and replicate as predictors (why the ,?)
@@ -230,7 +236,7 @@ return(myresults)
 ```{r Compile across Phenotypes, echo=TRUE}
 ANOVA.Trait.Summary<-rbind(extract.anova("nodules_perplant"),
 extract.anova("average_size"),
-extract.anova("total_area"),extract.anova("total_nodulated_area_perplant"),extract.anova("total_biomass"),extract.anova("ratio"),extract.anova("Nodule_weight_perplant"))
+extract.anova("total_area"),extract.anova("total_nodulated_area_perplant"),extract.anova("total_biomass"),extract.anova("ratio"),extract.anova("Nodule_weight_perplant"),extract.anova("log_CFUpernodule"),extract.anova("log_CFUperplant"))
 
 write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = "\t",row.names = FALSE)
 
