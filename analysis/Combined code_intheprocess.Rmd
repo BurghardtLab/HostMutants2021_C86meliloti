@@ -43,7 +43,7 @@ all.data<-all.data%>% mutate(above_biomass_perplant=above_biomass_g/num_plants,b
 #adding nodules/plant
 all.data<-all.data%>% mutate(nodules_perplant=Count/num_plants_picked_nods)
 #adding cfu per plant - divide by 4ml (this is the amount added to nodules to homogenize) then divide by number of plants picked nodules from to get cfu/ml to cfu/plant;cfupernodule
-table(is.na(all.data$cfu_ml)) # 27 NA's (why are you counting the number of NAs in the cfu_ml col? )
+table(is.na(all.data$cfu_ml)) # 27 NA's
 table(all.data$cfu_ml==0) # No Zeros. 
 #There are two reasons it could be a zero either there were no nodules picked and thus no rhizobia or there was a problem with the estimation of cfu. In the first case the 0 is meaningful but from an analysis standpoint we probably still want to ommit them becuase the model won't behave well.
 
@@ -206,31 +206,7 @@ biomass_ratio
 ```
 
 
-```{r Write Function to extract Statistical summary of coefficients, echo=TRUE}
-extract.summary<-function(trait) {
-#Dropping rows with NA
-#all.data.A17 <- all.data.A17 [complete.cases(all.data.A17), ] # This needs to be made specific to the trait! See below
-all.data.A17<-all.data.A17[!is.na(all.data.A17[,trait]),] 
-# Run a model with name and replicate as predictors
-trait.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
-# Run a model with type and replicate as predictors (why the ,?)
-trait.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
-#Compile results into a dataframe
-#myresults<-data.frame(Response=c(paste(trait)),Predictor=c("Genotype",""),Intercept=c(trait.G$"Intercept"),Estimate=c(trait.G$"Estimate"),Pval=c(trait.G$"Pr(>|t|)"))
-return(myresults)                      
-                      
-}
-```
 
-```{r Write Function to compile and summarize results each Phenotype, echo=TRUE}
-TRAIT.summary<-rbind(extract.summary("nodules_perplant"),extract.summary("average_size"),extract.summary("average_size"),extract.summary("total_area"),extract.summary("total_nodulated_area_perplant"),extract.summary("total_biomass"),extract.summary("ratio"),extract.summary("ratio"),extract.summary("log_CFUpernodule"),extract.summary("log_CFUperplant"))
-
-
-
-
-write.table (ANOVA.Trait.Summary,file="../tables/Trait-Summary.txt",sep = "\t",row.names = FALSE)
-
-```
 
 ```{r Write Function to run anova and summarize results each Phenotype, echo=TRUE}
 
