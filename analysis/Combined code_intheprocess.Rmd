@@ -184,25 +184,19 @@ biomass_ratio
 
 ```{r Linear model code Nod Num , echo=TRUE}
 # Run a model with name and replicate as predictors
-#NodNum.G <- lm(nodules_perplant ~ name + rep, data = all.data.A17)
+NodNum.G <- lm(nodules_perplant ~ name + rep, data = all.data.A17)
 # Run a model with type and replicate as predictors
-#NodNum.T<-lm(nodules_perplant ~ type + rep, data = all.data.A17)
+NodNum.T<-lm(nodules_perplant ~ type + rep, data = all.data.A17)
 #Examine the summaries
-#summary(NodNum.G)
-#summary(NodNum.T)
+summary(NodNum.G)
+summary(NodNum.T)
 #Examine the Analysis of Variance tables
-#a.G<-anova(NodNum.G)
-#a.G
-#a.T<-anova(NodNum.T)
-#a.T
-# percentage of variance explained
-#p<-a.G$"Sum Sq"
-#myresults<-data.frame(Response=c("Nod.Num"),Predictor=c("Genotype","Replicate","Residual"),Sum.Sq=p,PctExp=p/sum(p)*100)
-#myresults
-#q<-a.T$"Sum Sq"
-#myresults<-data.frame(Response=c("Nod.Num"),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(p,q),PctExp=c(p/sum(p)*100,q/sum(q)*100))
-#myresults
-#write.table (myresults,file="../tables/SG_Variance_nodulenumber.txt",sep = "\t",row.names = FALSE)
+a.G<-anova(NodNum.G)
+a.G
+a.T<-anova(NodNum.T)
+a.T
+
+
 ```
 
 
@@ -215,20 +209,30 @@ all.data.A17<-all.data.A17[!is.na(all.data.A17[,trait]),]
 trait.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
 # Run a model with type and replicate as predictors (why the ,?)
 trait.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
-#Compile results into a dataframe
-#myresults<-data.frame(Response=c(paste(trait)),Predictor=c("Genotype",""),Intercept=c(trait.G$"Intercept"),Estimate=c(trait.G$"Estimate"),Pval=c(trait.G$"Pr(>|t|)"))
-return(myresults)                      
+# Extract the coefficients
+  coefs.G <- summary(trait.G)$coefficients
+  coefs.T<-summary(trait.T)$coefficients
+#Convert the coefficients into a  dataframe
+  coefs.G<-as.data.frame(coefs.G)
+  coefs.T<-as.data.frame(coefs.T)
+# Create a data frame with the coefficients, trait, and p-value
+myresults2<-data.frame(Response=c(paste(trait)),Coefficient=coefs.G$'Estimate',Pvalue=coefs.G$'Pr(>|t|)')
+#create a dataframe with the predictors
+myresults1<-data.frame(Genotype=c("(Intercept)","dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd","nad1","dnf1","dnf2","dnf3","dnf4","dnf6","dnf7","dnf1/dnf2", "dnf5/dnf2","rdn1","sunn1","sunn4","repB","repC","repD","repE"))
+
+length(myresults2)<-length(myresults1)
+#Combine
+myresults<-cbind(myresults1,myresults2)
+# Return the data frame
+  return(myresults)
+}                  
                       
-}
+
 ```
 
 ```{r Write Function to compile and summarize results each Phenotype, echo=TRUE}
-TRAIT.summary<-rbind(extract.summary("nodules_perplant"),extract.summary("average_size"),extract.summary("average_size"),extract.summary("total_area"),extract.summary("total_nodulated_area_perplant"),extract.summary("total_biomass"),extract.summary("ratio"),extract.summary("ratio"),extract.summary("log_CFUpernodule"),extract.summary("log_CFUperplant"))
-
-
-
-
-write.table (ANOVA.Trait.Summary,file="../tables/Trait-Summary.txt",sep = "\t",row.names = FALSE)
+TRAIT.summary<-rbind(extract.summary("nodules_perplant"),extract.summary("average_size"),extract.summary("total_area"),extract.summary("total_nodulated_area_perplant"),extract.summary("total_biomass"),extract.summary("ratio"),extract.summary("log_CFUpernodule"),extract.summary("log_CFUperplant"))
+write.table (TRAIT.summary,file="../tables/Trait-Summary.txt",sep = "\t",row.names = FALSE)
 
 ```
 
@@ -302,7 +306,7 @@ NodSize.G<-lm(Nodulesizeperplant ~ name + rep, data = all.data.A17)
 # Run a model with type and replicate as predictors
 NodSize.T<-lm(Nodulesizeperplant ~type+rep,data=all.data.A17)
 #Examine the summaries
-summary(NodSize.G)
+b<-summary(NodSize.G)
 summary(NodSize.T)
 #Examine the Analysis of Variance tables
 p<-anova(NodNum.G)
@@ -315,6 +319,8 @@ print(cbind(PctExp=p/sum(p)*100))
 q<-q$"Sum.Sq"
 print(cbind(PctExp=q/sum(q)*100))
 ```
+
+
 
 ```{r Running a Linear Model for total nodulated area per plant, echo=TRUE}
 # Run a model with name and replicate as predictors
@@ -384,6 +390,7 @@ ratio.T<-lm(ratio ~ type + rep,data = all.data.A17)
 #Examine the summaries
 summary(ratio.G)
 summary(ratio.T)
+             
 #Examine the Analysis of Variance tables
 p<-anova(ratio.G)
 p
