@@ -109,7 +109,7 @@ pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(l)
 all.data.A17$name<-factor(all.data.A17$name,levels = rev(levels(all.data.A17$name)))
 
 #Boxplot depicting nodulation per plant 
-nod_cnt <-ggplot(all.data.A17,aes(x=name, y=nodules_perplant,fill=type)) + 
+nod_cnt <-ggplot(all.data.A17,aes(x=reorder(name,type), y=nodules_perplant,fill=type)) + 
         geom_boxplot(outlier.shape=NA) +
         geom_jitter() +
         coord_flip() +
@@ -117,6 +117,7 @@ nod_cnt <-ggplot(all.data.A17,aes(x=name, y=nodules_perplant,fill=type)) +
         labs(x="Plant Host",y="Nodules per plant") +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 nod_cnt 
+ggsave(plot = nod_cnt, width = 10, height = 10, dpi = 600, filename = "../figures/nod_cnt.png")
 ```
 
 ```{r}
@@ -129,6 +130,7 @@ nod_size<-ggplot(all.data.A17,aes(x=reorder(name,type), y=Nodulesizeperplant,fil
         labs(x="Plant Host",y="Average NoduleSize per plant") +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 nod_size
+ggsave(plot = nod_size, width = 10, height = 10, dpi = 600, filename = "../figures/nod_size.png")
 #Boxplot depicting total nodulated area per plant
 tot_nod_area<-ggplot(all.data.A17,aes(x=reorder(name,type), y=total_nodulated_area_perplant,fill=type)) + 
         geom_boxplot(outlier.shape=NA) +
@@ -138,7 +140,7 @@ tot_nod_area<-ggplot(all.data.A17,aes(x=reorder(name,type), y=total_nodulated_ar
         labs(x="Plant Host",y="Total Nodulated Area per plant") +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 tot_nod_area
-
+ggsave(plot = tot_nod_area, width = 10, height = 10, dpi = 600, filename = "../figures/tot_nod_area.png")
 #Boxplot depicting CFU per plant
 cfu_per_plant<-ggplot(all.data.A17,aes(x=reorder(name,type), y=log_CFUperplant,fill=type)) + 
         geom_boxplot(outlier.shape=NA) +
@@ -148,6 +150,7 @@ cfu_per_plant<-ggplot(all.data.A17,aes(x=reorder(name,type), y=log_CFUperplant,f
         labs(x="Plant Host",y="log(CFU per plant)") +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 cfu_per_plant
+ggsave(plot = cfu_per_plant, width = 10, height = 10, dpi = 600, filename = "../figures/cfu_per_plant.png")
 #Boxplot depicting CFU per nodule
 cfu_per_nodule<-ggplot(all.data.A17,aes(x=reorder(name,type), y=log_CFUpernodule,fill=type)) + 
         geom_boxplot(outlier.shape=NA) +
@@ -157,6 +160,7 @@ cfu_per_nodule<-ggplot(all.data.A17,aes(x=reorder(name,type), y=log_CFUpernodule
         labs(x="Plant Host",y="log(CFU per nodule") +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 cfu_per_nodule
+ggsave(plot =cfu_per_nodule, width = 10, height = 10, dpi = 600, filename = "../figures/cfu_per_nodule.png")
 #Boxplot depicting total biomass
 total_biomass<-ggplot(all.data.A17,aes(x=reorder(name,type), y=total_biomass,fill=type)) + 
         geom_boxplot(outlier.shape=NA) +
@@ -166,9 +170,13 @@ total_biomass<-ggplot(all.data.A17,aes(x=reorder(name,type), y=total_biomass,fil
         labs(x="Plant Host",y="Total Biomass(mg)") +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 total_biomass
+ggsave(plot =total_biomass, width = 10, height = 10, dpi = 600, filename = "../figures/total_biomass.png")
+
 #Boxplot depicting Nodule_weight_perplant
 Nodule_weight_perplant<-ggplot(all.data.A17,aes(x=reorder(name,type), y=Nodule_weight_perplant,fill=type)) + geom_boxplot(outlier.shape=NA)+geom_jitter()+coord_flip()+scale_color_manual(values=cbPalette)+labs(x="Plant Host",y="Nodule weight perplant")+theme_classic()+theme(legend.position="top",text = element_text(size=18))
 Nodule_weight_perplant
+ggsave(plot =Nodule_weight_perplant, width = 10, height = 10, dpi = 600, filename = "../figures/Nodule_weight_perplant.png")
+
 #Boxplot depicting ratio of above and below ground biomass
 biomass_ratio<-ggplot(all.data.A17,aes(x=reorder(name,type), y=ratio,fill=type)) + 
         geom_boxplot(outlier.shape=NA) +
@@ -178,6 +186,7 @@ biomass_ratio<-ggplot(all.data.A17,aes(x=reorder(name,type), y=ratio,fill=type))
         labs(x="Plant Host",y="Belowground:Aboveground") +
         theme_classic() + theme(legend.position="top", text = element_text(size=18))
 biomass_ratio
+ggsave(plot =biomass_ratio, width = 10, height = 10, dpi = 600, filename = "../figures/biomass_ratio.png")
 
 
 ```
@@ -207,7 +216,7 @@ extract.summary<-function(trait) {
 all.data.A17<-all.data.A17[!is.na(all.data.A17[,trait]),] 
 # Run a model with name and replicate as predictors
 trait.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
-# Run a model with type and replicate as predictors (why the ,?)
+# Run a model with type and replicate as predictors 
 trait.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
 # Extract the coefficients
   coefs.G <- summary(trait.G)$coefficients
@@ -215,23 +224,68 @@ trait.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
 #Convert the coefficients into a  dataframe
   coefs.G<-as.data.frame(coefs.G)
   coefs.T<-as.data.frame(coefs.T)
-# Create a data frame with the coefficients, trait, and p-value
-myresults2<-data.frame(Response=c(paste(trait)),Coefficient=coefs.G$'Estimate',Pvalue=coefs.G$'Pr(>|t|)')
-#create a dataframe with the predictors
-myresults1<-data.frame(Genotype=c("(Intercept)","dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd","nad1","dnf1","dnf2","dnf3","dnf4","dnf6","dnf7","dnf1/dnf2", "dnf5/dnf2","rdn1","sunn1","sunn4","repB","repC","repD","repE"))
+  
+  ##genotpye##
+  myresults1<-data.frame(Response=c(paste(trait)),Coefficient=c(coefs.G$'Estimate'),Pvalue=c(coefs.G$'Pr(>|t|)'))
+  myresults2<-data.frame(Genotype=c("(Intercept)","hcl","ipd3","nad1","dnf1","dnf2","dnf3","dnf4","dnf6","dnf7","dnf1/dnf2", "dnf5/dnf2","rdn1","sunn1","sunn4","repB","repC","repD","repE"))
+  #Combine
+myresults<-cbind(myresults1,myresults2)
 
-length(myresults2)<-length(myresults1)
+
+# Return the data frame
+  return(myresults)
+
+
+
+}  
+```
+
+```{r Write Function to extract Statistical summary of coefficients_attempt2, echo=TRUE}
+
+
+
+#Attempt2
+extract.summary<-function(trait) {
+#Dropping rows with NA
+#all.data.A17 <- all.data.A17 [complete.cases(all.data.A17), ] # This needs to be made specific to the trait! See below
+all.data.A17<-all.data.A17[!is.na(all.data.A17[,trait]),] 
+# Run a model with name and replicate as predictors
+trait.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
+# Run a model with type and replicate as predictors 
+trait.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
+# Extract the coefficients
+  coefs.G <- summary(trait.G)$coefficients
+  coefs.T<-summary(trait.T)$coefficients
+#Convert the coefficients into a  dataframe
+  coefs.G<-as.data.frame(coefs.G)
+  coefs.T<-as.data.frame(coefs.T)
+  # Create a data frame for genotype with the coefficients, trait, and p-value
+myresults2<-data.frame(Response=c(paste(trait)),Coefficient=c(coefs.G$'Estimate',coefs.T$"Estimate"),Pvalue=c(coefs.G$'Pr(>|t|)',coefs.T$'Pr(>|t|)'))
+#myresults2.T<-data.frame(Response=c(paste(trait)),Coefficient=coefs.T$'Estimate',Pvalue=coefs.T$'Pr(>|t|)')
+#create a dataframe with the predictors
+myresults1<-data.frame(Predictors=c("(Intercept)","hcl","ipd3","nad1","dnf1","dnf2","dnf3","dnf4","dnf6","dnf7","dnf1/dnf2", "dnf5/dnf2","rdn1","sunn1","sunn4","repB","repC","repD","repE","WT","Early","Late","AON","repB","repC","repD","repE"))
+
 #Combine
 myresults<-cbind(myresults1,myresults2)
 # Return the data frame
   return(myresults)
+ #Classifying the predictors
+Classification<- function(Classification){ if (coefs.G$'Estimate' > 0 & coefs.G$'Pr(>|t|)'< 0.1) { "Increase"}
+else if (coefs.G$'Estimate' < 0 & coefs.G$'Pr(>|t|)'< 0.1) {"Decrease"}
+else if (coefs.G$'Estimate' >= 0 & coefs.G$'Pr(>|t|)'>0.1) {"Unchanged"}
+}
+
+
+#how do i connect Classification with extract.summary????
 }                  
                       
 
 ```
 
 ```{r Write Function to compile and summarize results each Phenotype, echo=TRUE}
-TRAIT.summary<-rbind(extract.summary("nodules_perplant"),extract.summary("average_size"),extract.summary("total_area"),extract.summary("total_nodulated_area_perplant"),extract.summary("total_biomass"),extract.summary("ratio"),extract.summary("log_CFUpernodule"),extract.summary("log_CFUperplant"))
+TRAIT.summary<-rbind(extract.summary("nodules_perplant"),extract.summary("total_nodulated_area_perplant"),extract.summary("log_CFUpernodule"),extract.summary("log_CFUperplant"))
+  
+ #the code does not work for the following traits: total_area,total_biomass,ratio,average_size.
 write.table (TRAIT.summary,file="../tables/Trait-Summary.txt",sep = "\t",row.names = FALSE)
 
 ```
