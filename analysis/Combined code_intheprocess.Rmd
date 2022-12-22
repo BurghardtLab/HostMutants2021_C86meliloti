@@ -19,8 +19,10 @@ knitr::opts_chunk$set(message = FALSE)
 ```
 
 ```{r merging all data sets, echo=TRUE}
+
 # Import the text file of nodule data
 data_HostMutants2021_nod_counts <- read.table("../data/data_HostMutants2021_nod_counts.txt",sep = "\t",header=TRUE)
+
 # Import the genotype information data
 genotype_name <- read.table("../data/genotype_name.txt",sep = "\t",header=TRUE)
 
@@ -46,6 +48,12 @@ all.data<-all.data%>% mutate(nodules_perplant=Count/num_plants_picked_nods)
 table(is.na(all.data$cfu_ml)) # 27 NA's (why are you counting the number of NAs in the cfu_ml col? )
 table(all.data$cfu_ml==0) # No Zeros. 
 #There are two reasons it could be a zero either there were no nodules picked and thus no rhizobia or there was a problem with the estimation of cfu. In the first case the 0 is meaningful but from an analysis standpoint we probably still want to ommit them becuase the model won't behave well.
+
+all.data[all.data$total_area==0,]$total_area<- NA
+all.data[all.data$average_size==0,]$average_size<- NA
+all.data[all.data$Circularity==0,]$Circularity<- NA
+all.data[all.data$percent_area==0,]$percent_area<- NA
+all.data[all.data$Solidity==0,]$Solidity<- NA
 
 all.data<-all.data%>% mutate(CFUperplant=cfu_ml/num_plants_picked_nods/4, CFUpernodule=CFUperplant/nodules_perplant)
 #converting CFUperplant and CFUpernodule to log(CFUperplant),log(CFUpernodule)
@@ -82,6 +90,133 @@ all.data.A17$type<-factor(all.data.A17$type, levels = c("WT","Early","Late","AON
 #Changing the order of the genotypes
 all.data.A17$name<-factor(all.data.A17$name,levels=c("A17", "dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd", "nad1", "dnf1", "dnf2","dnf3", "dnf4","dnf6","dnf7", "dnf1/dnf2", "dnf5/dnf2", "rdn1", "sunn1","sunn4"))
 ```
+
+```{r Write Function to extract Statistical summary on genotype coefficients, echo=TRUE}
+#for troubleshooting
+#trait= "nodules_perplant"
+#trait= "total_biomass"
+#trait= "average_size"
+
+extract.coefs<-function(trait, predictor="name", p.threshold=0.05) {
+
+# Step1: Remove rows with NA for the focal trait
+  my.data<-all.data.A17[!is.na(all.data.A17[,trait]),] 
+
+# Step2: Run a lm model with genotypes and replicate as predictors
+
+if(predictor=="name")  {  
+    my.model <- lm(my.data[,trait] ~ name + rep, data = my.data)
+}
+  
+if(predictor=="type")  {
+  my.model<- lm(my.data[,trait] ~ type + rep, data = my.data)
+}
+
+  # Step 3 Extract coeffecient dataframe and add column for row.names
+  my.coefs <- as.data.frame(summary(my.model)$coefficients) # covert to data fram
+  my.coefs <- data.frame (Trait=paste(trait),Predictor=row.names(my.coefs), my.coefs) # add the row names as column
+  colnames(my.coefs) <-c("Trait","Predictor","Coef", "St.error","t.value","P.value")# Create more meaningful column names
+
+# Step 4 Remove none genotype predictors
+  my.coefs <-my.coefs[!my.coefs$Predictor %in% c("(Intercept)","repB","repC","repD","repE","repF"),] 
+
+# Step 5: classify coeffecients
+  my.coefs$Class<-"none" #Set up dummy column to hold classifications
+
+# Step 6 Modify catagorizations based on coef and pvalue. 
+  try(my.coefs[(my.coefs$Coef > 0 & my.coefs$P.value< p.threshold),]$Class<-"Up") 
+  try(my.coefs[(my.coefs$Coef < 0 & my.coefs$P.value< p.threshold),]$Class<-"Down") 
+
+return(my.coefs)
+} 
+
+extract.coefs(trait = "total_biomass",predictor="type", p.threshold=0.001)
+extract.coefs(trait = "nodules_perplant",predictor="type")
+extract.coefs(trait = "average_size")
+
+Geno.Coef.Summary<-rbind(
+  extract.coefs("nodules_perplant"),extract.coefs("average_size"),extract.coefs("total_area"),extract.coefs("total_nodulated_area_perplant"),extract.coefs("total_biomass"),extract.coefs("ratio"),extract.coefs("Nodule_weight_perplant"),extract.coefs("log_CFUpernodule"),extract.coefs("log_CFUperplant"))
+
+write.table (Geno.Coef.Summary,file="../tables/Geno.Coef.Summary.txt",sep = "\t",row.names = FALSE)
+
+Type.Coef.Summary<-rbind(
+  extract.coefs("nodules_perplant",predictor="type"),extract.coefs("average_size",predictor="type"),extract.coefs("total_area",predictor="type"),extract.coefs("total_nodulated_area_perplant",predictor="type"),extract.coefs("total_biomass",predictor="type"),extract.coefs("ratio",predictor="type"),extract.coefs("Nodule_weight_perplant",predictor="type"),extract.coefs("log_CFUpernodule",predictor="type"),extract.coefs("log_CFUperplant",predictor="type"))
+
+write.table (Type.Coef.Summary,file="../tables/Type.Coef.Summary.txt",sep = "\t",row.names = FALSE)
+
+```
+
+
+```{r Write Function to run anova and summarize results each Phenotype, echo=TRUE}
+
+extract.anova<- function(trait) {
+#Dropping rows with NA
+#all.data.A17 <- all.data.A17 [complete.cases(all.data.A17), ] # This needs to be made specific to the trait! See below
+all.data.A17<-all.data.A17[!is.na(all.data.A17[,trait]),] 
+
+# Run a model with name and replicate as predictors
+NodNum.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
+# Run a model with type and replicate as predictors (why the ,?)
+NodNum.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
+#Examine the Analysis of Variance tables and save output
+a.G<-anova(NodNum.G)
+a.T<-anova(NodNum.T)
+
+#Compile results into a dataframe
+myresults<-data.frame(Response=c(paste(trait)),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(a.G$"Sum Sq",a.T$"Sum Sq"),PctExp=c(a.G$"Sum Sq"/sum(a.G$"Sum Sq")*100,a.T$"Sum Sq"/sum(a.T$"Sum Sq")*100),Df=c(a.G$"Df",a.T$"Df"),Fval=c(a.G$"F value",a.T$"F value"), Pval=c(a.G$"Pr(>F)",a.T$"Pr(>F)"),R.adj=c(summary(NodNum.G)$adj.r.squared,"NA","NA",summary(NodNum.T)$adj.r.squared,"NA","NA"))
+
+return(myresults)
+
+}
+
+#Compile Anovas results across Phenotypes
+
+ANOVA.Trait.Summary<-rbind(extract.anova("nodules_perplant"),
+extract.anova("average_size"),
+extract.anova("total_area"),extract.anova("total_nodulated_area_perplant"),extract.anova("total_biomass"),extract.anova("ratio"),extract.anova("Nodule_weight_perplant"),extract.anova("log_CFUpernodule"),extract.anova("log_CFUperplant"))
+
+write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = "\t",row.names = FALSE)
+
+```
+
+#Visualizing Results
+
+```{r Create Coefficient Effect Summary Figure, echo=TRUE}
+
+```
+
+
+```{r Writing a function for the box-plots, echo=TRUE}
+#Nodule_weight_perplant<-ggplot(all.data.A17,aes(x=reorder(name,type), y=Nodule_weight_perplant,fill=type)) + geom_boxplot(outlier.shape=NA)+geom_jitter()+coord_flip()+scale_color_manual(values=cbPalette)+labs(x="Plant Host",y="Nodule weight perplant")+theme_classic()+theme(legend.position="top",text = element_text(size=18))
+
+
+#Nodule_weight_perplant
+
+
+
+
+
+#boxplot.trait<- function(trait) {
+
+# Run a model with name and replicate as predictors
+#NodNum.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
+# Run a model with type and replicate as predictors
+#NodNum.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
+
+#Examine the Analysis of Variance tables and save output
+#a.G<-anova(NodNum.G)
+#a.T<-anova(NodNum.T)
+
+#Compile results into a dataframe
+#myresults<-data.frame(Response=c(paste(trait)),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(a.G$"Sum Sq",a.T$"Sum Sq"),PctExp=c(p/sum(p)*100,q/sum(q)*100),Df=c(a.G$"Df",a.T$"Df"),Fval=c(a.G$"F value",a.T$"F value"), Pval=c(a.G$"Pr(>F)",a.T$"Pr(>F)"),R.adj=c(summary(NodNum.G)$adj.r.squared,"NA","NA",summary(NodNum.T)$adj.r.squared,"NA","NA"))
+
+#return(myresults)
+
+
+```
+
+###Boxplots to be replaced by Boxplot function eventually...
+
 
 ```{r Boxplots, echo=TRUE}
 ### For emulating ggplot colors ###
@@ -189,310 +324,4 @@ biomass_ratio
 ggsave(plot =biomass_ratio, width = 10, height = 10, dpi = 600, filename = "../figures/biomass_ratio.png")
 
 
-```
-
-```{r Linear model code Nod Num , echo=TRUE}
-# Run a model with name and replicate as predictors
-NodNum.G <- lm(nodules_perplant ~ name + rep, data = all.data.A17)
-# Run a model with type and replicate as predictors
-NodNum.T<-lm(nodules_perplant ~ type + rep, data = all.data.A17)
-#Examine the summaries
-summary(NodNum.G)
-summary(NodNum.T)
-#Examine the Analysis of Variance tables
-a.G<-anova(NodNum.G)
-a.G
-a.T<-anova(NodNum.T)
-a.T
-
-
-```
-
-
-```{r Write Function to extract Statistical summary of coefficients, echo=TRUE}
-extract.summary<-function(trait) {
-#Dropping rows with NA
-#all.data.A17 <- all.data.A17 [complete.cases(all.data.A17), ] # This needs to be made specific to the trait! See below
-all.data.A17<-all.data.A17[!is.na(all.data.A17[,trait]),] 
-# Run a model with name and replicate as predictors
-trait.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
-# Run a model with type and replicate as predictors 
-trait.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
-# Extract the coefficients
-  coefs.G <- summary(trait.G)$coefficients
-  coefs.T<-summary(trait.T)$coefficients
-#Convert the coefficients into a  dataframe
-  coefs.G<-as.data.frame(coefs.G)
-  coefs.T<-as.data.frame(coefs.T)
-  
-  ##genotpye##
-  myresults1<-data.frame(Response=c(paste(trait)),Coefficient=c(coefs.G$'Estimate'),Pvalue=c(coefs.G$'Pr(>|t|)'))
-  myresults2<-data.frame(Genotype=c("(Intercept)","hcl","ipd3","nad1","dnf1","dnf2","dnf3","dnf4","dnf6","dnf7","dnf1/dnf2", "dnf5/dnf2","rdn1","sunn1","sunn4","repB","repC","repD","repE"))
-  #Combine
-myresults<-cbind(myresults1,myresults2)
-
-
-# Return the data frame
-  return(myresults)
-
-
-
-}  
-```
-
-```{r Write Function to extract Statistical summary of coefficients_attempt2, echo=TRUE}
-
-
-
-#Attempt2
-extract.summary<-function(trait) {
-#Dropping rows with NA
-#all.data.A17 <- all.data.A17 [complete.cases(all.data.A17), ] # This needs to be made specific to the trait! See below
-all.data.A17<-all.data.A17[!is.na(all.data.A17[,trait]),] 
-# Run a model with name and replicate as predictors
-trait.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
-# Run a model with type and replicate as predictors 
-trait.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
-# Extract the coefficients
-  coefs.G <- summary(trait.G)$coefficients
-  coefs.T<-summary(trait.T)$coefficients
-#Convert the coefficients into a  dataframe
-  coefs.G<-as.data.frame(coefs.G)
-  coefs.T<-as.data.frame(coefs.T)
-  # Create a data frame for genotype with the coefficients, trait, and p-value
-myresults2<-data.frame(Response=c(paste(trait)),Coefficient=c(coefs.G$'Estimate',coefs.T$"Estimate"),Pvalue=c(coefs.G$'Pr(>|t|)',coefs.T$'Pr(>|t|)'))
-#myresults2.T<-data.frame(Response=c(paste(trait)),Coefficient=coefs.T$'Estimate',Pvalue=coefs.T$'Pr(>|t|)')
-#create a dataframe with the predictors
-myresults1<-data.frame(Predictors=c("(Intercept)","hcl","ipd3","nad1","dnf1","dnf2","dnf3","dnf4","dnf6","dnf7","dnf1/dnf2", "dnf5/dnf2","rdn1","sunn1","sunn4","repB","repC","repD","repE","WT","Early","Late","AON","repB","repC","repD","repE"))
-
-#Combine
-myresults<-cbind(myresults1,myresults2)
-# Return the data frame
-  return(myresults)
- #Classifying the predictors
-Classification<- function(Classification){ if (coefs.G$'Estimate' > 0 & coefs.G$'Pr(>|t|)'< 0.1) { "Increase"}
-else if (coefs.G$'Estimate' < 0 & coefs.G$'Pr(>|t|)'< 0.1) {"Decrease"}
-else if (coefs.G$'Estimate' >= 0 & coefs.G$'Pr(>|t|)'>0.1) {"Unchanged"}
-}
-
-
-#how do i connect Classification with extract.summary????
-}                  
-                      
-
-```
-
-```{r Write Function to compile and summarize results each Phenotype, echo=TRUE}
-TRAIT.summary<-rbind(extract.summary("nodules_perplant"),extract.summary("total_nodulated_area_perplant"),extract.summary("log_CFUpernodule"),extract.summary("log_CFUperplant"))
-  
- #the code does not work for the following traits: total_area,total_biomass,ratio,average_size.
-write.table (TRAIT.summary,file="../tables/Trait-Summary.txt",sep = "\t",row.names = FALSE)
-
-```
-
-```{r Write Function to run anova and summarize results each Phenotype, echo=TRUE}
-
-extract.anova<- function(trait) {
-#Dropping rows with NA
-#all.data.A17 <- all.data.A17 [complete.cases(all.data.A17), ] # This needs to be made specific to the trait! See below
-all.data.A17<-all.data.A17[!is.na(all.data.A17[,trait]),] 
-
-# Run a model with name and replicate as predictors
-NodNum.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
-# Run a model with type and replicate as predictors (why the ,?)
-NodNum.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
-#Examine the Analysis of Variance tables and save output
-a.G<-anova(NodNum.G)
-a.T<-anova(NodNum.T)
-
-#Compile results into a dataframe
-myresults<-data.frame(Response=c(paste(trait)),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(a.G$"Sum Sq",a.T$"Sum Sq"),PctExp=c(a.G$"Sum Sq"/sum(a.G$"Sum Sq")*100,a.T$"Sum Sq"/sum(a.T$"Sum Sq")*100),Df=c(a.G$"Df",a.T$"Df"),Fval=c(a.G$"F value",a.T$"F value"), Pval=c(a.G$"Pr(>F)",a.T$"Pr(>F)"),R.adj=c(summary(NodNum.G)$adj.r.squared,"NA","NA",summary(NodNum.T)$adj.r.squared,"NA","NA"))
-
-return(myresults)
-
-}
-
-```
-
-
-```{r Compile across Phenotypes, echo=TRUE}
-ANOVA.Trait.Summary<-rbind(extract.anova("nodules_perplant"),
-extract.anova("average_size"),
-extract.anova("total_area"),extract.anova("total_nodulated_area_perplant"),extract.anova("total_biomass"),extract.anova("ratio"),extract.anova("Nodule_weight_perplant"),extract.anova("log_CFUpernodule"),extract.anova("log_CFUperplant"))
-
-write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = "\t",row.names = FALSE)
-
-```
-
-```{r Writing a function for the box-plots, echo=TRUE}
-#Nodule_weight_perplant<-ggplot(all.data.A17,aes(x=reorder(name,type), y=Nodule_weight_perplant,fill=type)) + geom_boxplot(outlier.shape=NA)+geom_jitter()+coord_flip()+scale_color_manual(values=cbPalette)+labs(x="Plant Host",y="Nodule weight perplant")+theme_classic()+theme(legend.position="top",text = element_text(size=18))
-
-
-#Nodule_weight_perplant
-
-
-
-
-
-#boxplot.trait<- function(trait) {
-
-# Run a model with name and replicate as predictors
-#NodNum.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
-# Run a model with type and replicate as predictors
-#NodNum.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
-
-#Examine the Analysis of Variance tables and save output
-#a.G<-anova(NodNum.G)
-#a.T<-anova(NodNum.T)
-
-#Compile results into a dataframe
-#myresults<-data.frame(Response=c(paste(trait)),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(a.G$"Sum Sq",a.T$"Sum Sq"),PctExp=c(p/sum(p)*100,q/sum(q)*100),Df=c(a.G$"Df",a.T$"Df"),Fval=c(a.G$"F value",a.T$"F value"), Pval=c(a.G$"Pr(>F)",a.T$"Pr(>F)"),R.adj=c(summary(NodNum.G)$adj.r.squared,"NA","NA",summary(NodNum.T)$adj.r.squared,"NA","NA"))
-
-#return(myresults)
-
-
-```
-
-
-```{r Running a Linear Model for nodule size, echo=TRUE}
-# Run a model with name and replicate as predictors
-NodSize.G<-lm(Nodulesizeperplant ~ name + rep, data = all.data.A17)
-# Run a model with type and replicate as predictors
-NodSize.T<-lm(Nodulesizeperplant ~type+rep,data=all.data.A17)
-#Examine the summaries
-b<-summary(NodSize.G)
-summary(NodSize.T)
-#Examine the Analysis of Variance tables
-p<-anova(NodNum.G)
-p
-q<-anova(NodNum.T)
-q
-# percentage of variance explained
-p<-p$"Sum Sq"
-print(cbind(PctExp=p/sum(p)*100))
-q<-q$"Sum.Sq"
-print(cbind(PctExp=q/sum(q)*100))
-```
-
-
-
-```{r Running a Linear Model for total nodulated area per plant, echo=TRUE}
-# Run a model with name and replicate as predictors
-TotNodArea.G<-lm(total_nodulated_area_perplant ~ name + rep, data = all.data.A17)
-# Run a model with type and replicate as predictors
-TotNodArea.T<-lm(total_nodulated_area_perplant ~type+rep,data=all.data.A17)
-#Examine the summaries
-summary(TotNodArea.G)
-summary(TotNodArea.T)
-#Examine the Analysis of Variance tables
-p<-anova(TotNodArea.G)
-p
-q<-anova(TotNodArea.T)
-q
-# percentage of variance explained
-p<-p$"Sum Sq"
-print(cbind(PctExp=p/sum(p)*100))
-q<-q$"Sum.Sq"
-print(cbind(PctExp=q/sum(q)*100))
-```
-
-```{r Running a Linear Model for CFU per plant, echo=TRUE}
-# Run a model with name and replicate as predictors
-CFUperplant.G<-lm(CFUperplant ~ name + rep, data = all.data.A17)
-# Run a model with type and replicate as predictors
-CFUperplant.T<-lm(CFUperplant ~ type + rep, data = all.data.A17)
-#Examine the summaries
-summary(CFUperplant.G)
-summary(CFUperplant.T)
-#Examine the Analysis of Variance tables
-p<-anova(CFUperplant.G)
-p
-q<-anova(CFUperplant.T)
-q
-# percentage of variance explained
-p<-p$"Sum Sq"
-print(cbind(PctExp=p/sum(p)*100))
-q<-q$"Sum.Sq"
-print(cbind(PctExp=q/sum(q)*100))
-```
-
-```{r Running a Linear Model for CFU per nodule, echo=TRUE}
-# Run a model with name and replicate as predictors
-pernodule.G<-lm(CFUpernodule ~ name + rep,data = all.data.A17)
-# Run a model with type and replicate as predictors
-pernodule.T<-lm(CFUpernodule ~ type + rep,data = all.data.A17)
-#Examine the summaries
-summary(pernodule.G)
-summary(pernodule.T)
-#Examine the Analysis of Variance tables
-p<-anova(pernodule.G)
-p
-q<-anova(pernodule.T)
-q
-# percentage of variance explained
-p<-p$"Sum Sq"
-print(cbind(PctExp=p/sum(p)*100))
-q<-q$"Sum.Sq"
-print(cbind(PctExp=q/sum(q)*100))
-```
-
-```{r Running a Linear Model for ratio of above ground and below ground biomass, echo=TRUE}
-# Run a model with name and replicate as predictors
-ratio.G<-lm(ratio ~ name + rep,data = all.data.A17)
-# Run a model with type and replicate as predictors
-ratio.T<-lm(ratio ~ type + rep,data = all.data.A17)
-#Examine the summaries
-summary(ratio.G)
-summary(ratio.T)
-             
-#Examine the Analysis of Variance tables
-p<-anova(ratio.G)
-p
-q<-anova(ratio.T)
-q
-# percentage of variance explained
-p<-p$"Sum Sq"
-print(cbind(PctExp=p/sum(p)*100))
-q<-q$"Sum.Sq"
-print(cbind(PctExp=q/sum(q)*100))
-```
-#
-```{r Creating the tables for the manuscript, echo=TRUE}
-#extracting adjusted R-squared values across traits
-mod_summary_NodNum.G<-summary(NodNum.G)
-
-mod_summary_NodNum.T<-summary(NodNum.T)
-
-
-mod_summary_TotNodArea.G<-summary(TotNodArea.G)
-mod_summary_TotNodArea.T<-summary(TotNodArea.T)
-mod_summary_CFUperplant.G<-summary(CFUperplant.G)
-mod_summary_CFUperplant.T<-summary(CFUperplant.T)
-mod_summary_NodSize.G<-summary(NodSize.G)
-mod_summary_NodSize.T<-summary(NodSize.T)
-mod_summary_ratio.G<-summary(ratio.G)
-mod_summary_ratio.T<-summary(ratio.T)
-mod_summary_pernodule.G<-summary(pernodule.G)
-mod_summary_pernodule.T<-summary(pernodule.T)
-
-a<-mod_summary_NodNum.G$adj.r.squared 
-b<-mod_summary_NodNum.T$adj.r.squared 
-c<-mod_summary_TotNodArea.G$adj.r.squared 
-d<-mod_summary_TotNodArea.T$adj.r.squared 
-e<-mod_summary_NodSize.G$adj.r.squared 
-f<-mod_summary_NodSize.T$adj.r.squared 
-g<-mod_summary_CFUperplant.G$adj.r.squared 
-h<-mod_summary_CFUperplant.T$adj.r.squared 
-i<-mod_summary_pernodule.G$adj.r.squared 
-j<-mod_summary_pernodule.T$adj.r.squared 
-k<-mod_summary_ratio.G$adj.r.squared 
-l<-mod_summary_ratio.T$adj.r.squared 
-
-df<-data.frame(Traits=c('Nodule Number','Total Nodulated Area','Size per Nodule','CFUperplant','CFUpernodule','Biomass Ratio'),Type=c(b,d,f,h,j,l),
-               Genotype=c(a,c,e,g,i,k))
-#create the table
-tab1 <- table(df$Traits,df$Type,df$Genotype)
-tab1
-#write the table
-write.table (tab1,file="adj.r.squared values across traits.txt",sep = "\t",row.names =FALSE)
 ```
