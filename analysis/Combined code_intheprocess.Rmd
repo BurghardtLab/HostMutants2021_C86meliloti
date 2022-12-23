@@ -83,6 +83,10 @@ all.data.A17<-all.data.A17%>%filter(sample_id!= "847F")
 all.data.A17<-all.data.A17%>%filter(sample_id!= "833A")
 # Remove 833B
 all.data.A17<-all.data.A17%>%filter(sample_id!="833B")
+
+### REDUCE data set down to traits and columns of interest for this paper
+
+### Make sure factors are in the right order for analysis
 #Turning all.data.A17$name  into a factor.
 all.data.A17$name<-factor(all.data.A17$name)
 #Turning all.data.A17$Type into a factor.
@@ -91,7 +95,7 @@ all.data.A17$type<-factor(all.data.A17$type, levels = c("WT","Early","Late","AON
 all.data.A17$name<-factor(all.data.A17$name,levels=c("A17", "dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd", "nad1", "dnf1", "dnf2","dnf3", "dnf4","dnf6","dnf7", "dnf1/dnf2", "dnf5/dnf2", "rdn1", "sunn1","sunn4"))
 ```
 
-```{r Write Function to extract Statistical summary on genotype coefficients, echo=TRUE}
+```{r Write Function to extract Statistical summary on genotype coefficients, echo=FALSE}
 #for troubleshooting
 #trait= "nodules_perplant"
 #trait= "total_biomass"
@@ -130,17 +134,13 @@ if(predictor=="type")  {
 return(my.coefs)
 } 
 
-extract.coefs(trait = "total_biomass",predictor="type", p.threshold=0.001)
-extract.coefs(trait = "nodules_perplant",predictor="type")
-extract.coefs(trait = "average_size")
-
 Geno.Coef.Summary<-rbind(
-  extract.coefs("nodules_perplant"),extract.coefs("average_size"),extract.coefs("total_area"),extract.coefs("total_nodulated_area_perplant"),extract.coefs("total_biomass"),extract.coefs("ratio"),extract.coefs("Nodule_weight_perplant"),extract.coefs("log_CFUpernodule"),extract.coefs("log_CFUperplant"))
+  extract.coefs("nodules_perplant"),extract.coefs("average_size"),extract.coefs("total_nodulated_area_perplant"),extract.coefs("total_biomass"),extract.coefs("ratio"),extract.coefs("log_CFUpernodule"),extract.coefs("log_CFUperplant"))
 
 write.table (Geno.Coef.Summary,file="../tables/Geno.Coef.Summary.txt",sep = "\t",row.names = FALSE)
 
 Type.Coef.Summary<-rbind(
-  extract.coefs("nodules_perplant",predictor="type"),extract.coefs("average_size",predictor="type"),extract.coefs("total_area",predictor="type"),extract.coefs("total_nodulated_area_perplant",predictor="type"),extract.coefs("total_biomass",predictor="type"),extract.coefs("ratio",predictor="type"),extract.coefs("Nodule_weight_perplant",predictor="type"),extract.coefs("log_CFUpernodule",predictor="type"),extract.coefs("log_CFUperplant",predictor="type"))
+  extract.coefs("nodules_perplant",predictor="type"),extract.coefs("average_size",predictor="type"),extract.coefs("total_nodulated_area_perplant",predictor="type"),extract.coefs("total_biomass",predictor="type"),extract.coefs("ratio",predictor="type"),extract.coefs("log_CFUpernodule",predictor="type"),extract.coefs("log_CFUperplant",predictor="type"))
 
 write.table (Type.Coef.Summary,file="../tables/Type.Coef.Summary.txt",sep = "\t",row.names = FALSE)
 
@@ -171,9 +171,7 @@ return(myresults)
 
 #Compile Anovas results across Phenotypes
 
-ANOVA.Trait.Summary<-rbind(extract.anova("nodules_perplant"),
-extract.anova("average_size"),
-extract.anova("total_area"),extract.anova("total_nodulated_area_perplant"),extract.anova("total_biomass"),extract.anova("ratio"),extract.anova("Nodule_weight_perplant"),extract.anova("log_CFUpernodule"),extract.anova("log_CFUperplant"))
+ANOVA.Trait.Summary<-rbind(extract.anova("nodules_perplant"),extract.anova("average_size"),extract.anova("total_nodulated_area_perplant"),extract.anova("total_biomass"),extract.anova("ratio"),extract.anova("log_CFUpernodule"),extract.anova("log_CFUperplant"))
 
 write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = "\t",row.names = FALSE)
 
@@ -182,6 +180,25 @@ write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = 
 #Visualizing Results
 
 ```{r Create Coefficient Effect Summary Figure, echo=TRUE}
+
+Geno.Coef.Summary$Class<-factor(Geno.Coef.Summary$Class,levels=c("Up","none","Down"))
+
+Geno.Coef.Summary$Trait<-factor(Geno.Coef.Summary$Trait,levels=c("nodules_perplant","average_size","total_nodulated_area_perplant","total_biomass","ratio","log_CFUpernodule" ,"log_CFUperplant"))
+
+### First pass graph
+Coef.Prop.Figure<-ggplot(data = Geno.Coef.Summary) + 
+  geom_bar(mapping = aes(x = Trait, fill = Class), position = "fill")+ 
+  theme_bw()+
+  coord_flip()+
+  scale_fill_manual(values=c("darkblue","darkgrey","darkred"))
+Coef.Prop.Figure
+
+pdf(file = "../figures/Figure2_ProportionCoef.pdf",width = 6, height = 6)
+Coef.Prop.Figure
+dev.off()
+
+##Need to fix x label
+
 
 ```
 
