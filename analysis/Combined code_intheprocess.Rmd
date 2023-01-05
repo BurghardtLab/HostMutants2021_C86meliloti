@@ -194,14 +194,16 @@ Coef.Prop.Figure<-ggplot(data = Geno.Coef.Summary) +
   geom_bar(mapping = aes(x = Trait, fill = Class), position = "fill")+ 
   theme_bw()+
   coord_flip()+
-  scale_fill_manual(values=c("darkblue","darkgrey","darkred"))+xlab ("")+ylab("Percentage of Genotypes")
+  scale_fill_manual(values=c("darkblue","darkgrey","darkred"))+xlab ("")+ylab("Proportion of Genotypes")
 Coef.Prop.Figure
 
 pdf(file = "../figures/Figure2_ProportionCoef.pdf",width = 6, height = 6)
 Coef.Prop.Figure
 dev.off()
 
-##Need to fix x label
+
+
+
 
 
 ```
