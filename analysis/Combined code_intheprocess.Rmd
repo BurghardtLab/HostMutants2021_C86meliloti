@@ -184,16 +184,17 @@ write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = 
 
 ```{r Create Coefficient Effect Summary Figure, echo=TRUE}
 
+
 Geno.Coef.Summary$Class<-factor(Geno.Coef.Summary$Class,levels=c("Up","none","Down"))
 
-Geno.Coef.Summary$Trait<-factor(Geno.Coef.Summary$Trait,levels=c("nodules_perplant","average_size","total_nodulated_area_perplant","total_biomass","ratio","log_CFUpernodule" ,"log_CFUperplant"))
+Geno.Coef.Summary$Trait<-factor(Geno.Coef.Summary$Trait,levels=c("Nodule_number_per_plant","Average_area_per_nodule","Total_nodule_area_per_plant","Total_biomass_per_plant","Root_to_Shoot_Ratio", "CFU_per_nodule_LOG10","CFU_per_plant_LOG10"))
 
 ### First pass graph
 Coef.Prop.Figure<-ggplot(data = Geno.Coef.Summary) + 
   geom_bar(mapping = aes(x = Trait, fill = Class), position = "fill")+ 
   theme_bw()+
   coord_flip()+
-  scale_fill_manual(values=c("darkblue","darkgrey","darkred"))
+  scale_fill_manual(values=c("darkblue","darkgrey","darkred"))+xlab ("")+ylab("Percentage of Genotypes")
 Coef.Prop.Figure
 
 pdf(file = "../figures/Figure2_ProportionCoef.pdf",width = 6, height = 6)
