@@ -221,21 +221,33 @@ dev.off()
 
 #boxplot.trait<- function(trait) {
 
-# Run a model with name and replicate as predictors
-#NodNum.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
-# Run a model with type and replicate as predictors
-#NodNum.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
-
-#Examine the Analysis of Variance tables and save output
-#a.G<-anova(NodNum.G)
-#a.T<-anova(NodNum.T)
-
-#Compile results into a dataframe
-#myresults<-data.frame(Response=c(paste(trait)),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(a.G$"Sum Sq",a.T$"Sum Sq"),PctExp=c(p/sum(p)*100,q/sum(q)*100),Df=c(a.G$"Df",a.T$"Df"),Fval=c(a.G$"F value",a.T$"F value"), Pval=c(a.G$"Pr(>F)",a.T$"Pr(>F)"),R.adj=c(summary(NodNum.G)$adj.r.squared,"NA","NA",summary(NodNum.T)$adj.r.squared,"NA","NA"))
-
-#return(myresults)
 
 
+```
+
+```{r Boxplots, echo=TRUE}
+trait.plot<-function(trait){
+  
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
+
+
+l = length(seq(-7.9, 8, 0.1))
+pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(l)
+
+#Dropping rows with NA
+all.data.A17<-all.data.A17[!is.na(all.data.A17[,trait]),]
+all.data.A17$name<-factor(all.data.A17$name,levels = rev(levels(all.data.A17$name))) 
+
+ggplot(all.data.A17,aes(x=reorder(name,type),y=all.data.A17[,trait],fill=type)) + 
+        geom_boxplot(outlier.shape=NA) +
+        geom_jitter() +
+        coord_flip() +
+        scale_color_manual(values=cbPalette)  +
+        labs(x="Plant Host",y=c(paste(trait))) +
+        theme_classic() + theme(legend.position="top", text = element_text(size=18))
+
+
+}
 ```
 
 ###Boxplots to be replaced by Boxplot function eventually...
@@ -264,7 +276,7 @@ pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(l)
 #mycols<-data.frame(type=c("AON","Early","Late","WT"), cols=cbPalette)
 #mycols$type <- factor(mycols$type, ordered=TRUE)
 
-all.data.A17$name<-factor(all.data.A17$name,levels = rev(levels(all.data.A17$name)))
+all.data.A17$name<-factor(all.data.A17$name,levels = rev(levels(all.data.A17$name)))     
 
 #Boxplot depicting nodulation per plant 
 nod_cnt <-ggplot(all.data.A17,aes(x=reorder(name,type), y=nodules_perplant,fill=type)) + 
