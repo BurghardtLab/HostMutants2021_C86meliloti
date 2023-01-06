@@ -226,28 +226,26 @@ dev.off()
 ```
 
 ```{r Boxplots, echo=TRUE}
-trait.plot<-function(trait){
-  
+
+# There is no need to run these inside the function. You can just have a my pal argument  
 cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
 
+trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE) {
+  
+  all.data.A17$name<-factor(all.data.A17$name,levels = rev(levels(all.data.A17$name))) # reorder factors
+  mydata<-data.frame(name=all.data.A17$name, type=all.data.A17$type, mytrait=all.data.A17[,trait]) # create sub dataframe with only focal trait to make plotting easier
 
-l = length(seq(-7.9, 8, 0.1))
-pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(l)
-
-#Dropping rows with NA
-all.data.A17<-all.data.A17[!is.na(all.data.A17[,trait]),]
-all.data.A17$name<-factor(all.data.A17$name,levels = rev(levels(all.data.A17$name))) 
-
-ggplot(all.data.A17,aes(x=reorder(name,type),y=all.data.A17[,trait],fill=type)) + 
-        geom_boxplot(outlier.shape=NA) +
+  ggplot(mydata,aes(x=name,y=mytrait,fill=type))+
+        geom_boxplot(outlier.shape=NA,na.rm = TRUE,coef=0) +
         geom_jitter() +
         coord_flip() +
-        scale_color_manual(values=cbPalette)  +
+        scale_color_manual(values=mypal)  +
         labs(x="Plant Host",y=c(paste(trait))) +
-        theme_classic() + theme(legend.position="top", text = element_text(size=18))
-
-
+        theme_classic() + 
+        theme(legend.position="top", text = element_text(size=18))
 }
+
+trait.boxplot(trait = "CFU_per_plant_LOG10")
 ```
 
 ###Boxplots to be replaced by Boxplot function eventually...
