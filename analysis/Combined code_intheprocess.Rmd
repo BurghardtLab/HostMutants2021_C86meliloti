@@ -236,15 +236,16 @@ trait.boxplot(trait = "root_to_shoot_ratio")
 trait.boxplot(trait = "total_biomass_per_plant")
 trait.boxplot(trait = "cfu_per_nodule_LOG10")
 trait.boxplot(trait = "cfu_per_plant_LOG10")
-pdf(file = "../figures/nodule_number_per_plant.pdf",width = 6, height = 6)
-pdf(file = "../figures/total_nodule_area_per_plant.pdf",width = 6, height = 6)
-pdf(file = "../figures/average_area_per_nodule.pdf",width = 6, height = 6)
-pdf(file = "../figures/root_to_shoot_ratio.pdf",width = 6, height = 6)
-pdf(file = "../figures/total_biomass_per_plant.pdf",width = 6, height = 6)
-pdf(file = "../figures/cfu_per_nodule_LOG10.pdf",width = 6, height = 6)
-pdf(file = "../figures/cfu_per_plant_LOG10.pdf",width = 6, height = 6)
-
+pdf(file = "../figures/boxplots_allsymbiotictraits.pdf",width = 6, height = 6)
+trait.boxplot(trait = "nodule_number_per_plant")
+trait.boxplot(trait = "total_nodule_area_per_plant")
+trait.boxplot(trait = "average_area_per_nodule")
+trait.boxplot(trait = "root_to_shoot_ratio")
+trait.boxplot(trait = "total_biomass_per_plant")
+trait.boxplot(trait = "cfu_per_nodule_LOG10")
+trait.boxplot(trait = "cfu_per_plant_LOG10")
 dev.off()
+
 
 ```
 
