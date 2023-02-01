@@ -44,6 +44,7 @@ all.data<-subset (all.data, select=-c(X,batch,start,end,num_alive_apr15))
 all.data<-all.data%>% mutate(above_biomass_perplant=above_biomass_g/num_plants,below_biomass_perplant=below_biomass_g/num_plants,ratio=below_biomass_perplant/above_biomass_perplant,total_biomass=above_biomass_perplant+below_biomass_perplant)
 #adding nodules/plant
 all.data<-all.data%>% mutate(nodules_perplant=Count/num_plants_picked_nods)
+
 #adding cfu per plant - divide by 4ml (this is the amount added to nodules to homogenize) then divide by number of plants picked nodules from to get cfu/ml to cfu/plant;cfupernodule
 table(is.na(all.data$cfu_ml)) # 27 NA's (why are you counting the number of NAs in the cfu_ml col? )
 table(all.data$cfu_ml==0) # No Zeros. 
@@ -54,6 +55,8 @@ all.data[all.data$average_size==0,]$average_size<- NA
 all.data[all.data$Circularity==0,]$Circularity<- NA
 all.data[all.data$percent_area==0,]$percent_area<- NA
 all.data[all.data$Solidity==0,]$Solidity<- NA
+all.data[all.data$nodules_perplant==0,]$nodules_perplant<-NA
+
 
 all.data<-all.data%>% mutate(CFUperplant=cfu_ml/num_plants_picked_nods/4, CFUpernodule=CFUperplant/nodules_perplant)
 #converting CFUperplant and CFUpernodule to log(CFUperplant),log(CFUpernodule)
