@@ -1,6 +1,6 @@
 sample_id	genotype_id	rep	date_nod_picked		batch	start	end	Slice	Count	total_area	average_size	percent_area	Circularity	Solidity
-833A	833	A	5/10/21						NA	0	0	0	0	0
-833B	833	B	5/11/21	Y	6			833_B_0073_cropped.tif	221	269306	1218.579	2.389	0.774	0.939
+833A	833	A	5/10/21						NA	NA	NA	NA	NA	NA
+833B	833	B	5/11/21	Y	6			833_B_0073_cropped.tif	221	NA	NA	2.389	0.774	0.939
 833C	833	C	5/12/21	y	8	1		833_C_0098_cropped.tif	236	1.062	0.005	2.094	0.805	0.935
 833D	833	D	5/13/21	y	7	1		833_D_0124_cropped.tif	294	2.016	0.007	4.439	0.767	0.938
 833E	833	E	5/14/21	Y	11	1		833_E_0150_cropped.tif	259	1.738	0.007	5.491	0.778	0.933
@@ -11,12 +11,12 @@ sample_id	genotype_id	rep	date_nod_picked		batch	start	end	Slice	Count	total_are
 834E	834	E	5/14/21	Y	11			834_E_0152_cropped.tif	357	0.595	0.002	0.715	0.881	0.931
 836A	836	A	5/10/21	Y	5	1		836_A_0050_cropped.tif	281	1.037	0.004	1.811	0.837	0.95
 836B	836	B	5/11/21	Y	6	1		836_B_0083_cropped.tif	432	1.515	0.004	2.028	0.851	0.944
-836C	836	C	5/12/21	manual count					489	0	0	0	0	0
+836C	836	C	5/12/21	manual count					489	NA	NA	NA	NA	NA
 836D	836	D	5/13/21	Y	7			836_D_0123_cropped.tif	269	0.891	0.003	1.829	0.848	0.941
 836E	836	E	5/14/21	Y	11			836_E_0160_cropped.tif	466	1.286	0.003	1.545	0.781	0.919
 837A	837	A	5/10/21	Y	5			837_A_0048_cropped.tif	310	1.09	0.004	2.208	0.846	0.95
-837B	837	B	5/11/21	manual count					685	0	0	0	0	0
-837C	837	C	5/12/21						0	0	0	0	0	0
+837B	837	B	5/11/21	manual count					685	NA	NA	NA	NA	NA
+837C	837	C	5/12/21						NA	NA	NA	NA	NA	NA
 839A	839	A	5/10/21	Y	5			839_A_0054_cropped.tif	425	1.674	0.004	2.935	0.833	0.947
 839B	839	B	5/11/21	Y	6			839_B_0080_cropped.tif	630	2.475	0.004	3.435	0.845	0.947
 839C	839	C	5/12/21	y	8			839_C_0096_cropped.tif	504	1.62	0.003	2.881	0.784	0.931
@@ -36,10 +36,10 @@ sample_id	genotype_id	rep	date_nod_picked		batch	start	end	Slice	Count	total_are
 842B	842	B	5/11/21	Y	6			842_B_0066_cropped.tif	807	5.205	0.006	6.548	0.825	0.94
 842C	842	C	5/12/21	y	8			842_C_0091_cropped.tif	902	5.428	0.006	8.294	0.829	0.946
 842D	842	D	5/14/21	y	10			842_D_0142_cropped.tif	754	3.618	0.005	6.093	0.818	0.933
-842E	842	E	5/14/21	manual count					889	0	0	0	0	0
+842E	842	E	5/14/21	manual count					889	NA	NA	NA	NA	NA
 843A	843	A	5/10/21	Y	5			843_A_0053_cropped.tif	908	3.398	0.004	7.745	0.821	0.937
-843B	843	B	5/12/21	manual count					758	0	0	0	0	0
-843C	843	C	5/12/21	manual count					726	0	0	0	0	0
+843B	843	B	5/12/21	manual count					758	NA	NA	NA	NA	NA
+843C	843	C	5/12/21	manual count					726	NA	NA	NA	NA	NA
 844A	844	A	5/6/21						0	0	0	0	0	0
 844B	844	B	5/6/21	Y	1			844_B_0013_cropped.tif	19	0.044	0.002	0.22	0.77	0.922
 844C	844	C	5/7/21						0	0	0	0	0	0
@@ -80,7 +80,7 @@ sample_id	genotype_id	rep	date_nod_picked		batch	start	end	Slice	Count	total_are
 852B	852	B	5/7/21	y	2		3946	852_B_0018_cropped.tif	225	0.107	4.75E-04	0.143	0.924	0.917
 852C	852	C	5/8/21	y	3		1370	852_C_0026_cropped.tif	411	0.177	4.30E-04	0.236	0.914	0.912
 852D	852	D	5/14/21	Y	10			852_D_0143_cropped.tif	239	0.295	0.001	0.312	0.868	0.917
-852E	852	E	5/14/21						0	0	0	0	0	0
+852E	852	E	5/14/21						NA	NA	NA	NA	NA	NA
 854A	854	A	5/10/21	y	4			854_A_0036_cropped.tif	217	4.163	0.019	8.957	0.725	0.885
 854B	854	B	5/11/21	y	6			854_B_0071_cropped.tif	322	1.835	0.006	1.668	0.701	0.933
 854C	854	C	5/12/21	y	8			854_C_0107_cropped.tif	204	2.205	0.011	6.419	0.645	0.839
@@ -102,7 +102,7 @@ sample_id	genotype_id	rep	date_nod_picked		batch	start	end	Slice	Count	total_are
 857D	857	D	5/13/21	Y	7			857_D_0125_cropped.tif	190	4.931	0.026	8.705	0.702	0.924
 857E	857	E	5/14/21	Y	10			857_E_0146_cropped.tif	222	4.659	0.021	4.931	0.66	0.9
 858A	858	A	5/10/21	Y	5			858_A_0047_cropped.tif	247	4.409	0.018	7.286	0.698	0.914
-858B	858	B	5/11/21	n					0	0	0	0	0	0
+858B	858	B	5/11/21	n					NA	NA	NA	NA	NA	NA
 858C	858	C	5/12/21	Y	8			858_C_0094_cropped.tif	307	3.739	0.012	8.814	0.703	0.925
 858D	858	D	5/13/21	Y	7			858_D_0120_cropped.tif	566	4.377	0.008	9.122	0.621	0.832
 858E	858	E	5/14/21	Y	11			858_E_0163_cropped.tif	354	5.41	0.015	11.114	0.67	0.916

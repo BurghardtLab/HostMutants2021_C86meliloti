@@ -32,81 +32,60 @@ genotype_name<-subset(genotype_name,genotype_id!="838")
 genotype_name<-subset(genotype_name,genotype_id!="888")
 genotype_name<-subset(genotype_name,genotype_id!="889")
 genotype_name<-subset(genotype_name,genotype_id!="890")
-#import the text file with the CFU data
+
+#import the text file with the CFU and nodule count data
 data_nsfpgrp_hostmutants_C86meliloti <- read.table("../data/data_nsfpgrp_hostmutants_C86meliloti.txt",sep = "\t",header=TRUE)
-#merge  data_HostMutants2021_nod_counts.txt,data_nsfpgrp_hostmutants_C86meliloti.txt, by 'sample_id","genotype_id" and "rep"
+
+# Merge all three datasets sequentially
 all.data <-full_join (data_HostMutants2021_nod_counts,data_nsfpgrp_hostmutants_C86meliloti,by=c("sample_id","genotype_id","rep"))
-# merge the newly created table with the "genotype_name"
+
 all.data <-full_join (all.data,genotype_name,by = "genotype_id")
-#removing columns marked "batch","start","end","num_alive_apr15"
-all.data<-subset (all.data, select=-c(X,batch,start,end,num_alive_apr15))
-#adding above_biomass_g/plant,below_biomass_g/plant,ratio and total_biomass
-all.data<-all.data%>% mutate(above_biomass_perplant=above_biomass_g/num_plants,below_biomass_perplant=below_biomass_g/num_plants,ratio=below_biomass_perplant/above_biomass_perplant,total_biomass=above_biomass_perplant+below_biomass_perplant)
-#adding nodules/plant
-all.data<-all.data%>% mutate(nodules_perplant=Count/num_plants_picked_nods)
 
-#adding cfu per plant - divide by 4ml (this is the amount added to nodules to homogenize) then divide by number of plants picked nodules from to get cfu/ml to cfu/plant;cfupernodule
-table(is.na(all.data$cfu_ml)) # 27 NA's (why are you counting the number of NAs in the cfu_ml col? )
-table(all.data$cfu_ml==0) # No Zeros. 
-#There are two reasons it could be a zero either there were no nodules picked and thus no rhizobia or there was a problem with the estimation of cfu. In the first case the 0 is meaningful but from an analysis standpoint we probably still want to ommit them becuase the model won't behave well.
+###### Data set clean-up ######
+# Choose only columns to keep that are meaningful for our analysis
+all.data<-subset (all.data,select=c(sample_id,genotype_id,name,type,rep,background,date_biomass_harvested,num_plants,percent_herbivory,flowering,above_biomass_g,below_biomass_g,Count,num_plants_picked_nods,total_area,average_size,cfu_ml))
 
-#all.data[all.data$total_area==0,]$total_area<- NA
-#all.data[all.data$average_size==0,]$average_size<- NA
-#all.data[all.data$Circularity==0,]$Circularity<- NA
-#all.data[all.data$percent_area==0,]$percent_area<- NA
-#all.data[all.data$Solidity==0,]$Solidity<- NA
-all.data[is.na(all.data) | all.data == "0"] <- NA
+# Calculate additional measurements 
+# Simplified code by combining all of them here and subbed in your new names
+all.data<-all.data%>% mutate(
+  above_biomass_per_plant=above_biomass_g/num_plants,
+  below_biomass_per_plant=below_biomass_g/num_plants,
+  root_to_shoot_ratio=below_biomass_per_plant/above_biomass_per_plant,
+  total_biomass_per_plant=above_biomass_per_plant+below_biomass_per_plant,
+  nodule_number_per_plant=Count/num_plants_picked_nods,
+  cfu_per_plant_LOG10=log10(cfu_ml/num_plants_picked_nods),
+  cfu_per_nodule_LOG10=log10(cfu_ml/Count),
+  total_nodulated_area_per_plant=total_area/num_plants_picked_nods,
+  average_area_per_nodule=total_nodulated_area_per_plant/nodule_number_per_plant)
 
-
-all.data<-all.data%>% mutate(CFUperplant=cfu_ml/num_plants_picked_nods/4, CFUpernodule=CFUperplant/nodules_perplant)
-#converting CFUperplant and CFUpernodule to log(CFUperplant),log(CFUpernodule)
-all.data<-all.data%>% mutate(log_CFUperplant=log10(CFUperplant),log_CFUpernodule=log10(CFUpernodule))
-#adding total_nodulated area_perplant and Nodulesize_perplant
-all.data<-all.data%>% mutate(total_nodulated_area_perplant=total_area/num_plants_picked_nods,Nodulesizeperplant=total_nodulated_area_perplant/nodules_perplant)
-#adding weight pernodule and totalnodule weight per plant
-all.data<-all.data%>% mutate(Nodule_weight_perplant=nodule_weight_g/num_plants_picked_nods,Weight_pernodule=Nodule_weight_perplant/nodules_perplant)
-#replacing  'inf' with 'NA'(the sample 846A needs to be removed)
+#replacing  'NAN' and 'Inf' with 'NA'
 all.data[is.na(all.data) | all.data == "Inf"] <- NA
-#changing the col names
-oldnames = c("nodules_perplant","total_nodulated_area_perplant","Nodulesizeperplant","ratio","total_biomass","log_CFUpernodule","log_CFUperplant")
-newnames = c("nodule_number_per_plant","total_nodule_area_per_plant","average_area_per_nodule","root_to_shoot_ratio","total_biomass_per_plant","cfu_per_nodule_LOG10","cfu_per_plant_LOG10")
-for(i in 1:7) names(all.data)[names(all.data) == oldnames[i]] = newnames[i]
+all.data[is.na(all.data) | all.data == "NaN"] <- NA
+
 write.table (all.data,file="../data/Traits_MedicagoMutants.txt",sep = "\t",row.names = FALSE)
 ```
 
 ```{r Importing Data and polishing the table, echo=TRUE}
-# Importing the data
+# Import the data 
 Traits_MedicagoMutants<- read.table("../data/Traits_MedicagoMutants.txt",sep = "\t",header=TRUE)
+
 #convert the genotype_id into integer
 Traits_MedicagoMutants$genotype_id = as.integer(Traits_MedicagoMutants$genotype_id)
+
 #Select for only the A17 background
 all.data.A17 <- Traits_MedicagoMutants %>% filter(background=="A17")
-# Removing two genotypes that did not survive/form nodules.
-all.data.A17 <- all.data.A17 %>% filter(genotype_id!="853")
-all.data.A17 <- all.data.A17 %>% filter(genotype_id!="838")
-#remove 847F
-all.data.A17<-all.data.A17%>%filter(sample_id!= "847F")
-#remove 833A
-all.data.A17<-all.data.A17%>%filter(sample_id!= "833A")
-# Remove 833B
-all.data.A17<-all.data.A17%>%filter(sample_id!="833B")
 
-### REDUCE data set down to traits and columns of interest for this paper
 
 ### Make sure factors are in the right order for analysis
 #Turning all.data.A17$name  into a factor.
-all.data.A17$name<-factor(all.data.A17$name)
+  all.data.A17$name<-factor(all.data.A17$name)
 #Turning all.data.A17$Type into a factor.
-all.data.A17$type<-factor(all.data.A17$type, levels = c("WT","Early","Late","AON"))
+  all.data.A17$type<-factor(all.data.A17$type, levels = c("WT","Early","Late","AON"))
 #Changing the order of the genotypes
-all.data.A17$name<-factor(all.data.A17$name,levels=c("A17", "dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd", "nad1", "dnf1", "dnf2","dnf3", "dnf4","dnf6","dnf7", "dnf1/dnf2", "dnf5/dnf2", "rdn1", "sunn1","sunn4"))
+  all.data.A17$name<-factor(all.data.A17$name,levels=c("A17", "dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd", "nad1", "dnf1", "dnf2","dnf3", "dnf4","dnf6","dnf7", "dnf1/dnf2", "dnf5/dnf2", "rdn1", "sunn1","sunn4"))
 ```
 
 ```{r Write Function to extract Statistical summary on genotype coefficients, echo=FALSE}
-#for troubleshooting
-#trait= "nodules_perplant"
-#trait= "total_biomass"
-#trait= "average_size"
 
 extract.coefs<-function(trait, predictor="name", p.threshold=0.05) {
 
@@ -141,11 +120,11 @@ if(predictor=="type")  {
 return(my.coefs)
 } 
 
-Geno.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant"),extract.coefs("average_area_per_nodule"),extract.coefs("total_nodule_area_per_plant"),extract.coefs("total_biomass_per_plant"),extract.coefs("root_to_shoot_ratio"),extract.coefs("cfu_per_nodule_LOG10"),extract.coefs("cfu_per_plant_LOG10"))
+Geno.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant"),extract.coefs("average_area_per_nodule"),extract.coefs("total_nodulated_area_per_plant"),extract.coefs("total_biomass_per_plant"),extract.coefs("root_to_shoot_ratio"),extract.coefs("cfu_per_nodule_LOG10"),extract.coefs("cfu_per_plant_LOG10"))
 
 write.table (Geno.Coef.Summary,file="../tables/Geno.Coef.Summary.txt",sep = "\t",row.names = FALSE)
 
-Type.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant",predictor="type"),extract.coefs("average_area_per_nodule",predictor="type"),extract.coefs("total_nodule_area_per_plant",predictor="type"),extract.coefs("total_biomass_per_plant",predictor="type"),extract.coefs("root_to_shoot_ratio",predictor="type"),extract.coefs("cfu_per_nodule_LOG10",predictor="type"),extract.coefs("cfu_per_plant_LOG10",predictor="type"))
+Type.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant",predictor="type"),extract.coefs("average_area_per_nodule",predictor="type"),extract.coefs("total_nodulated_area_per_plant",predictor="type"),extract.coefs("total_biomass_per_plant",predictor="type"),extract.coefs("root_to_shoot_ratio",predictor="type"),extract.coefs("cfu_per_nodule_LOG10",predictor="type"),extract.coefs("cfu_per_plant_LOG10",predictor="type"))
 
 write.table (Type.Coef.Summary,file="../tables/Type.Coef.Summary.txt",sep = "\t",row.names = FALSE)
 
@@ -175,9 +154,7 @@ return(myresults)
 }
 
 #Compile Anovas results across Phenotypes
-
-
-ANOVA.Trait.Summary<-rbind(extract.anova("nodule_number_per_plant"),extract.anova("average_area_per_nodule"),extract.anova("total_nodule_area_per_plant"),extract.anova("total_biomass_per_plant"),extract.anova("root_to_shoot_ratio"),extract.anova("cfu_per_nodule_LOG10"),extract.anova("cfu_per_plant_LOG10"))
+ANOVA.Trait.Summary<-rbind(extract.anova("nodule_number_per_plant"),extract.anova("average_area_per_nodule"),extract.anova("total_nodulated_area_per_plant"),extract.anova("total_biomass_per_plant"),extract.anova("root_to_shoot_ratio"),extract.anova("cfu_per_nodule_LOG10"),extract.anova("cfu_per_plant_LOG10"))
 
 write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = "\t",row.names = FALSE)
 
@@ -190,7 +167,7 @@ write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = 
 
 Geno.Coef.Summary$Class<-factor(Geno.Coef.Summary$Class,levels=c("Up","None","Down"))
 
-Geno.Coef.Summary$Trait<-factor(Geno.Coef.Summary$Trait,levels=c("nodule_number_per_plant","average_area_per_nodule","total_nodule_area_per_plant","total_biomass_per_plant","root_to_shoot_ratio", "cfu_per_nodule_LOG10","cfu_per_plant_LOG10"))
+Geno.Coef.Summary$Trait<-factor(Geno.Coef.Summary$Trait,levels=c("nodule_number_per_plant","average_area_per_nodule","total_nodulated_area_per_plant","total_biomass_per_plant","root_to_shoot_ratio", "cfu_per_nodule_LOG10","cfu_per_plant_LOG10"))
 
 ### First pass graph
 Coef.Prop.Figure<-ggplot(data = Geno.Coef.Summary) + 
@@ -198,22 +175,17 @@ Coef.Prop.Figure<-ggplot(data = Geno.Coef.Summary) +
   theme_bw()+
   coord_flip()+
   scale_fill_manual(values=c("darkblue","darkgrey","darkred"))+xlab ("")+ylab("Proportion of Genotypes")
-Coef.Prop.Figure
 
 pdf(file = "../figures/Figure2_ProportionCoef.pdf",width = 6, height = 6)
 Coef.Prop.Figure
 dev.off()
 
 
-
-
-
-
 ```
 
 ```{r Boxplots, echo=TRUE}
 
-# There is no need to run these inside the function. You can just have a my pal argument  
+
 cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
 
 trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE) {
@@ -232,133 +204,16 @@ trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE) {
         theme(legend.position="top", text = element_text(size=18))
  
 }
-trait.boxplot(trait = "nodule_number_per_plant")
-trait.boxplot(trait = "total_nodule_area_per_plant")
-trait.boxplot(trait = "average_area_per_nodule")
-trait.boxplot(trait = "root_to_shoot_ratio")
-trait.boxplot(trait = "total_biomass_per_plant")
-trait.boxplot(trait = "cfu_per_nodule_LOG10")
-trait.boxplot(trait = "cfu_per_plant_LOG10")
+
 pdf(file = "../figures/boxplots_allsymbiotictraits.pdf",width = 6, height = 6)
 trait.boxplot(trait = "nodule_number_per_plant")
-trait.boxplot(trait = "total_nodule_area_per_plant")
+trait.boxplot(trait = "total_nodulated_area_per_plant")
 trait.boxplot(trait = "average_area_per_nodule")
 trait.boxplot(trait = "root_to_shoot_ratio")
 trait.boxplot(trait = "total_biomass_per_plant")
 trait.boxplot(trait = "cfu_per_nodule_LOG10")
 trait.boxplot(trait = "cfu_per_plant_LOG10")
 dev.off()
-
-
-```
-
-###Boxplots to be replaced by Boxplot function eventually...
-
-
-```{r Boxplots, echo=TRUE}
-### For emulating ggplot colors ###
-gg_color_hue <- function(n) {
-  hues = seq(15, 375, length = n + 1)
-  hcl(h = hues, l = 65, c = 100)[1:n]
-}
-mypal<-gg_color_hue(6)
-
-#color palette for standard plots - colorblind friendly
-cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
-
-
-l = length(seq(-7.9, 8, 0.1))
-pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(l)
-
-#Allows visualization of a color Palette
-#require(scales)
-#show_col(cbPalette)
-
-# Define a color and shape scheme for the whole manuscript
-#mycols<-data.frame(type=c("AON","Early","Late","WT"), cols=cbPalette)
-#mycols$type <- factor(mycols$type, ordered=TRUE)
-
-all.data.A17$name<-factor(all.data.A17$name,levels = rev(levels(all.data.A17$name)))     
-
-#Boxplot depicting nodulation per plant 
-nod_cnt <-ggplot(all.data.A17,aes(x=reorder(name,type), y=nodules_perplant,fill=type)) + 
-        geom_boxplot(outlier.shape=NA) +
-        geom_jitter() +
-        coord_flip() +
-        scale_color_manual(values=cbPalette)  +
-        labs(x="Plant Host",y="Nodules per plant") +
-        theme_classic() + theme(legend.position="top", text = element_text(size=18))
-nod_cnt 
-ggsave(plot = nod_cnt, width = 10, height = 10, dpi = 600, filename = "../figures/nod_cnt.png")
-```
-
-```{r}
-#Boxplot depicting average nodule size per plant
-nod_size<-ggplot(all.data.A17,aes(x=reorder(name,type), y=Nodulesizeperplant,fill=type)) + 
-        geom_boxplot(outlier.shape=NA) +
-        geom_jitter() +
-        coord_flip() +
-        scale_color_manual(values=cbPalette)  +
-        labs(x="Plant Host",y="Average NoduleSize per plant") +
-        theme_classic() + theme(legend.position="top", text = element_text(size=18))
-nod_size
-ggsave(plot = nod_size, width = 10, height = 10, dpi = 600, filename = "../figures/nod_size.png")
-#Boxplot depicting total nodulated area per plant
-tot_nod_area<-ggplot(all.data.A17,aes(x=reorder(name,type), y=total_nodulated_area_perplant,fill=type)) + 
-        geom_boxplot(outlier.shape=NA) +
-        geom_jitter() +
-        coord_flip() +
-        scale_color_manual(values=cbPalette)  +
-        labs(x="Plant Host",y="Total Nodulated Area per plant") +
-        theme_classic() + theme(legend.position="top", text = element_text(size=18))
-tot_nod_area
-ggsave(plot = tot_nod_area, width = 10, height = 10, dpi = 600, filename = "../figures/tot_nod_area.png")
-#Boxplot depicting CFU per plant
-cfu_per_plant<-ggplot(all.data.A17,aes(x=reorder(name,type), y=log_CFUperplant,fill=type)) + 
-        geom_boxplot(outlier.shape=NA) +
-        geom_jitter() +
-        coord_flip() +
-        scale_color_manual(values=cbPalette)  +
-        labs(x="Plant Host",y="log(CFU per plant)") +
-        theme_classic() + theme(legend.position="top", text = element_text(size=18))
-cfu_per_plant
-ggsave(plot = cfu_per_plant, width = 10, height = 10, dpi = 600, filename = "../figures/cfu_per_plant.png")
-#Boxplot depicting CFU per nodule
-cfu_per_nodule<-ggplot(all.data.A17,aes(x=reorder(name,type), y=log_CFUpernodule,fill=type)) + 
-        geom_boxplot(outlier.shape=NA) +
-        geom_jitter() +
-        coord_flip() +
-        scale_color_manual(values=cbPalette)  +
-        labs(x="Plant Host",y="log(CFU per nodule") +
-        theme_classic() + theme(legend.position="top", text = element_text(size=18))
-cfu_per_nodule
-ggsave(plot =cfu_per_nodule, width = 10, height = 10, dpi = 600, filename = "../figures/cfu_per_nodule.png")
-#Boxplot depicting total biomass
-total_biomass<-ggplot(all.data.A17,aes(x=reorder(name,type), y=total_biomass,fill=type)) + 
-        geom_boxplot(outlier.shape=NA) +
-        geom_jitter() +
-        coord_flip() +
-        scale_color_manual(values=cbPalette)  +
-        labs(x="Plant Host",y="Total Biomass(mg)") +
-        theme_classic() + theme(legend.position="top", text = element_text(size=18))
-total_biomass
-ggsave(plot =total_biomass, width = 10, height = 10, dpi = 600, filename = "../figures/total_biomass.png")
-
-#Boxplot depicting Nodule_weight_perplant
-Nodule_weight_perplant<-ggplot(all.data.A17,aes(x=reorder(name,type), y=Nodule_weight_perplant,fill=type)) + geom_boxplot(outlier.shape=NA)+geom_jitter()+coord_flip()+scale_color_manual(values=cbPalette)+labs(x="Plant Host",y="Nodule weight perplant")+theme_classic()+theme(legend.position="top",text = element_text(size=18))
-Nodule_weight_perplant
-ggsave(plot =Nodule_weight_perplant, width = 10, height = 10, dpi = 600, filename = "../figures/Nodule_weight_perplant.png")
-
-#Boxplot depicting ratio of above and below ground biomass
-biomass_ratio<-ggplot(all.data.A17,aes(x=reorder(name,type), y=ratio,fill=type)) + 
-        geom_boxplot(outlier.shape=NA) +
-        geom_jitter() +
-        coord_flip() +
-        scale_color_manual(values=cbPalette)  +
-        labs(x="Plant Host",y="Belowground:Aboveground") +
-        theme_classic() + theme(legend.position="top", text = element_text(size=18))
-biomass_ratio
-ggsave(plot =biomass_ratio, width = 10, height = 10, dpi = 600, filename = "../figures/biomass_ratio.png")
 
 
 ```
