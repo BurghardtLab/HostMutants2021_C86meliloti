@@ -50,12 +50,12 @@ table(is.na(all.data$cfu_ml)) # 27 NA's (why are you counting the number of NAs 
 table(all.data$cfu_ml==0) # No Zeros. 
 #There are two reasons it could be a zero either there were no nodules picked and thus no rhizobia or there was a problem with the estimation of cfu. In the first case the 0 is meaningful but from an analysis standpoint we probably still want to ommit them becuase the model won't behave well.
 
-all.data[all.data$total_area==0,]$total_area<- NA
-all.data[all.data$average_size==0,]$average_size<- NA
-all.data[all.data$Circularity==0,]$Circularity<- NA
-all.data[all.data$percent_area==0,]$percent_area<- NA
-all.data[all.data$Solidity==0,]$Solidity<- NA
-all.data[all.data$nodules_perplant==0,]$nodules_perplant<-NA
+#all.data[all.data$total_area==0,]$total_area<- NA
+#all.data[all.data$average_size==0,]$average_size<- NA
+#all.data[all.data$Circularity==0,]$Circularity<- NA
+#all.data[all.data$percent_area==0,]$percent_area<- NA
+#all.data[all.data$Solidity==0,]$Solidity<- NA
+all.data[is.na(all.data) | all.data == "0"] <- NA
 
 
 all.data<-all.data%>% mutate(CFUperplant=cfu_ml/num_plants_picked_nods/4, CFUpernodule=CFUperplant/nodules_perplant)
