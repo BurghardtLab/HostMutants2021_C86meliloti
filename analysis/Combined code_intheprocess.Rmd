@@ -179,8 +179,18 @@ Coef.Prop.Figure<-ggplot(data = Geno.Coef.Summary) +
 pdf(file = "../figures/Figure2_ProportionCoef.pdf",width = 6, height = 6)
 Coef.Prop.Figure
 dev.off()
+#Should this line be added to the code?
+p<-ggplot_build(Coef.Prop.Figure)
+pp
+```
 
-
+```{r Create heat map for the Genotype up and down heatmap, echo=TRUE}
+#first pass at the up and down heat map
+rnames<- c("nodule_number_per_plant","average_area_per_nodule","total_nodulated_area_per_plant","total_biomass_per_plant","root_to_shoot_ratio", "cfu_per_nodule_LOG10","cfu_per_plant_LOG10")
+cnames<-c("namehcl","nameipd3","namelatd","namenad1","namednf1","namednf2","namednf3","namednf4","namednf6","namednf7","namednf1/dnf2","namednf5/dnf2","namerdn1","namesunn1","namesunn4")
+matrix(data=Geno.Coef.Summary,byrow=TRUE,nrow=7,ncol=15,dimnames=list(rnames,cnames))
+m_heatmap<-heatmap(m,Colv = NA, Rowv = NA)
+m_heatmap
 ```
 
 ```{r Boxplots, echo=TRUE}
@@ -217,3 +227,5 @@ dev.off()
 
 
 ```
+
+
