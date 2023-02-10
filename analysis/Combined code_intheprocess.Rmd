@@ -48,6 +48,8 @@ fit_all<-as_tibble(cbind(freq_all[,c(1:7)],log2(mapply("/", freq_all[,c(-1:-7)],
 #The lowest fitness values is Mag27 = -7.1 to substitute all INF with -8
 fit_all<-fit_all %>% mutate_if(is.numeric, ~ifelse(abs(.) == Inf,-8,.))
 
+write.table (traits_all,file="../data/Strain Fitness_MedicagoMutants_A17.txt",sep = "\t",row.names = FALSE)
+
 # Create a data frame with fitness means for each geno                            
 fit_mean<-fit_all %>% group_by(geno,type) %>% summarise(across(starts_with("MAG"),mean))
 fit_median<-fit_all %>% group_by(geno,type) %>% summarise(across(starts_with("MAG"),median))
@@ -94,12 +96,12 @@ traits_all<-traits_all%>% mutate(
 traits_all[is.na(traits_all) | traits_all == "Inf"] <- NA
 traits_all[is.na(traits_all) | traits_all == "NaN"] <- NA
 
-write.table (traits_all,file="../data/Traits_MedicagoMutants.txt",sep = "\t",row.names = FALSE)
+write.table (traits_all,file="../data/Traits_MedicagoMutants_A17.txt",sep = "\t",row.names = FALSE)
 ```
 
 ```{r Importing Data and defining factor levels, echo=TRUE}
 # Import the data if starting here 
-#Traits_MedicagoMutants<- read.table("../data/Traits_MedicagoMutants.txt",sep = "\t",header=TRUE)
+#Traits_MedicagoMutants<- read.table("../data/Traits_MedicagoMutants_A17.txt",sep = "\t",header=TRUE)
 #convert the genotype_id into integer
 #Traits_MedicagoMutants$genotype_id = as.integer(Traits_MedicagoMutants$genotype_id)
 
