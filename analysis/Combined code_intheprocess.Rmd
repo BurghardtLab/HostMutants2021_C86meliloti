@@ -15,39 +15,71 @@ require(tidyverse)
 require(ggpubr)
 require(ggplot2)
 require(RColorBrewer)
+require(gplots)
+require(vegan)
 knitr::opts_chunk$set(message = FALSE)
 ```
 
-```{r merging all data sets, echo=TRUE}
+```{r Strain Frequency: Import Data, echo=TRUE}
+
+freq_all<-read.table("../data/freq.tsv", header=TRUE)
+genotype_name <- read.table("../data/genotype_name.txt",sep = "\t",header=TRUE)
+
+genotype_name<-as_tibble(genotype_name)%>% mutate(across(!order, as.factor))
+
+# Subset initial inculum repplications and calculate mean fitness across technical replicates
+freq_initial<- freq_all %>% filter(str_detect(sample_id, "M_C86_NL")) %>% select(!sample_id) %>% summarise_all(mean)
+
+# Graph the initial frequency histogram
+hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution")
+
+#Break apart sample_id string into genotype id and replicate and convert into facotrs
+freq_all<-freq_all %>% mutate(genotype_id = substr(sample_id, 3,5), rep = substr(sample_id, 6,6),.before = sample_id) %>% mutate(across(c(genotype_id,rep,sample_id), as.factor))
+                                                                                       #join the dataset of genotype names with the genotype ids
+freq_all <- inner_join(genotype_name,freq_all, by="genotype_id") %>% filter(background=="A17") %>% rename(geno=name)
+
+freq_all$type<-factor(freq_all$type, levels = c("WT","Early","Late","AON"))
+
+freq_all$geno<-factor(freq_all$geno,levels=c("A17", "dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd", "nad1", "dnf1", "dnf2","dnf3", "dnf4","dnf6","dnf7", "dnf1/dnf2", "dnf5/dnf2", "rdn1", "sunn1","sunn4"))
+
+#Transform raw frequency data to fitness data= log2(treatment_freq/initial_freq)
+fit_all<-as_tibble(cbind(freq_all[,c(1:7)],log2(mapply("/", freq_all[,c(-1:-7)], freq_initial))))
+
+#The lowest fitness values is Mag27 = -7.1 to substitute all INF with -8
+fit_all<-fit_all %>% mutate_if(is.numeric, ~ifelse(abs(.) == Inf,-8,.))
+
+# Create a data frame with fitness means for each geno                            
+fit_mean<-fit_all %>% group_by(geno,type) %>% summarise(across(starts_with("MAG"),mean))
+fit_median<-fit_all %>% group_by(geno,type) %>% summarise(across(starts_with("MAG"),median))
+
+# Calculate strain diversity and creat a new dataset
+div_all<-rowwise(freq_all) %>% transmute(geno=geno,type=type, rep=rep,sample_id=substr(sample_id, 3,6), nodule_isolate_diversity=diversity(c_across(starts_with("MAG"))))
+
+```
+
+
+```{r Merge all trait data sets, echo=TRUE}
 
 # Import the text file of nodule data
 data_HostMutants2021_nod_counts <- read.table("../data/data_HostMutants2021_nod_counts.txt",sep = "\t",header=TRUE)
-
-# Import the genotype information data
-genotype_name <- read.table("../data/genotype_name.txt",sep = "\t",header=TRUE)
-
-#removing rows marked "853","838","888","889","890"
-genotype_name<-subset(genotype_name,genotype_id!="853")
-genotype_name<-subset(genotype_name,genotype_id!="838")
-genotype_name<-subset(genotype_name,genotype_id!="888")
-genotype_name<-subset(genotype_name,genotype_id!="889")
-genotype_name<-subset(genotype_name,genotype_id!="890")
 
 #import the text file with the CFU and nodule count data
 data_nsfpgrp_hostmutants_C86meliloti <- read.table("../data/data_nsfpgrp_hostmutants_C86meliloti.txt",sep = "\t",header=TRUE)
 
 # Merge all three datasets sequentially
-all.data <-full_join (data_HostMutants2021_nod_counts,data_nsfpgrp_hostmutants_C86meliloti,by=c("sample_id","genotype_id","rep"))
+traits_all <-as_tibble(full_join (data_HostMutants2021_nod_counts,data_nsfpgrp_hostmutants_C86meliloti,by=c("sample_id","genotype_id","rep"))) %>% mutate(across(c(genotype_id,rep),as.factor))
 
-all.data <-full_join (all.data,genotype_name,by = "genotype_id")
+traits_all <-full_join (genotype_name,traits_all,by = "genotype_id") %>% filter(background=="A17")%>% rename(geno=name)
+
+traits_all <- full_join(traits_all,div_all,by=NULL)
 
 ###### Data set clean-up ######
 # Choose only columns to keep that are meaningful for our analysis
-all.data<-subset (all.data,select=c(sample_id,genotype_id,name,type,rep,background,date_biomass_harvested,num_plants,percent_herbivory,flowering,above_biomass_g,below_biomass_g,Count,num_plants_picked_nods,total_area,average_size,cfu_ml))
+traits_all<-subset (traits_all,select=c(sample_id,genotype_id,geno,type,rep,background,date_biomass_harvested,num_plants,percent_herbivory,flowering,above_biomass_g,below_biomass_g,Count,num_plants_picked_nods,total_area,average_size,cfu_ml,nodule_isolate_diversity))
 
 # Calculate additional measurements 
 # Simplified code by combining all of them here and subbed in your new names
-all.data<-all.data%>% mutate(
+traits_all<-traits_all%>% mutate(
   above_biomass_per_plant=above_biomass_g/num_plants,
   below_biomass_per_plant=below_biomass_g/num_plants,
   root_to_shoot_ratio=below_biomass_per_plant/above_biomass_per_plant,
@@ -59,43 +91,37 @@ all.data<-all.data%>% mutate(
   average_area_per_nodule=total_nodulated_area_per_plant/nodule_number_per_plant)
 
 #replacing  'NAN' and 'Inf' with 'NA'
-all.data[is.na(all.data) | all.data == "Inf"] <- NA
-all.data[is.na(all.data) | all.data == "NaN"] <- NA
+traits_all[is.na(traits_all) | traits_all == "Inf"] <- NA
+traits_all[is.na(traits_all) | traits_all == "NaN"] <- NA
 
-write.table (all.data,file="../data/Traits_MedicagoMutants.txt",sep = "\t",row.names = FALSE)
+write.table (traits_all,file="../data/Traits_MedicagoMutants.txt",sep = "\t",row.names = FALSE)
 ```
 
-```{r Importing Data and polishing the table, echo=TRUE}
-# Import the data 
-Traits_MedicagoMutants<- read.table("../data/Traits_MedicagoMutants.txt",sep = "\t",header=TRUE)
-
+```{r Importing Data and defining factor levels, echo=TRUE}
+# Import the data if starting here 
+#Traits_MedicagoMutants<- read.table("../data/Traits_MedicagoMutants.txt",sep = "\t",header=TRUE)
 #convert the genotype_id into integer
-Traits_MedicagoMutants$genotype_id = as.integer(Traits_MedicagoMutants$genotype_id)
-
-#Select for only the A17 background
-all.data.A17 <- Traits_MedicagoMutants %>% filter(background=="A17")
-
+#Traits_MedicagoMutants$genotype_id = as.integer(Traits_MedicagoMutants$genotype_id)
 
 ### Make sure factors are in the right order for analysis
-#Turning all.data.A17$name  into a factor.
-  all.data.A17$name<-factor(all.data.A17$name)
-#Turning all.data.A17$Type into a factor.
-  all.data.A17$type<-factor(all.data.A17$type, levels = c("WT","Early","Late","AON"))
+#Turning traits_all$type into a factor.
+  traits_all$type<-factor(traits_all$type, levels = c("WT","Early","Late","AON"))
 #Changing the order of the genotypes
-  all.data.A17$name<-factor(all.data.A17$name,levels=c("A17", "dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd", "nad1", "dnf1", "dnf2","dnf3", "dnf4","dnf6","dnf7", "dnf1/dnf2", "dnf5/dnf2", "rdn1", "sunn1","sunn4"))
+  traits_all$geno<-factor(traits_all$geno,levels=c("A17", "dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd", "nad1", "dnf1", "dnf2","dnf3", "dnf4","dnf6","dnf7", "dnf1/dnf2", "dnf5/dnf2", "rdn1", "sunn1","sunn4"))
+  
 ```
+###### Statistical Analysis: Coeffecients from ANOVA's and RDAs
+```{r Write Function to extract Statistical summary on geno coefficients, echo=FALSE}
 
-```{r Write Function to extract Statistical summary on genotype coefficients, echo=FALSE}
-
-extract.coefs<-function(trait, predictor="name", p.threshold=0.05) {
+extract.coefs<-function(trait, predictor="geno", p.threshold=0.05) {
 
 # Step1: Remove rows with NA for the focal trait
-  my.data<-all.data.A17[!is.na(all.data.A17[,trait]),] 
+  my.data<-as.data.frame(traits_all[!is.na(traits_all[,trait]),]) 
 
 # Step2: Run a lm model with genotypes and replicate as predictors
 
-if(predictor=="name")  {  
-    my.model <- lm(my.data[,trait] ~ name + rep, data = my.data)
+if(predictor=="geno")  {  
+    my.model <- lm(my.data[,trait] ~ geno + rep, data = my.data)
 }
   
 if(predictor=="type")  {
@@ -107,7 +133,7 @@ if(predictor=="type")  {
   my.coefs <- data.frame (Trait=paste(trait),Predictor=row.names(my.coefs), my.coefs) # add the row names as column
   colnames(my.coefs) <-c("Trait","Predictor","Coef", "St.error","t.value","P.value")# Create more meaningful column names
 
-# Step 4 Remove none genotype predictors
+# Step 4 Remove none geno predictors
   my.coefs <-my.coefs[!my.coefs$Predictor %in% c("(Intercept)","repB","repC","repD","repE","repF"),] 
 
 # Step 5: classify coeffecients
@@ -118,30 +144,67 @@ if(predictor=="type")  {
   try(my.coefs[(my.coefs$Coef < 0 & my.coefs$P.value< p.threshold),]$Class<-"Down") 
 
 return(my.coefs)
-} 
+}
 
-Geno.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant"),extract.coefs("average_area_per_nodule"),extract.coefs("total_nodulated_area_per_plant"),extract.coefs("total_biomass_per_plant"),extract.coefs("root_to_shoot_ratio"),extract.coefs("cfu_per_nodule_LOG10"),extract.coefs("cfu_per_plant_LOG10"))
+Geno.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant"),extract.coefs("average_area_per_nodule"),extract.coefs("total_nodulated_area_per_plant"),extract.coefs("total_biomass_per_plant"),extract.coefs("root_to_shoot_ratio"),extract.coefs("cfu_per_nodule_LOG10"),extract.coefs("cfu_per_plant_LOG10"),extract.coefs("nodule_isolate_diversity"))
 
 write.table (Geno.Coef.Summary,file="../tables/Geno.Coef.Summary.txt",sep = "\t",row.names = FALSE)
 
-Type.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant",predictor="type"),extract.coefs("average_area_per_nodule",predictor="type"),extract.coefs("total_nodulated_area_per_plant",predictor="type"),extract.coefs("total_biomass_per_plant",predictor="type"),extract.coefs("root_to_shoot_ratio",predictor="type"),extract.coefs("cfu_per_nodule_LOG10",predictor="type"),extract.coefs("cfu_per_plant_LOG10",predictor="type"))
+Type.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant",predictor="type"),extract.coefs("average_area_per_nodule",predictor="type"),extract.coefs("total_nodulated_area_per_plant",predictor="type"),extract.coefs("total_biomass_per_plant",predictor="type"),extract.coefs("root_to_shoot_ratio",predictor="type"),extract.coefs("cfu_per_nodule_LOG10",predictor="type"),extract.coefs("cfu_per_plant_LOG10",predictor="type"),extract.coefs("nodule_isolate_diversity",predictor="type"))
 
 write.table (Type.Coef.Summary,file="../tables/Type.Coef.Summary.txt",sep = "\t",row.names = FALSE)
+```
+
+```{r RDA Model results for Strain Isolote Fitness}
+
+extract.rda<-function(mygroup, predictor="geno", p.threshold=0.05) {
+
+#Step 1: Remove all genotypes but the focal genotype and WT  
+
+if(predictor=="geno")  {
+  fit_sub<-fit_all[fit_all$geno==mygroup|fit_all$geno=="A17",] 
+  rda_model<-rda(fit_sub[,c(8:93)]~geno,fit_sub, scale=TRUE)
+  rda_anova<-anova(rda_model, step=1000, perm.max=1000, by= "terms") 
+}  
+
+if(predictor=="type")  {
+  fit_sub<-fit_all[fit_all$type==mygroup|fit_all$type=="WT",] 
+  rda_model<-rda(fit_sub[,c(8:93)]~type,fit_sub, scale=TRUE)
+  rda_anova<-anova(rda_model, step=1000, perm.max=1000, by= "terms")  
+}  
+
+my.coefs <-data.frame(Trait="nodule_isolate_fitness",Predictor=paste(mygroup),R.adj=c(round(RsquareAdj(rda_model)$adj.r.squared,4)),Prop.Var=round(rda_anova[1,"Variance"]/sum(rda_anova$Variance),4), f.value=rda_anova[1,"F"],p.value=round(rda_anova [1,"Pr(>F)"],4),Class="None") 
+
+# Step 6 Modify catagorizations based on coef and pvalue. 
+  try(my.coefs[(my.coefs$p.value< p.threshold),]$Class<-"Change") 
+  
+return(my.coefs)
+
+}  
+# Compile results for Genotype RDA's
+Geno.Coef.RDA<-rbind(extract.rda("hcl"),extract.rda("ipd3"),extract.rda("latd"),extract.rda("nad1"),extract.rda("dnf1"),extract.rda("dnf2"),extract.rda("dnf3"),extract.rda("dnf4"),extract.rda("dnf6"),extract.rda("dnf7"),extract.rda("dnf1/dnf2"),extract.rda("dnf5/dnf2"),extract.rda("rdn1"),extract.rda("sunn1"),extract.rda("sunn4"))
+
+Type.Coef.RDA<-rbind(extract.rda("AON",predictor="type"),extract.rda("Early",predictor = "type"),extract.rda("Late",predictor = "type"))
+
+write.table (Geno.Coef.RDA,file="../tables/Geno.Coef.RDA.txt",sep = "\t",row.names = FALSE)
+write.table (Type.Coef.RDA,file="../tables/Type.Coef.RDA.txt",sep = "\t",row.names = FALSE)
+
 
 ```
 
+###ANOVA's comparing Geno and type predictors
 
 ```{r Write Function to run anova and summarize results each Phenotype, echo=TRUE}
 
 extract.anova<- function(trait) {
 #Dropping rows with NA
-#all.data.A17 <- all.data.A17 [complete.cases(all.data.A17), ] # This needs to be made specific to the trait! See below
-all.data.A17<-all.data.A17[!is.na(all.data.A17[,trait]),] 
 
-# Run a model with name and replicate as predictors
-NodNum.G <- lm(all.data.A17[,trait] ~ name + rep, data = all.data.A17)
+traits_all<-as.data.frame(traits_all[!is.na(traits_all[,trait]),]) 
+
+# Run a model with genotype and replicate as predictors
+NodNum.G <- lm(traits_all[,trait] ~ geno + rep, data = traits_all)
 # Run a model with type and replicate as predictors (why the ,?)
-NodNum.T<-lm(all.data.A17[,trait] ~ type + rep, data = all.data.A17)
+NodNum.T<-lm(traits_all[,trait] ~ type + rep, data = traits_all)
 #Examine the Analysis of Variance tables and save output
 a.G<-anova(NodNum.G)
 a.T<-anova(NodNum.T)
@@ -152,9 +215,20 @@ myresults<-data.frame(Response=c(paste(trait)),Predictor=c("Genotype","Replicate
 return(myresults)
 
 }
+```
 
-#Compile Anovas results across Phenotypes
-ANOVA.Trait.Summary<-rbind(extract.anova("nodule_number_per_plant"),extract.anova("average_area_per_nodule"),extract.anova("total_nodulated_area_per_plant"),extract.anova("total_biomass_per_plant"),extract.anova("root_to_shoot_ratio"),extract.anova("cfu_per_nodule_LOG10"),extract.anova("cfu_per_plant_LOG10"))
+```{r Perform analogous Permanova on strain fitness data}
+rda_geno<-rda(fit_all[,c(8:93)]~geno+rep,fit_all, scale=TRUE)
+rda.model.geno<-anova(rda_geno, step=1000, perm.max=1000, by= "terms")  
+
+rda_type<-rda(fit_all[,c(8:93)]~type+rep,fit_all, scale=TRUE)
+rda.model.type<-anova(rda_type, step=1000, perm.max=1000, by= "terms") 
+
+rda.strainfitness<-data.frame(Response=c("nodule_isolate_fitness"),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(rda.model.geno$Variance,rda.model.type$Variance),PctExp=c(rda.model.geno$Variance/sum(rda.model.geno$Variance)*100,rda.model.type$Variance/sum(rda.model.type$Variance)*100),Df=c(rda.model.geno$Df,rda.model.type$Df),Fval=c(rda.model.geno$F,rda.model.type$F), Pval=c(rda.model.geno$`Pr(>F)`,rda.model.type$`Pr(>F)`),R.adj=c(round(RsquareAdj(rda_geno)$adj.r.squared,4),"NA","NA",round(RsquareAdj(rda_type)$adj.r.squared,4),"NA","NA"))
+```
+
+```{r Compile Anova results across Traits}
+ANOVA.Trait.Summary<-rbind(extract.anova("nodule_number_per_plant"),extract.anova("average_area_per_nodule"),extract.anova("total_nodulated_area_per_plant"),extract.anova("total_biomass_per_plant"),extract.anova("root_to_shoot_ratio"),extract.anova("cfu_per_nodule_LOG10"),extract.anova("cfu_per_plant_LOG10"),extract.anova("nodule_isolate_diversity"),rda.strainfitness)
 
 write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = "\t",row.names = FALSE)
 
@@ -167,7 +241,7 @@ write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = 
 
 Geno.Coef.Summary$Class<-factor(Geno.Coef.Summary$Class,levels=c("Up","None","Down"))
 
-Geno.Coef.Summary$Trait<-factor(Geno.Coef.Summary$Trait,levels=c("nodule_number_per_plant","average_area_per_nodule","total_nodulated_area_per_plant","total_biomass_per_plant","root_to_shoot_ratio", "cfu_per_nodule_LOG10","cfu_per_plant_LOG10"))
+Geno.Coef.Summary$Trait<-factor(Geno.Coef.Summary$Trait,levels=c("nodule_number_per_plant","average_area_per_nodule","total_nodulated_area_per_plant","total_biomass_per_plant","root_to_shoot_ratio", "cfu_per_nodule_LOG10","cfu_per_plant_LOG10","nodule_isolate_diversity"))
 
 ### First pass graph
 Coef.Prop.Figure<-ggplot(data = Geno.Coef.Summary) + 
@@ -180,17 +254,33 @@ pdf(file = "../figures/Figure2_ProportionCoef.pdf",width = 6, height = 6)
 Coef.Prop.Figure
 dev.off()
 #Should this line be added to the code?
-p<-ggplot_build(Coef.Prop.Figure)
-pp
+#p<-ggplot_build(Coef.Prop.Figure)
+#pp
 ```
 
 ```{r Create heat map for the Genotype up and down heatmap, echo=TRUE}
-#first pass at the up and down heat map
-rnames<- c("nodule_number_per_plant","average_area_per_nodule","total_nodulated_area_per_plant","total_biomass_per_plant","root_to_shoot_ratio", "cfu_per_nodule_LOG10","cfu_per_plant_LOG10")
-cnames<-c("namehcl","nameipd3","namelatd","namenad1","namednf1","namednf2","namednf3","namednf4","namednf6","namednf7","namednf1/dnf2","namednf5/dnf2","namerdn1","namesunn1","namesunn4")
-matrix(data=Geno.Coef.Summary,byrow=TRUE,nrow=7,ncol=15,dimnames=list(rnames,cnames))
-m_heatmap<-heatmap(m,Colv = NA, Rowv = NA)
-m_heatmap
+#From Sohini first pass at the up and down heat map
+#rnames<- c("nodule_number_per_plant","average_area_per_nodule","total_nodulated_area_per_plant","total_biomass_per_plant","root_to_shoot_ratio", "cfu_per_nodule_LOG10","cfu_per_plant_LOG10")
+#cnames<-c("namehcl","nameipd3","namelatd","namenad1","namednf1","namednf2","namednf3","namednf4","namednf6","namednf7","namednf1/dnf2","namednf5/dnf2","namerdn1","namesunn1","namesunn4")
+#m<-matrix(data=as.numeric(Geno.Coef.Summary$Class),byrow=TRUE,nrow=7,ncol=15,dimnames=list(rnames,cnames))
+#m_heatmap<-heatmap(m,Colv = NA, Rowv = NA)
+#m_heatmap
+
+## Yes! You figured out the data structure that you needed, but there are drawbacks to creating a matrix like you are doing. Can you think of any? hint... check out the na's in my dataset. There are tons of tools to convert data from long to wide format like you were trying to do. (https://github.com/rstudio/cheatsheets/blob/main/tidyr.pdf and https://github.com/rstudio/cheatsheets/blob/main/data-transformation.pdf). 
+# Pivot your data using the pivot_wider function to a wide format on the Class variable
+Geno_matrix<-Geno.Coef.Summary %>% select(c(Trait,Predictor,Class)) %>% pivot_wider(names_from=c(Trait),values_from=c(Class)) %>% mutate(across(!Predictor,as.numeric)) %>% 
+mutate(Predictor=substr(Predictor,5,14)) %>% 
+column_to_rownames(var="Predictor")
+
+#Create you palette
+pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(3)
+
+# make your heatmap and write to pdf! Good you figured out that you needed a heatmap, but the original heatmap function is awful and no one uses it. Use heatmap.2!
+
+pdf(file = "../figures/Figure2_Heatmap.pdf",width = 10, height = 5)
+heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=TRUE, dendrogram = "col",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15))
+dev.off()
+
 ```
 
 ```{r Boxplots, echo=TRUE}
@@ -200,11 +290,11 @@ cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
 
 trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE) {
   
-  all.data.A17$name<-factor(all.data.A17$name,levels = rev(levels(all.data.A17$name))) # reorder factors
+  traits_all$geno<-factor(traits_all$geno,levels = rev(levels(traits_all$geno))) # reorder factors
+  traits_all<-as.data.frame(traits_all[!is.na(traits_all[,trait]),])
+  mydata<-data.frame(geno=traits_all$geno, type=traits_all$type, mytrait=traits_all[,trait]) # create sub dataframe with only focal trait to make plotting easier
   
-  mydata<-data.frame(name=all.data.A17$name, type=all.data.A17$type, mytrait=all.data.A17[,trait]) # create sub dataframe with only focal trait to make plotting easier
-  
-  ggplot(mydata,aes(x=name,y=mytrait,fill=type))+
+  ggplot(mydata,aes(x=geno,y=mytrait,fill=type))+
         geom_boxplot(outlier.shape=NA,na.rm = TRUE,coef=0) +
         geom_jitter() +
         coord_flip() +
@@ -223,9 +313,24 @@ trait.boxplot(trait = "root_to_shoot_ratio")
 trait.boxplot(trait = "total_biomass_per_plant")
 trait.boxplot(trait = "cfu_per_nodule_LOG10")
 trait.boxplot(trait = "cfu_per_plant_LOG10")
+trait.boxplot(trait = "nodule_isolate_diversity")
 dev.off()
 
 
 ```
 
+```{r Heatmap of Strain Fitness, echo=TRUE}
 
+pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(length(seq(-7.9, 8, 0.1)))
+
+fit_mean_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
+fit_median_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
+
+pdf(file = "../figures/Figure5_StrainFitnessHeatmap.pdf",width = 5, height = 10)
+heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = "both",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Mean Fitness", key.ylab =NA , tracecol="black",key.title = NA)
+
+heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = "both",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",key.title = NA)
+
+dev.off()
+
+```
