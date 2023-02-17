@@ -48,7 +48,7 @@ fit_all<-as_tibble(cbind(freq_all[,c(1:7)],log2(mapply("/", freq_all[,c(-1:-7)],
 #The lowest fitness values is Mag27 = -7.1 to substitute all INF with -8
 fit_all<-fit_all %>% mutate_if(is.numeric, ~ifelse(abs(.) == Inf,-8,.))
 
-write.table (traits_all,file="../data/Strain Fitness_MedicagoMutants_A17.txt",sep = "\t",row.names = FALSE)
+write.table (fit_all,file="../data/Strain Fitness_MedicagoMutants_A17.txt",sep = "\t",row.names = FALSE)
 
 # Create a data frame with fitness means for each geno                            
 fit_mean<-fit_all %>% group_by(geno,type) %>% summarise(across(starts_with("MAG"),mean))
@@ -335,4 +335,14 @@ heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = "bo
 
 dev.off()
 
+```
+
+``` {R Subset data for GWAS Analysis}
+
+x<- as_tibble(t(fit_mean_matrix)) 
+# Choices "latd","ipd3", "nad1","dnf2","dnf3","dnf6","dnf7","sunn4"
+
+GWAS_traits<-tibble(strains=row.names(t(fit_mean_matrix)),A17=x$A17,latd.change=x$latd-x$A17,ipd3.change=x$ipd3-x$A17,nad1change=x$nad1-x$A17,dnf2.change=x$dnf2-x$A17,dnf3.change=x$dnf3-x$A17,dnf6.change=x$dnf6-x$A17,dnf7.change=x$dnf7-x$A17,sunn4.change=x$sunn4-x$A17)
+
+write.table (GWAS_traits,file="../tables/TraitsforGWAS_mean.txt",sep = "\t",row.names = FALSE)
 ```
