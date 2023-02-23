@@ -293,8 +293,12 @@ cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
 trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE) {
   
   traits_all$geno<-factor(traits_all$geno,levels = rev(levels(traits_all$geno))) # reorder factors
+  
   traits_all<-as.data.frame(traits_all[!is.na(traits_all[,trait]),])
+  
   mydata<-data.frame(geno=traits_all$geno, type=traits_all$type, mytrait=traits_all[,trait]) # create sub dataframe with only focal trait to make plotting easier
+  model<-lm(mytrait~geno,data=traits_all)
+  p<-HSD.test(model,'geno', group=TRUE,console=TRUE)
   
   ggplot(mydata,aes(x=geno,y=mytrait,fill=type))+
         geom_boxplot(outlier.shape=NA,na.rm = TRUE,coef=0) +
@@ -303,10 +307,8 @@ trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE) {
         scale_color_manual(values=mypal)  +
         labs(x="Plant Host",y=c(paste(trait))) +
         theme_classic() + 
-        theme(legend.position="top", text = element_text(size=18))
- 
+        theme(legend.position="top", text = element_text(size=18))+annotate("text",label=c(paste(p$groups)
 }
-
 pdf(file = "../figures/boxplots_allsymbiotictraits.pdf",width = 6, height = 6)
 trait.boxplot(trait = "nodule_number_per_plant")
 trait.boxplot(trait = "total_nodulated_area_per_plant")
@@ -317,8 +319,7 @@ trait.boxplot(trait = "cfu_per_nodule_LOG10")
 trait.boxplot(trait = "cfu_per_plant_LOG10")
 trait.boxplot(trait = "nodule_isolate_diversity")
 dev.off()
-
-
+ 
 ```
 
 ```{r Heatmap of Strain Fitness, echo=TRUE}
