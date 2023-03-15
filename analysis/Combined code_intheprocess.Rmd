@@ -329,12 +329,11 @@ pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(length(seq(-7.9, 8, 0
 
 fit_mean_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
 fit_median_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
-Col<-traits_all$geno
 
 pdf(file = "../figures/Figure5_StrainFitnessHeatmap.pdf",width = 5, height = 10)
-heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=Col,dendrogram = "both", col=redblue(100), trace="none", scale="none",cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Mean Fitness", key.ylab =NA , tracecol="black",key.title = NA) #color key helps me understand the dynamics.
+heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=FALSE,dendrogram = "both", col=pal, trace="none", scale="none",cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Mean Fitness", key.ylab =NA , tracecol="black",key.title = NA) #color key helps me understand the dynamics.
 
-heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=Col<-traits_all$geno, dendrogram = "both",col=redblue(100), trace="none", scale="none", cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",key.title = NA)
+heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=Col<-traits_all$geno, dendrogram = "both",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",key.title = NA)
 
 dev.off()
 
