@@ -17,7 +17,6 @@ require(ggplot2)
 require(RColorBrewer)
 require(gplots)
 require(vegan)
-require(agricolae)
 knitr::opts_chunk$set(message = FALSE)
 ```
 
@@ -36,7 +35,8 @@ hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution")
 
 #Break apart sample_id string into genotype id and replicate and convert into facotrs
 freq_all<-freq_all %>% mutate(genotype_id = substr(sample_id, 3,5), rep = substr(sample_id, 6,6),.before = sample_id) %>% mutate(across(c(genotype_id,rep,sample_id), as.factor))
-                                                                                       #join the dataset of genotype names with the genotype ids
+                                                                                      
+ #join the dataset of genotype names with the genotype ids
 freq_all <- inner_join(genotype_name,freq_all, by="genotype_id") %>% filter(background=="A17") %>% rename(geno=name)
 
 freq_all$type<-factor(freq_all$type, levels = c("WT","Early","Late","AON"))
@@ -241,10 +241,7 @@ write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = 
 #Visualizing Results
 
 ```{r Create Coefficient Effect Summary Figure, echo=TRUE}
-
-
 Geno.Coef.Summary$Class<-factor(Geno.Coef.Summary$Class,levels=c("Up","None","Down"))
-
 Geno.Coef.Summary$Trait<-factor(Geno.Coef.Summary$Trait,levels=c("nodule_number_per_plant","average_area_per_nodule","total_nodulated_area_per_plant","total_biomass_per_plant","root_to_shoot_ratio", "cfu_per_nodule_LOG10","cfu_per_plant_LOG10","nodule_isolate_diversity"))
 
 ### First pass graph
@@ -263,12 +260,6 @@ dev.off()
 ```
 
 ```{r Create heat map for the Genotype up and down heatmap, echo=TRUE}
-#From Sohini first pass at the up and down heat map
-#rnames<- c("nodule_number_per_plant","average_area_per_nodule","total_nodulated_area_per_plant","total_biomass_per_plant","root_to_shoot_ratio", "cfu_per_nodule_LOG10","cfu_per_plant_LOG10")
-#cnames<-c("namehcl","nameipd3","namelatd","namenad1","namednf1","namednf2","namednf3","namednf4","namednf6","namednf7","namednf1/dnf2","namednf5/dnf2","namerdn1","namesunn1","namesunn4")
-#m<-matrix(data=as.numeric(Geno.Coef.Summary$Class),byrow=TRUE,nrow=7,ncol=15,dimnames=list(rnames,cnames))
-#m_heatmap<-heatmap(m,Colv = NA, Rowv = NA)
-#m_heatmap
 
 ## Yes! You figured out the data structure that you needed, but there are drawbacks to creating a matrix like you are doing. Can you think of any? hint... check out the na's in my dataset. There are tons of tools to convert data from long to wide format like you were trying to do. (https://github.com/rstudio/cheatsheets/blob/main/tidyr.pdf and https://github.com/rstudio/cheatsheets/blob/main/data-transformation.pdf). 
 # Pivot your data using the pivot_wider function to a wide format on the Class variable
@@ -279,16 +270,12 @@ column_to_rownames(var="Predictor")
 #Create you palette
 pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(3)
 
+
 # make your heatmap and write to pdf! Good you figured out that you needed a heatmap, but the original heatmap function is awful and no one uses it. Use heatmap.2!
 
 pdf(file = "../figures/Figure2_Heatmap.pdf",width = 10, height = 5)
-heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=TRUE, dendrogram = "col",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15))
+heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE, dendrogram = "none",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15))
 dev.off()
-
-```
-```{RDA plots, echo=TRUE}
-rdaplot<- ordiplot(rda_geno,choices = 1,type="text",display = "sites")
-rdaplot<-ordiplot(rda_type)
 
 ```
 
@@ -298,9 +285,11 @@ rdaplot<-ordiplot(rda_type)
 cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
 
 trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE) {
-traits_all$geno<-factor(traits_all$geno,levels = rev(levels(traits_all$geno))) # reorder factors
+  
+  traits_all$geno<-factor(traits_all$geno,levels = rev(levels(traits_all$geno))) # reorder factors
   traits_all<-as.data.frame(traits_all[!is.na(traits_all[,trait]),])
   mydata<-data.frame(geno=traits_all$geno, type=traits_all$type, mytrait=traits_all[,trait]) # create sub dataframe with only focal trait to make plotting easier
+  
   ggplot(mydata,aes(x=geno,y=mytrait,fill=type))+
         geom_boxplot(outlier.shape=NA,na.rm = TRUE,coef=0) +
         geom_jitter() +
@@ -308,7 +297,9 @@ traits_all$geno<-factor(traits_all$geno,levels = rev(levels(traits_all$geno))) #
         scale_color_manual(values=mypal)  +
         labs(x="Plant Host",y=c(paste(trait))) +
         theme_classic() + 
-        theme(legend.position="top", text = element_text(size=18))+annotate("text",label=c(paste(p$groups)
+        theme(legend.position="top", text = element_text(size=18))
+ 
+}
 
 pdf(file = "../figures/boxplots_allsymbiotictraits.pdf",width = 6, height = 6)
 trait.boxplot(trait = "nodule_number_per_plant")
@@ -320,6 +311,7 @@ trait.boxplot(trait = "cfu_per_nodule_LOG10")
 trait.boxplot(trait = "cfu_per_plant_LOG10")
 trait.boxplot(trait = "nodule_isolate_diversity")
 dev.off()
+
 
 ```
 
@@ -333,7 +325,7 @@ fit_median_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
 pdf(file = "../figures/Figure5_StrainFitnessHeatmap.pdf",width = 5, height = 10)
 heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=FALSE,dendrogram = "both", col=pal, trace="none", scale="none",cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Mean Fitness", key.ylab =NA , tracecol="black",key.title = NA) #color key helps me understand the dynamics.
 
-heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=Col<-traits_all$geno, dendrogram = "both",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",key.title = NA)
+heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=Col<-traits_all$geno, dendrogram = "both",col=palo, trace="none", scale="none", cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",key.title = NA)
 
 dev.off()
 
