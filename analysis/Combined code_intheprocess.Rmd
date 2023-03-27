@@ -283,9 +283,7 @@ dev.off()
 
 
 cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
-
 trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE) {
-  
   traits_all$geno<-factor(traits_all$geno,levels = rev(levels(traits_all$geno))) # reorder factors
   traits_all<-as.data.frame(traits_all[!is.na(traits_all[,trait]),])
   mydata<-data.frame(geno=traits_all$geno, type=traits_all$type, mytrait=traits_all[,trait]) # create sub dataframe with only focal trait to make plotting easier
@@ -294,7 +292,7 @@ trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE) {
         geom_boxplot(outlier.shape=NA,na.rm = TRUE,coef=0) +
         geom_jitter() +
         coord_flip() +
-        scale_color_manual(values=mypal)  +
+        scale_fill_manual(values=mypal)  +
         labs(x="Plant Host",y=c(paste(trait))) +
         theme_classic() + 
         theme(legend.position="top", text = element_text(size=18))
@@ -319,13 +317,17 @@ dev.off()
 
 pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(length(seq(-7.9, 8, 0.1)))
 
+
+col_letters = c("A17"="#E69F00","hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9", "nad1"="#009E73", "dnf1"="#009E73", "dnf2"="#009E73","dnf3"="#009E73", "dnf4"="#009E73","dnf6"="#009E73","dnf7"="#009E73", "dnf1/dnf2"="#009E73", "dnf5/dnf2"="#009E73", "rdn1"="#F0E442", "sunn1"="#F0E442","sunn4"="#F0E442")
+
+
 fit_mean_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
 fit_median_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
 
 pdf(file = "../figures/Figure5_StrainFitnessHeatmap.pdf",width = 5, height = 10)
-heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=TRUE,dendrogram = "both", col=pal, trace="none", scale="none",cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Mean Fitness", key.ylab =NA , tracecol="black",key.title = NA) #color key helps me understand the dynamics.
+heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=TRUE,dendrogram = "both", col=pal, trace="none", scale="none",cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Mean Fitness", key.ylab =NA , tracecol="black",key.title = NA,colCol = col_letters ) #color key helps me understand the dynamics.
 
-heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = "both",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",key.title = NA)
+heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = "both",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",key.title = NA,colCol = col_letters)
 
 dev.off()
 

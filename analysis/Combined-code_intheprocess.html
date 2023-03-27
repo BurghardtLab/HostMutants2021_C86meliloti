@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sohini Guha,Gina Bledsoe,Liana T. Burghardt" />
 
-<meta name="date" content="2023-03-23" />
+<meta name="date" content="2023-03-25" />
 
 <title>NSFPGRP_HostMutants_C86meliloti</title>
 
@@ -299,23 +299,17 @@ overflow-y: auto;
 border: 1px solid #ddd;
 border-radius: 4px;
 }
-.tabset-dropdown > .nav-tabs > li.active:before {
-content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+content: "\e259";
 font-family: 'Glyphicons Halflings';
 display: inline-block;
 padding: 10px;
 border-right: 1px solid #ddd;
 }
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-content: "";
-border: none;
-}
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-content: "";
+content: "\e258";
 font-family: 'Glyphicons Halflings';
-display: inline-block;
-padding: 10px;
-border-right: 1px solid #ddd;
+border: none;
 }
 .tabset-dropdown > .nav-tabs > li.active {
 display: block;
@@ -358,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">NSFPGRP_HostMutants_C86meliloti</h1>
 <h4 class="author">Sohini Guha,Gina Bledsoe,Liana T. Burghardt</h4>
-<h4 class="date">2023-03-23</h4>
+<h4 class="date">2023-03-25</h4>
 
 </div>
 
@@ -587,9 +581,7 @@ dev.off()</code></pre>
 <pre><code>## quartz_off_screen 
 ##                 2</code></pre>
 <pre class="r"><code>cbPalette &lt;- c(&quot;#E69F00&quot;, &quot;#56B4E9&quot;, &quot;#009E73&quot;, &quot;#F0E442&quot;)
-
 trait.boxplot&lt;-function(trait,mypal=cbPalette,log=FALSE) {
-  
   traits_all$geno&lt;-factor(traits_all$geno,levels = rev(levels(traits_all$geno))) # reorder factors
   traits_all&lt;-as.data.frame(traits_all[!is.na(traits_all[,trait]),])
   mydata&lt;-data.frame(geno=traits_all$geno, type=traits_all$type, mytrait=traits_all[,trait]) # create sub dataframe with only focal trait to make plotting easier
@@ -598,7 +590,7 @@ trait.boxplot&lt;-function(trait,mypal=cbPalette,log=FALSE) {
         geom_boxplot(outlier.shape=NA,na.rm = TRUE,coef=0) +
         geom_jitter() +
         coord_flip() +
-        scale_color_manual(values=mypal)  +
+        scale_fill_manual(values=mypal)  +
         labs(x=&quot;Plant Host&quot;,y=c(paste(trait))) +
         theme_classic() + 
         theme(legend.position=&quot;top&quot;, text = element_text(size=18))
@@ -619,13 +611,17 @@ dev.off()</code></pre>
 ##                 2</code></pre>
 <pre class="r"><code>pal = colorRampPalette(c(&#39;#2166AC&#39;, &#39;#F7F7F7&#39;, &#39;#B2182B&#39;))(length(seq(-7.9, 8, 0.1)))
 
+
+col_letters = c(&quot;A17&quot;=&quot;#E69F00&quot;,&quot;hcl&quot;=&quot;#56B4E9&quot;,&quot;ipd3&quot;=&quot;#56B4E9&quot;,&quot;latd&quot;=&quot;#56B4E9&quot;, &quot;nad1&quot;=&quot;#009E73&quot;, &quot;dnf1&quot;=&quot;#009E73&quot;, &quot;dnf2&quot;=&quot;#009E73&quot;,&quot;dnf3&quot;=&quot;#009E73&quot;, &quot;dnf4&quot;=&quot;#009E73&quot;,&quot;dnf6&quot;=&quot;#009E73&quot;,&quot;dnf7&quot;=&quot;#009E73&quot;, &quot;dnf1/dnf2&quot;=&quot;#009E73&quot;, &quot;dnf5/dnf2&quot;=&quot;#009E73&quot;, &quot;rdn1&quot;=&quot;#F0E442&quot;, &quot;sunn1&quot;=&quot;#F0E442&quot;,&quot;sunn4&quot;=&quot;#F0E442&quot;)
+
+
 fit_mean_matrix&lt;-fit_mean %&gt;% select(!type) %&gt;% column_to_rownames(var=&quot;geno&quot;)
 fit_median_matrix&lt;-fit_mean %&gt;% select(!type) %&gt;% column_to_rownames(var=&quot;geno&quot;)
 
 pdf(file = &quot;../figures/Figure5_StrainFitnessHeatmap.pdf&quot;,width = 5, height = 10)
-heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=TRUE,dendrogram = &quot;both&quot;, col=pal, trace=&quot;none&quot;, scale=&quot;none&quot;,cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = &quot;Mean Fitness&quot;, key.ylab =NA , tracecol=&quot;black&quot;,key.title = NA) #color key helps me understand the dynamics.
+heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=TRUE,dendrogram = &quot;both&quot;, col=pal, trace=&quot;none&quot;, scale=&quot;none&quot;,cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = &quot;Mean Fitness&quot;, key.ylab =NA , tracecol=&quot;black&quot;,key.title = NA,colCol = col_letters ) #color key helps me understand the dynamics.
 
-heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = &quot;both&quot;,col=pal, trace=&quot;none&quot;, scale=&quot;none&quot;, cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = &quot;Median Fitness&quot;, key.ylab =NA , tracecol=&quot;black&quot;,key.title = NA)
+heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = &quot;both&quot;,col=pal, trace=&quot;none&quot;, scale=&quot;none&quot;, cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = &quot;Median Fitness&quot;, key.ylab =NA , tracecol=&quot;black&quot;,key.title = NA,colCol = col_letters)
 
 dev.off()</code></pre>
 <pre><code>## quartz_off_screen 
