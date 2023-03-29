@@ -281,22 +281,24 @@ dev.off()
 Geno.Coef.RDA<-Geno.Coef.RDA %>% select(c(Trait,Predictor,Class))
 #Generating new rows
 Newrows<-data.frame(Trait=c("nodule_isolate_fitness","nodule_isolate_fitness","nodule_isolate_fitness"),
-+                     Predictor=c("dmi1-2","dmi2-3","dmi3-1"),
-+                     Class=c("None","None","None"))
+                    Predictor=c("dmi1-2","dmi2-3","dmi3-1"),
+                     Class=c("None","None","None"))
 #Combine
 Geno.Coef.RDA<-rbind(Geno.Coef.RDA,Newrows)%>%column_to_rownames(var="Predictor")
 # replace "None" values with 0,"Change" with "1"
 Geno.Coef.RDA[is.na(Geno.Coef.RDA)|Geno.Coef.RDA=="Change"]<- 1
 Geno.Coef.RDA[is.na(Geno.Coef.RDA)|Geno.Coef.RDA=="None"]<- 0
-#Convert the Class col to numeric
-Geno.Coef.RDA<-as.numeric(as.character(Geno.Coef.RDA))
 #Convert it to a matrix
-Geno.Coef.RDA.matrix<-as.matrix(Geno.Coef.RDA)
+mat <- as.matrix(Geno.Coef.RDA[, 2])
 #define a color pallette
 pal1 = colorRampPalette(c('#2166AC', '#B2182B'))(2)
-#Construct the heatmap
-heatmap.2(t(as.matrix(Geno.Coef.RDA.matrix)),Rowv=FALSE, Colv=FALSE, dendrogram = "none",trace="none",col=pal1, scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15))
-#getting an error:x' must have at least 2 rows and 2 columns
+#Construct the heatmap1
+q=Heatmap(t(as.matrix(Geno_matrix)))
+#Construct the heatmap2
+p=Heatmap((Geno.Coef.RDA))
+#combine the heatmaps
+p%v%q
+#getting an error:x' must have at least 2 rows and 2 columns/x must be a numeric blah blah
 ```
 
 ```{r Boxplots, echo=TRUE}
@@ -348,6 +350,11 @@ pdf(file = "../figures/Figure5_StrainFitnessHeatmap.pdf",width = 5, height = 10)
 heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=TRUE,dendrogram = "both", col=pal, trace="none", scale="none",cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Mean Fitness", key.ylab =NA , tracecol="black",key.title = NA,colCol = col_letters ) #color key helps me understand the dynamics.
 
 heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = "both",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",key.title = NA,colCol = col_letters)
+
+myorder<-order(fit_mean_matrix["A17",])
+heatmap.2(t(as.matrix(fit_mean_matrix[,myorder])),Rowv=FALSE, Colv=TRUE, dendrogram = "column",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",key.title = NA,colCol = col_letters)
+dev.off()
+
 
 dev.off()
 
