@@ -20,6 +20,15 @@ require(vegan)
 knitr::opts_chunk$set(message = FALSE)
 ```
 
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+#BiocManager::install("ComplexHeatmap")
+
+library(ComplexHeatmap)
+```
+
 ```{r Strain Frequency: Import Data, echo=TRUE}
 
 freq_all<-read.table("../data/freq.tsv", header=TRUE)
@@ -274,28 +283,28 @@ pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(3)
 pdf(file = "../figures/Figure2_Heatmap.pdf",width = 10, height = 5)
 heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE, dendrogram = "none",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15))
 dev.off()
+```
 
+```{r Create additional panel and combine with existing heatmap, echo=TRUE}
 
 #adding the panel for relative strain fitness
 #Selecting the data cols
-Geno.Coef.RDA<-Geno.Coef.RDA %>% select(c(Trait,Predictor,Class))
+Geno.Coef.RDA1<-Geno.Coef.RDA %>% select(c(Trait,Predictor,Class))
 #Generating new rows
 Newrows<-data.frame(Trait=c("nodule_isolate_fitness","nodule_isolate_fitness","nodule_isolate_fitness"),
                     Predictor=c("dmi1-2","dmi2-3","dmi3-1"),
                      Class=c("None","None","None"))
 #Combine
-Geno.Coef.RDA<-rbind(Geno.Coef.RDA,Newrows)%>%column_to_rownames(var="Predictor")
+Geno.Coef.RDA1<-rbind(Geno.Coef.RDA1,Newrows)%>%column_to_rownames(var="Predictor")
 # replace "None" values with 0,"Change" with "1"
-Geno.Coef.RDA[is.na(Geno.Coef.RDA)|Geno.Coef.RDA=="Change"]<- 1
-Geno.Coef.RDA[is.na(Geno.Coef.RDA)|Geno.Coef.RDA=="None"]<- 0
+Geno.Coef.RDA1[is.na(Geno.Coef.RDA1)|Geno.Coef.RDA1=="Change"]<- 1
+Geno.Coef.RDA1[is.na(Geno.Coef.RDA1)|Geno.Coef.RDA1=="None"]<- 0
 #Convert it to a matrix
-mat <- as.matrix(Geno.Coef.RDA[, 2])
-#define a color pallette
-pal1 = colorRampPalette(c('#2166AC', '#B2182B'))(2)
+mat <- as.matrix(t(Geno.Coef.RDA1[, 2]))
 #Construct the heatmap1
 q=Heatmap(t(as.matrix(Geno_matrix)))
 #Construct the heatmap2
-p=Heatmap((Geno.Coef.RDA))
+p=Heatmap((mat))
 #combine the heatmaps
 p%v%q
 #getting an error:x' must have at least 2 rows and 2 columns/x must be a numeric blah blah
@@ -352,11 +361,12 @@ heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=TRUE,dendrogram = "both"
 heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = "both",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",key.title = NA,colCol = col_letters)
 
 myorder<-order(fit_mean_matrix["A17",])
+
 heatmap.2(t(as.matrix(fit_mean_matrix[,myorder])),Rowv=FALSE, Colv=TRUE, dendrogram = "column",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",key.title = NA,colCol = col_letters)
 dev.off()
 
 
-dev.off()
+
 
 ```
 
