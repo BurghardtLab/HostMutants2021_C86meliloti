@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-Analysis file for NSF Host Mutant C86 Ensifer meliloti select and resequence project. 
+Analysis file for NSF Host Mutant C86 Sinorhizobium meliloti select and resequence project. 
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -55,7 +55,7 @@ write.table (fit_all,file="../data/Strain Fitness_MedicagoMutants_A17.txt",sep =
 fit_mean<-fit_all %>% group_by(geno,type) %>% summarise(across(starts_with("MAG"),mean))
 fit_median<-fit_all %>% group_by(geno,type) %>% summarise(across(starts_with("MAG"),median))
 
-# Calculate strain diversity and creat a new dataset
+# Calculate strain diversity and create a new dataset
 div_all<-rowwise(freq_all) %>% transmute(geno=geno,type=type, rep=rep,sample_id=substr(sample_id, 3,6), nodule_isolate_diversity=diversity(c_across(starts_with("MAG"))))
 
 ```
@@ -176,10 +176,10 @@ if(predictor=="type")  {
   rda_anova<-anova(rda_model, step=1000, perm.max=1000, by= "terms")  
 }  
 
-my.coefs <-data.frame(Trait="nodule_isolate_fitness",Predictor=paste(mygroup),R.adj=c(round(RsquareAdj(rda_model)$adj.r.squared,4)),Prop.Var=round(rda_anova[1,"Variance"]/sum(rda_anova$Variance),4), f.value=rda_anova[1,"F"],p.value=round(rda_anova [1,"Pr(>F)"],4),Class="None") 
+my.coefs <-data.frame(Trait="nodule_isolate_fitness",Predictor=paste(mygroup),R.adj=c(round(RsquareAdj(rda_model)$adj.r.squared,4)),Prop.Var=round(rda_anova[1,"Variance"]/sum(rda_anova$Variance),4), f.value=rda_anova[1,"F"],P.value=round(rda_anova [1,"Pr(>F)"],4),Class="None") 
 
 # Step 6 Modify catagorizations based on coef and pvalue. 
-  try(my.coefs[(my.coefs$p.value< p.threshold),]$Class<-"Change") 
+  try(my.coefs[(my.coefs$P.value< p.threshold),]$Class<-"Change") 
   
 return(my.coefs)
 
@@ -241,15 +241,17 @@ write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = 
 #Visualizing Results
 
 ```{r Create Coefficient Effect Summary Figure, echo=TRUE}
-Geno.Coef.Summary$Class<-factor(Geno.Coef.Summary$Class,levels=c("Up","None","Down"))
-Geno.Coef.Summary$Trait<-factor(Geno.Coef.Summary$Trait,levels=c("nodule_number_per_plant","average_area_per_nodule","total_nodulated_area_per_plant","total_biomass_per_plant","root_to_shoot_ratio", "cfu_per_nodule_LOG10","cfu_per_plant_LOG10","nodule_isolate_diversity"))
+Geno.Coef.Summary<-Geno.Coef.Summary %>% mutate(Predictor=substr(Predictor,5,14))
+Geno.Coef.Graphs<-rbind(Geno.Coef.Summary[,c(1,2,6,7)], Geno.Coef.RDA[,c(1,2,6,7)])
+Geno.Coef.Graphs$Class<-factor(Geno.Coef.Graphs$Class,levels=c("Up","None","Down","Change"))
+Geno.Coef.Graphs$Trait<-factor(Geno.Coef.Graphs$Trait,levels=c("nodule_number_per_plant","average_area_per_nodule","total_nodulated_area_per_plant","total_biomass_per_plant","root_to_shoot_ratio", "cfu_per_nodule_LOG10","cfu_per_plant_LOG10","nodule_isolate_diversity", "nodule_isolate_fitness"))
 
 ### First pass graph
-Coef.Prop.Figure<-ggplot(data = Geno.Coef.Summary) + 
+Coef.Prop.Figure<-ggplot(data = Geno.Coef.Graphs) + 
   geom_bar(mapping = aes(x = Trait, fill = Class), position = "fill")+ 
   theme_bw()+
   coord_flip()+
-  scale_fill_manual(values=c("darkblue","darkgrey","darkred"))+xlab ("")+ylab("Proportion of Genotypes")
+  scale_fill_manual(values=c("darkblue",'lightgrey',"darkred","darkgoldenrod"))+xlab ("")+ylab("Proportion of Genotypes")
 
 pdf(file = "../figures/Figure2_ProportionCoef.pdf",width = 6, height = 6)
 Coef.Prop.Figure
@@ -261,28 +263,21 @@ dev.off()
 
 ```{r Create heat map for the Genotype up and down heatmap, echo=TRUE}
 
-## Yes! You figured out the data structure that you needed, but there are drawbacks to creating a matrix like you are doing. Can you think of any? hint... check out the na's in my dataset. There are tons of tools to convert data from long to wide format like you were trying to do. (https://github.com/rstudio/cheatsheets/blob/main/tidyr.pdf and https://github.com/rstudio/cheatsheets/blob/main/data-transformation.pdf). 
-# Pivot your data using the pivot_wider function to a wide format on the Class variable
-Geno_matrix<-Geno.Coef.Summary %>% select(c(Trait,Predictor,Class)) %>% pivot_wider(names_from=c(Trait),values_from=c(Class)) %>% mutate(across(!Predictor,as.numeric)) %>% 
-mutate(Predictor=substr(Predictor,5,14)) %>% 
+Geno_matrix<-Geno.Coef.Graphs %>% select(c(Trait,Predictor,Class)) %>% pivot_wider(names_from=c(Trait),values_from=c(Class)) %>% mutate(across(!Predictor,as.numeric)) %>%
 column_to_rownames(var="Predictor")
 #Create you palette
-pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(3)
-
-# make your heatmap and write to pdf! Good you figured out that you needed a heatmap, but the original heatmap function is awful and no one uses it. Use heatmap.2!
+pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B','darkgoldenrod'))(4)
 
 pdf(file = "../figures/Figure2_Heatmap.pdf",width = 10, height = 5)
-heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE, dendrogram = "none",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15))
+heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE, dendrogram = "none",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15),na.color='lightgrey')
 dev.off()
 
-
+# colCol = col_letters
 #adding the panel for relative strain fitness
 #Selecting the data cols
-Geno.Coef.RDA<-Geno.Coef.RDA %>% select(c(Trait,Predictor,Class))
+#Geno.Coef.RDA<-Geno.Coef.RDA %>% select(c(Trait,Predictor,Class))
 #Generating new rows
-Newrows<-data.frame(Trait=c("nodule_isolate_fitness","nodule_isolate_fitness","nodule_isolate_fitness"),
-+                     Predictor=c("dmi1-2","dmi2-3","dmi3-1"),
-+                     Class=c("None","None","None"))
+Newrows<-data.frame(Trait=c("nodule_isolate_fitness","nodule_isolate_fitness","nodule_isolate_fitness"),Predictor=c("dmi1-2","dmi2-3","dmi3-1"),Class=c("None","None","None"))
 #Combine 
 Geno.Coef.RDA<-rbind(Geno.Coef.RDA,Newrows)%>%column_to_rownames(var="Predictor")
 # replace "None" values with 0,"Change" with "1"
@@ -335,7 +330,8 @@ dev.off()
 
 ```{r Heatmap of Strain Fitness, echo=TRUE}
 
-pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B'))(length(seq(-7.9, 8, 0.1)))
+pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))(length(seq(-7.9, 4, 0.1)))
+#pal = colorRampPalette(c('#2166AC','#F7F7F7', '#B2182B'))(length(seq(-7.9, 4, 0.1)))
 
 
 col_letters = c("A17"="#E69F00","hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9", "nad1"="#009E73", "dnf1"="#009E73", "dnf2"="#009E73","dnf3"="#009E73", "dnf4"="#009E73","dnf6"="#009E73","dnf7"="#009E73", "dnf1/dnf2"="#009E73", "dnf5/dnf2"="#009E73", "rdn1"="#F0E442", "sunn1"="#F0E442","sunn4"="#F0E442")
@@ -346,12 +342,12 @@ fit_mean_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
 fit_median_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
 
 pdf(file = "../figures/Figure5_StrainFitnessHeatmap.pdf",width = 5, height = 10)
-heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=TRUE,dendrogram = "both", col=pal, trace="none", scale="none",cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Mean Fitness", key.ylab =NA , tracecol="black",key.title = NA,colCol = col_letters ) #color key helps me understand the dynamics.
+heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=TRUE,dendrogram = "both", col=pal,trace="none", scale="none",cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Mean Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE,key.title = NA,colCol = col_letters) #color key helps me understand the dynamics.
 
-heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = "both",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",key.title = NA,colCol = col_letters)
+heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = "both",col=pal, trace="none", scale="none", cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE,key.title = NA,colCol = col_letters)
 
 myorder<-order(fit_mean_matrix["A17",])
-heatmap.2(t(as.matrix(fit_mean_matrix[,myorder])),Rowv=FALSE, Colv=TRUE, dendrogram = "column",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .5, key=TRUE, srtCol=45,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",key.title = NA,colCol = col_letters)
+heatmap.2(t(as.matrix(fit_mean_matrix[,myorder])),Rowv=FALSE, Colv=TRUE, dendrogram = "column",col=pal, trace="none", scale="none", cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE, key.title = NA,colCol = col_letters)
 dev.off()
 
 ```
