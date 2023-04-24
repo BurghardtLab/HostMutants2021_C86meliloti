@@ -51,6 +51,7 @@ fit_all<-fit_all %>% mutate_if(is.numeric, ~ifelse(abs(.) == Inf,-8,.))
 
 write.table (fit_all,file="../data/Strain Fitness_MedicagoMutants_A17.txt",sep = "\t",row.names = FALSE)
 
+fit_all$geno<-factor(fit_all$geno)
 # Create a data frame with fitness means for each geno                            
 fit_mean<-fit_all %>% group_by(geno,type) %>% summarise(across(starts_with("MAG"),mean))
 fit_median<-fit_all %>% group_by(geno,type) %>% summarise(across(starts_with("MAG"),median))
@@ -220,7 +221,7 @@ return(myresults)
 }
 ```
 
-```{r Perform analogous Permanova on strain fitness data}
+```{r Perform analogous RDA Permanova on strain fitness data}
 rda_geno<-rda(fit_all[,c(8:93)]~geno+rep,fit_all, scale=TRUE)
 rda.model.geno<-anova(rda_geno, step=1000, perm.max=1000, by= "terms")  
 
@@ -243,7 +244,7 @@ write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = 
 ```{r Create Coefficient Effect Summary Figure, echo=TRUE}
 Geno.Coef.Summary<-Geno.Coef.Summary %>% mutate(Predictor=substr(Predictor,5,14))
 Geno.Coef.Graphs<-rbind(Geno.Coef.Summary[,c(1,2,6,7)], Geno.Coef.RDA[,c(1,2,6,7)])
-Geno.Coef.Graphs$Class<-factor(Geno.Coef.Graphs$Class,levels=c("Up","None","Down","Change"))
+Geno.Coef.Graphs$Class<-factor(Geno.Coef.Graphs$Class,levels=c("None","Up","Down","Change"))
 Geno.Coef.Graphs$Trait<-factor(Geno.Coef.Graphs$Trait,levels=c("nodule_number_per_plant","average_area_per_nodule","total_nodulated_area_per_plant","total_biomass_per_plant","root_to_shoot_ratio", "cfu_per_nodule_LOG10","cfu_per_plant_LOG10","nodule_isolate_diversity", "nodule_isolate_fitness"))
 
 ### First pass graph
@@ -251,7 +252,7 @@ Coef.Prop.Figure<-ggplot(data = Geno.Coef.Graphs) +
   geom_bar(mapping = aes(x = Trait, fill = Class), position = "fill")+ 
   theme_bw()+
   coord_flip()+
-  scale_fill_manual(values=c("darkblue",'lightgrey',"darkred","darkgoldenrod"))+xlab ("")+ylab("Proportion of Genotypes")
+  scale_fill_manual(values=c('#F7F7F7','#2166AC', '#B2182B','darkgoldenrod'))+xlab ("")+ylab("Proportion of Genotypes")+theme_bw()
 
 pdf(file = "../figures/Figure2_ProportionCoef.pdf",width = 6, height = 6)
 Coef.Prop.Figure
@@ -268,36 +269,17 @@ column_to_rownames(var="Predictor")
 #Create you palette
 pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B','darkgoldenrod'))(4)
 
-pdf(file = "../figures/Figure2_Heatmap.pdf",width = 10, height = 5)
-heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE, dendrogram = "none",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15),na.color='lightgrey')
-dev.off()
+col_letters = c("hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9", "nad1"="#009E73", "dnf1"="#009E73", "dnf2"="#009E73","dnf3"="#009E73", "dnf4"="#009E73","dnf6"="#009E73","dnf7"="#009E73", "dnf1/dnf2"="#009E73", "dnf5/dnf2"="#009E73", "rdn1"="#E69F00", "sunn1"="#E69F00","sunn4"="#E69F00","dmm1-2"="#56B4E9","dmi2-3"="#56B4E9","dmi3-1"="#56B4E9")
 
-# colCol = col_letters
-#adding the panel for relative strain fitness
-#Selecting the data cols
-#Geno.Coef.RDA<-Geno.Coef.RDA %>% select(c(Trait,Predictor,Class))
-#Generating new rows
-Newrows<-data.frame(Trait=c("nodule_isolate_fitness","nodule_isolate_fitness","nodule_isolate_fitness"),Predictor=c("dmi1-2","dmi2-3","dmi3-1"),Class=c("None","None","None"))
-#Combine 
-Geno.Coef.RDA<-rbind(Geno.Coef.RDA,Newrows)%>%column_to_rownames(var="Predictor")
-# replace "None" values with 0,"Change" with "1"
-Geno.Coef.RDA[is.na(Geno.Coef.RDA)|Geno.Coef.RDA=="Change"]<- 1
-Geno.Coef.RDA[is.na(Geno.Coef.RDA)|Geno.Coef.RDA=="None"]<- 0
-#Convert the Class col to numeric
-Geno.Coef.RDA<-as.numeric(as.character(Geno.Coef.RDA))
-#Convert it to a matrix
-Geno.Coef.RDA.matrix<-as.matrix(Geno.Coef.RDA)
-#define a color pallette
-pal1 = colorRampPalette(c('#2166AC', '#B2182B'))(2)
-#Construct the heatmap
-heatmap.2(t(as.matrix(Geno.Coef.RDA.matrix)),Rowv=FALSE, Colv=FALSE, dendrogram = "none",trace="none",col=pal1, scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15))
-#getting an error:x' must have at least 2 rows and 2 columns
+pdf(file = "../figures/Figure2_Heatmap_SymbioticTraits.pdf",width = 10, height = 5)
+heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE, dendrogram = "none",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15),na.color='lightgrey',colCol = col_letters)
+dev.off()
 ```
 
 ```{r Boxplots, echo=TRUE}
 
+cbPalette <- c("#B23214","#56B4E9", "#009E73", "#E69F00")
 
-cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
 trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE) {
   traits_all$geno<-factor(traits_all$geno,levels = rev(levels(traits_all$geno))) # reorder factors
   traits_all<-as.data.frame(traits_all[!is.na(traits_all[,trait]),])
@@ -314,7 +296,7 @@ trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE) {
  
 }
 
-pdf(file = "../figures/boxplots_allsymbiotictraits.pdf",width = 6, height = 6)
+pdf(file = "../figures/Fig3+Sup_Boxplots_SymbioticTraits.pdf",width = 6, height = 6)
 trait.boxplot(trait = "nodule_number_per_plant")
 trait.boxplot(trait = "total_nodulated_area_per_plant")
 trait.boxplot(trait = "average_area_per_nodule")
@@ -334,9 +316,7 @@ pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))(length(seq(
 #pal = colorRampPalette(c('#2166AC','#F7F7F7', '#B2182B'))(length(seq(-7.9, 4, 0.1)))
 
 
-col_letters = c("A17"="#E69F00","hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9", "nad1"="#009E73", "dnf1"="#009E73", "dnf2"="#009E73","dnf3"="#009E73", "dnf4"="#009E73","dnf6"="#009E73","dnf7"="#009E73", "dnf1/dnf2"="#009E73", "dnf5/dnf2"="#009E73", "rdn1"="#F0E442", "sunn1"="#F0E442","sunn4"="#F0E442")
-
-
+col_letters = c("A17"="#B23214","hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9", "nad1"="#009E73", "dnf1"="#009E73", "dnf2"="#009E73","dnf3"="#009E73", "dnf4"="#009E73","dnf6"="#009E73","dnf7"="#009E73", "dnf1/dnf2"="#009E73", "dnf5/dnf2"="#009E73", "rdn1"="#E69F00", "sunn1"="#E69F00","sunn4"="#E69F00")
 
 fit_mean_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
 fit_median_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
@@ -360,4 +340,33 @@ x<- as_tibble(t(fit_mean_matrix))
 GWAS_traits<-tibble(strains=row.names(t(fit_mean_matrix)),A17=x$A17,latd.change=x$latd-x$A17,ipd3.change=x$ipd3-x$A17,nad1change=x$nad1-x$A17,dnf2.change=x$dnf2-x$A17,dnf3.change=x$dnf3-x$A17,dnf6.change=x$dnf6-x$A17,dnf7.change=x$dnf7-x$A17,sunn4.change=x$sunn4-x$A17)
 
 write.table (GWAS_traits,file="../tables/TraitsforGWAS_mean.txt",sep = "\t",row.names = FALSE)
+```
+
+```{RDA plots}
+
+df1  <- data.frame(geno=fit_all$geno,type=fit_all$type,summary(rda_geno)$site)    
+rda1_ev <-as.vector(eigenvals(rda_geno, model = c("constrained")))
+
+rdainfo<-data.frame(geno=levels(factor(fit_all$geno)),mycols=c("#B23214","#56B4E9","#56B4E9","#56B4E9","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#E69F00","#E69F00","#E69F00"), myshapes=c(19,19,18,17,19,18,17,1,2,3,4,5,6,19,18,17))
+
+pdf(file = "../figures/Figure4_RDA_A17Background.pdf",width = 5, height = 5)
+
+ggplot(df1, aes(x=RDA1,y=RDA2,color=type))+
+  scale_color_manual(values=cbPalette)+
+  geom_text(aes(label=geno),size=3) +
+  geom_hline(yintercept=0, linetype="dotted") +
+  geom_vline(xintercept=0, linetype="dotted") +
+  labs(x=paste("RDA 1 (",round(rda1_ev[1],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[2],2),"%)"), color="Type") +
+  theme_classic() + theme(legend.position="top", text = element_text(size=12))
+
+ggplot(df1, aes(x=RDA3,y=RDA4,color=type))+
+  scale_color_manual(values=cbPalette)+
+  geom_text(aes(label=geno),size=3) +
+  geom_hline(yintercept=0, linetype="dotted") +
+  geom_vline(xintercept=0, linetype="dotted") +
+  labs(x=paste("RDA 1 (",round(rda1_ev[3],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[4],2),"%)"), color="Type") +
+  theme_classic() + theme(legend.position="top", text = element_text(size=12)) 
+
+dev.off()
+
 ```
