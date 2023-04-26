@@ -342,7 +342,7 @@ GWAS_traits<-tibble(strains=row.names(t(fit_mean_matrix)),A17=x$A17,latd.change=
 write.table (GWAS_traits,file="../tables/TraitsforGWAS_mean.txt",sep = "\t",row.names = FALSE)
 ```
 
-```{RDA plots}
+```{r RDA plots}
 
 df1  <- data.frame(geno=fit_all$geno,type=fit_all$type,summary(rda_geno)$site)    
 rda1_ev <-as.vector(eigenvals(rda_geno, model = c("constrained")))
