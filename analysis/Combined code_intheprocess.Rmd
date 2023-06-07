@@ -264,10 +264,13 @@ dev.off()
 
 ```{r Create heat map for the Genotype up and down heatmap, echo=TRUE}
 
+Geno.Coef.Graphs$Class<-factor(Geno.Coef.Graphs$Class,levels=c("Down","None","Up","Change"))
 Geno_matrix<-Geno.Coef.Graphs %>% select(c(Trait,Predictor,Class)) %>% pivot_wider(names_from=c(Trait),values_from=c(Class)) %>% mutate(across(!Predictor,as.numeric)) %>%
 column_to_rownames(var="Predictor")
-#Create you palette
+#Create your palette
 pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B','darkgoldenrod'))(4)
+
+
 
 col_letters = c("hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9", "nad1"="#009E73", "dnf1"="#009E73", "dnf2"="#009E73","dnf3"="#009E73", "dnf4"="#009E73","dnf6"="#009E73","dnf7"="#009E73", "dnf1/dnf2"="#009E73", "dnf5/dnf2"="#009E73", "rdn1"="#E69F00", "sunn1"="#E69F00","sunn4"="#E69F00","dmm1-2"="#56B4E9","dmi2-3"="#56B4E9","dmi3-1"="#56B4E9")
 
