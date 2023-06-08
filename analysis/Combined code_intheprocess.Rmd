@@ -20,6 +20,9 @@ require(vegan)
 knitr::opts_chunk$set(message = FALSE)
 ```
 
+Add Descriptions...
+
+
 ```{r Strain Frequency: Import Data, echo=TRUE}
 
 freq_all<-read.table("../data/freq.tsv", header=TRUE)
@@ -325,12 +328,17 @@ fit_mean_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
 fit_median_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
 
 pdf(file = "../figures/Figure5_StrainFitnessHeatmap.pdf",width = 5, height = 10)
-heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=TRUE,dendrogram = "both", col=pal,trace="none", scale="none",cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Mean Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE,key.title = NA,colCol = col_letters) #color key helps me understand the dynamics.
+heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=TRUE,dendrogram = "both", col=pal,hclustfun = function(d) hclust(d,method="ward.D2"),trace="none", scale="none",cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Mean Fitness", key.ylab =NA, tracecol="black",symbreaks=FALSE,key.title = NA,colCol = col_letters) #color key helps me understand the dynamics.
 
-heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = "both",col=pal, trace="none", scale="none", cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE,key.title = NA,colCol = col_letters)
+heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = "both",col=pal,hclustfun = function(d) hclust(d,method="ward.D2"), trace="none", scale="none", cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE,key.title = NA,colCol = col_letters)
 
-myorder<-order(fit_mean_matrix["A17",])
-heatmap.2(t(as.matrix(fit_mean_matrix[,myorder])),Rowv=FALSE, Colv=TRUE, dendrogram = "column",col=pal, trace="none", scale="none", cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE, key.title = NA,colCol = col_letters)
+myorder<-order(rank(fit_mean_matrix["A17",]))
+heatmap.2(t(as.matrix(fit_mean_matrix[,myorder])),Rowv=FALSE, Colv=TRUE, dendrogram = "column", hclustfun = function(d) hclust(d,method="ward.D2"), col=pal, trace="none", scale="none", cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Mean Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE, key.title = NA,colCol = col_letters)
+
+myorder<-order(rank(fit_median_matrix["A17",]))
+heatmap.2(t(as.matrix(fit_median_matrix[,myorder])),Rowv=FALSE, Colv=TRUE, dendrogram = "column", hclustfun = function(d) hclust(d,method="ward.D2"),col=pal, trace="none", scale="none", cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE, key.title = NA,colCol = col_letters)
+
+
 dev.off()
 
 ```
