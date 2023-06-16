@@ -286,10 +286,10 @@ dev.off()
 
 cbPalette <- c("#B23214","#56B4E9", "#009E73", "#E69F00")
 
-trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE) {
-  traits_all$geno<-factor(traits_all$geno,levels = rev(levels(traits_all$geno))) # reorder factors
-  traits_all<-as.data.frame(traits_all[!is.na(traits_all[,trait]),])
-  mydata<-data.frame(geno=traits_all$geno, type=traits_all$type, mytrait=traits_all[,trait]) # create sub dataframe with only focal trait to make plotting easier
+trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE,trait_all=traits_all) {
+  trait_all$geno<-factor(trait_all$geno,levels = rev(levels(trait_all$geno))) # reorder factors
+  trait_all<-as.data.frame(trait_all[!is.na(trait_all[,trait]),])
+  mydata<-data.frame(geno=trait_all$geno, type=trait_all$type, mytrait=trait_all[,trait]) # create sub dataframe with only focal trait to make plotting easier
   
   ggplot(mydata,aes(x=geno,y=mytrait,fill=type))+
         geom_boxplot(outlier.shape=NA,na.rm = TRUE,coef=0) +
@@ -309,7 +309,7 @@ trait.boxplot(trait = "average_area_per_nodule")
 trait.boxplot(trait = "root_to_shoot_ratio")
 trait.boxplot(trait = "total_biomass_per_plant")
 trait.boxplot(trait = "cfu_per_nodule_LOG10")
-trait.boxplot(trait = "cfu_per_plant_LOG10")
+trait.boxplot(trait = "cfu_per_plant_LOG10",trait_all = traits_all[traits_all$geno!="latd",])
 trait.boxplot(trait = "nodule_isolate_diversity")
 dev.off()
 
