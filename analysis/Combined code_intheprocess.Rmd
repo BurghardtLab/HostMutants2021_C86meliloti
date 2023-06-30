@@ -21,7 +21,6 @@ knitr::opts_chunk$set(message = FALSE)
 ```
 ```{r setup, include=FALSE}
 # This file takes as input various files included in the Github repository including
-# Measurements of plant and nodule phenotypes of WT and NPD- NPDMutantPhenoytpes_community_DRYAD.txt
 # Strain frequency files - freq.tsv
 #Names of the Medicago genotypes in A17 background along with their genotype ids, disruption type and order-genotype_name.txt
 #Nodule numbers and individual nodule sizes for each sample-data_HostMutants2021_nod_counts.txt
@@ -169,7 +168,7 @@ Type.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant",predictor="type
 write.table (Type.Coef.Summary,file="../tables/Type.Coef.Summary.txt",sep = "\t",row.names = FALSE)
 ```
 
-```{r RDA Model results for Strain Isolote Fitness}
+```{r RDA Model results for Strain Isolate Fitness}
 
 extract.rda<-function(mygroup, predictor="geno", p.threshold=0.05) {
 
