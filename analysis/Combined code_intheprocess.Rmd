@@ -199,8 +199,8 @@ Geno.Coef.RDA<-rbind(extract.rda("hcl"),extract.rda("ipd3"),extract.rda("latd"),
 
 Type.Coef.RDA<-rbind(extract.rda("AON",predictor="type"),extract.rda("Early",predictor = "type"),extract.rda("Late",predictor = "type"))
 
-write.table (Geno.Coef.RDA,file="../tables/Geno.Coef.RDA.txt",sep = "\t",row.names = FALSE)
-write.table (Type.Coef.RDA,file="../tables/Type.Coef.RDA.txt",sep = "\t",row.names = FALSE)
+write.table (Geno.Coef.RDA,file="../tables/Supplemental Table S2.txt",sep = "\t",row.names = FALSE)
+write.table (Type.Coef.RDA,file="../tables/Supplemental Table S3.txt",sep = "\t",row.names = FALSE)
 
 
 ```
@@ -244,7 +244,7 @@ rda.strainfitness<-data.frame(Response=c("nodule_isolate_fitness"),Predictor=c("
 ```{r Compile Anova results across Traits}
 ANOVA.Trait.Summary<-rbind(extract.anova("nodule_number_per_plant"),extract.anova("average_area_per_nodule"),extract.anova("total_nodulated_area_per_plant"),extract.anova("total_biomass_per_plant"),extract.anova("root_to_shoot_ratio"),extract.anova("cfu_per_nodule_LOG10"),extract.anova("cfu_per_plant_LOG10"),extract.anova("nodule_isolate_diversity"),rda.strainfitness)
 
-write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = "\t",row.names = FALSE)
+write.table (ANOVA.Trait.Summary,file="../tables/Supplemental Table S4.txt",sep = "\t",row.names = FALSE)
 
 ```
 
@@ -263,7 +263,7 @@ Coef.Prop.Figure<-ggplot(data = Geno.Coef.Graphs) +
   coord_flip()+
   scale_fill_manual(values=c('#F7F7F7','#2166AC', '#B2182B','darkgoldenrod'))+xlab ("")+ylab("Proportion of Genotypes")+theme_bw()
 
-pdf(file = "../figures/Figure2_ProportionCoef.pdf",width = 6, height = 6)
+pdf(file = "../figures/Supplemental Figure1.pdf",width = 6, height = 6)
 Coef.Prop.Figure
 dev.off()
 #Should this line be added to the code?
@@ -288,7 +288,7 @@ heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE, dendrogram = "none",
 dev.off()
 ```
 
-```{r Boxplots, echo=TRUE}
+```{r code for creating Fig 3 and Fig 4, echo=TRUE}
 
 cbPalette <- c("#B23214","#56B4E9", "#009E73", "#E69F00")
 
@@ -322,7 +322,7 @@ dev.off()
 
 ```
 
-```{r Heatmap of Strain Fitness, echo=TRUE}
+```{r code for creating Fig 5, echo=TRUE}
 
 pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))(length(seq(-7.9, 4, 0.1)))
 #pal = colorRampPalette(c('#2166AC','#F7F7F7', '#B2182B'))(length(seq(-7.9, 4, 0.1)))
@@ -387,3 +387,16 @@ ggplot(df1, aes(x=RDA3,y=RDA4,color=type))+
 dev.off()
 
 ```
+
+```{r cor plots}
+# Correlation Plot
+# Prep data for plotting combine soil and host fitness values only and turn into wide format
+mean_fit<- rbind(meso_fit_med, inplanta_fit_med, longterm_FS)
+fit_wide<-mean_fit%>% pivot_wider(names_from = Trt, values_from = median)
+# Calculate fitness correlations using the rcorr fuction in the Hmisc package
+fit_wide<-fit_wide[, c(1, 13, 2, 12, 6, 7, 8, 9, 3, 5, 4, 10, 11 ) ]
+M <- rcorr(as.matrix(fit_wide[,-1])) # correlation matrix # pvalue matrix
+col1 = colorRampPalette(c("#AA1F2A", 'white', "#4696C5"))
+pdf(file = "../figures/Fig4_fitnesscor.pdf",useDingbats = FALSE, height=6, width=6)
+corrplot(M$r, method = "ellipse", type = "upper", diag = FALSE, order= "original", tl.col="black",addCoef.col = TRUE, col = col1(10), title = "Phenotypic Correlations", mar=c(0,0,2,0))
+dev.off()
