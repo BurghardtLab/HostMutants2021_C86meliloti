@@ -1,0 +1,4 @@
+Trait	Predictor	R.adj	Prop.Var	f.value	P.value	Class
+nodule_isolate_fitness	AON	0.0455	0.1137	1.667583697	0.024	Change
+nodule_isolate_fitness	Early	0.057	0.1356	1.72513575	0.043	Change
+nodule_isolate_fitness	Late	0.0358	0.0619	2.374812398	0.001	Change
