@@ -41,7 +41,7 @@ freq_initial<- freq_all %>% filter(str_detect(sample_id, "M_C86_NL")) %>% select
 # Graph the initial frequency histogram
 hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution")
 
-pdf(file = "../figures/Supplemental Figure1.pdf",width = 6, height = 6)
+pdf(file = "../figures/Supplemental Fig1.pdf",width = 6, height = 6)
 hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution")
 dev.off()
 
@@ -165,7 +165,7 @@ return(my.coefs)
 
 Geno.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant"),extract.coefs("average_area_per_nodule"),extract.coefs("total_nodulated_area_per_plant"),extract.coefs("total_biomass_per_plant"),extract.coefs("root_to_shoot_ratio"),extract.coefs("cfu_per_nodule_LOG10"),extract.coefs("cfu_per_plant_LOG10"),extract.coefs("nodule_isolate_diversity"))
 
-write.table (Geno.Coef.Summary,file="../tables/Supplemental Table S2.txt",sep = "\t",row.names = FALSE)
+write.table (Geno.Coef.Summary,file="../tables/Supplemental Table S5.txt",sep = "\t",row.names = FALSE)
 
 Type.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant",predictor="type"),extract.coefs("average_area_per_nodule",predictor="type"),extract.coefs("total_nodulated_area_per_plant",predictor="type"),extract.coefs("total_biomass_per_plant",predictor="type"),extract.coefs("root_to_shoot_ratio",predictor="type"),extract.coefs("cfu_per_nodule_LOG10",predictor="type"),extract.coefs("cfu_per_plant_LOG10",predictor="type"),extract.coefs("nodule_isolate_diversity",predictor="type"))
 
@@ -203,8 +203,8 @@ Geno.Coef.RDA<-rbind(extract.rda("hcl"),extract.rda("ipd3"),extract.rda("latd"),
 
 Type.Coef.RDA<-rbind(extract.rda("AON",predictor="type"),extract.rda("Early",predictor = "type"),extract.rda("Late",predictor = "type"))
 
-write.table (Geno.Coef.RDA,file="../tables/Geno.Coef.RDA.txt",sep = "\t",row.names = FALSE)
-write.table (Type.Coef.RDA,file="../tables/Type.Coef.RDA.txt",sep = "\t",row.names = FALSE)
+write.table (Geno.Coef.RDA,file="../tables/Supplemental Table S6.txt",sep = "\t",row.names = FALSE)
+write.table (Type.Coef.RDA,file="../tables/Supplemental Table S4.txt",sep = "\t",row.names = FALSE)
 
 
 ```
@@ -248,7 +248,7 @@ rda.strainfitness<-data.frame(Response=c("nodule_isolate_fitness"),Predictor=c("
 ```{r Compile Anova results across Traits}
 ANOVA.Trait.Summary<-rbind(extract.anova("nodule_number_per_plant"),extract.anova("average_area_per_nodule"),extract.anova("total_nodulated_area_per_plant"),extract.anova("total_biomass_per_plant"),extract.anova("root_to_shoot_ratio"),extract.anova("cfu_per_nodule_LOG10"),extract.anova("cfu_per_plant_LOG10"),extract.anova("nodule_isolate_diversity"),rda.strainfitness)
 
-write.table (ANOVA.Trait.Summary,file="../tables/Supplemental Table S4.txt",sep = "\t",row.names = FALSE)
+write.table (ANOVA.Trait.Summary,file="../tables/Supplemental Table S2.txt",sep = "\t",row.names = FALSE)
 
 ```
 
