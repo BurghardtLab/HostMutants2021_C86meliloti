@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-Analysis file for NSF Host Mutant C86 Sinorhizobium meliloti select and resequence project. 
+Analysis file for NSF Host Mutant C86 Sinorhizobium meliloti select and resequence project.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -19,22 +19,31 @@ require(gplots)
 require(vegan)
 knitr::opts_chunk$set(message = FALSE)
 ```
+```{r setup, include=FALSE}
+# This file takes as input various files included in the Github repository including
+# Strain frequency files - freq.tsv
+#Names of the Medicago genotypes in A17 background along with their genotype ids, disruption type and order-genotype_name.txt
+#Nodule numbers and individual nodule sizes for each sample-data_HostMutants2021_nod_counts.txt
+#Sample ids, replicates for each genotype,CFU per ml,aboveground biomass,belowground biomass for each sample-data_nsfpgrp_hostmutants_C86meliloti.txt
 
-Add Descriptions...
+```
 
-
-```{r Strain Frequency: Import Data, echo=TRUE}
+```{r Strain Frequency: Import Data/Code for Supplemental Figure 1, echo=TRUE}
 
 freq_all<-read.table("../data/freq.tsv", header=TRUE)
 genotype_name <- read.table("../data/genotype_name.txt",sep = "\t",header=TRUE)
 
 genotype_name<-as_tibble(genotype_name)%>% mutate(across(!order, as.factor))
 
-# Subset initial inculum repplications and calculate mean fitness across technical replicates
+# Subset initial inoculum replications and calculate mean fitness across technical replicates
 freq_initial<- freq_all %>% filter(str_detect(sample_id, "M_C86_NL")) %>% select(!sample_id) %>% summarise_all(mean)
 
 # Graph the initial frequency histogram
 hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution")
+
+pdf(file = "../figures/Supplemental Fig1.pdf",width = 6, height = 6)
+hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution")
+dev.off()
 
 #Break apart sample_id string into genotype id and replicate and convert into facotrs
 freq_all<-freq_all %>% mutate(genotype_id = substr(sample_id, 3,5), rep = substr(sample_id, 6,6),.before = sample_id) %>% mutate(across(c(genotype_id,rep,sample_id), as.factor))
@@ -63,7 +72,6 @@ fit_median<-fit_all %>% group_by(geno,type) %>% summarise(across(starts_with("MA
 div_all<-rowwise(freq_all) %>% transmute(geno=geno,type=type, rep=rep,sample_id=substr(sample_id, 3,6), nodule_isolate_diversity=diversity(c_across(starts_with("MAG"))))
 
 ```
-
 
 ```{r Merge all trait data sets, echo=TRUE}
 
@@ -117,7 +125,9 @@ write.table (traits_all,file="../data/Traits_MedicagoMutants_A17.txt",sep = "\t"
   traits_all$geno<-factor(traits_all$geno,levels=c("A17", "dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd", "nad1", "dnf1", "dnf2","dnf3", "dnf4","dnf6","dnf7", "dnf1/dnf2", "dnf5/dnf2", "rdn1", "sunn1","sunn4"))
   
 ```
+
 ###### Statistical Analysis: Coeffecients from ANOVA's and RDAs
+
 ```{r Write Function to extract Statistical summary on geno coefficients, echo=FALSE}
 
 extract.coefs<-function(trait, predictor="geno", p.threshold=0.05) {
@@ -155,14 +165,14 @@ return(my.coefs)
 
 Geno.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant"),extract.coefs("average_area_per_nodule"),extract.coefs("total_nodulated_area_per_plant"),extract.coefs("total_biomass_per_plant"),extract.coefs("root_to_shoot_ratio"),extract.coefs("cfu_per_nodule_LOG10"),extract.coefs("cfu_per_plant_LOG10"),extract.coefs("nodule_isolate_diversity"))
 
-write.table (Geno.Coef.Summary,file="../tables/Geno.Coef.Summary.txt",sep = "\t",row.names = FALSE)
+write.table (Geno.Coef.Summary,file="../tables/Supplemental Table S5.txt",sep = "\t",row.names = FALSE)
 
 Type.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant",predictor="type"),extract.coefs("average_area_per_nodule",predictor="type"),extract.coefs("total_nodulated_area_per_plant",predictor="type"),extract.coefs("total_biomass_per_plant",predictor="type"),extract.coefs("root_to_shoot_ratio",predictor="type"),extract.coefs("cfu_per_nodule_LOG10",predictor="type"),extract.coefs("cfu_per_plant_LOG10",predictor="type"),extract.coefs("nodule_isolate_diversity",predictor="type"))
 
-write.table (Type.Coef.Summary,file="../tables/Type.Coef.Summary.txt",sep = "\t",row.names = FALSE)
+write.table (Type.Coef.Summary,file="../tables/Supplemental Table S3.txt",sep = "\t",row.names = FALSE)
 ```
 
-```{r RDA Model results for Strain Isolote Fitness}
+```{r RDA Model results for Strain Isolate Fitness}
 
 extract.rda<-function(mygroup, predictor="geno", p.threshold=0.05) {
 
@@ -193,8 +203,8 @@ Geno.Coef.RDA<-rbind(extract.rda("hcl"),extract.rda("ipd3"),extract.rda("latd"),
 
 Type.Coef.RDA<-rbind(extract.rda("AON",predictor="type"),extract.rda("Early",predictor = "type"),extract.rda("Late",predictor = "type"))
 
-write.table (Geno.Coef.RDA,file="../tables/Geno.Coef.RDA.txt",sep = "\t",row.names = FALSE)
-write.table (Type.Coef.RDA,file="../tables/Type.Coef.RDA.txt",sep = "\t",row.names = FALSE)
+write.table (Geno.Coef.RDA,file="../tables/Supplemental Table S6.txt",sep = "\t",row.names = FALSE)
+write.table (Type.Coef.RDA,file="../tables/Supplemental Table S4.txt",sep = "\t",row.names = FALSE)
 
 
 ```
@@ -238,13 +248,13 @@ rda.strainfitness<-data.frame(Response=c("nodule_isolate_fitness"),Predictor=c("
 ```{r Compile Anova results across Traits}
 ANOVA.Trait.Summary<-rbind(extract.anova("nodule_number_per_plant"),extract.anova("average_area_per_nodule"),extract.anova("total_nodulated_area_per_plant"),extract.anova("total_biomass_per_plant"),extract.anova("root_to_shoot_ratio"),extract.anova("cfu_per_nodule_LOG10"),extract.anova("cfu_per_plant_LOG10"),extract.anova("nodule_isolate_diversity"),rda.strainfitness)
 
-write.table (ANOVA.Trait.Summary,file="../tables/ANOVA-Trait-Summary.txt",sep = "\t",row.names = FALSE)
+write.table (ANOVA.Trait.Summary,file="../tables/Supplemental Table S2.txt",sep = "\t",row.names = FALSE)
 
 ```
 
 #Visualizing Results
 
-```{r Create Coefficient Effect Summary Figure, echo=TRUE}
+```{r code for creating Supplemental Figure S2, echo=TRUE}
 Geno.Coef.Summary<-Geno.Coef.Summary %>% mutate(Predictor=substr(Predictor,5,14))
 Geno.Coef.Graphs<-rbind(Geno.Coef.Summary[,c(1,2,6,7)], Geno.Coef.RDA[,c(1,2,6,7)])
 Geno.Coef.Graphs$Class<-factor(Geno.Coef.Graphs$Class,levels=c("None","Up","Down","Change"))
@@ -257,15 +267,15 @@ Coef.Prop.Figure<-ggplot(data = Geno.Coef.Graphs) +
   coord_flip()+
   scale_fill_manual(values=c('#F7F7F7','#2166AC', '#B2182B','darkgoldenrod'))+xlab ("")+ylab("Proportion of Genotypes")+theme_bw()
 
-pdf(file = "../figures/Figure2_ProportionCoef.pdf",width = 6, height = 6)
+pdf(file = "../figures/Supplemental Figure2.pdf",width = 6, height = 6)
 Coef.Prop.Figure
 dev.off()
 #Should this line be added to the code?
-#p<-ggplot_build(Coef.Prop.Figure)
-#pp
+p<-ggplot_build(Coef.Prop.Figure)
+
 ```
 
-```{r Create heat map for the Genotype up and down heatmap, echo=TRUE}
+```{r code for creating Figure 2, echo=TRUE}
 
 Geno.Coef.Graphs$Class<-factor(Geno.Coef.Graphs$Class,levels=c("Down","None","Up","Change"))
 Geno_matrix<-Geno.Coef.Graphs %>% select(c(Trait,Predictor,Class)) %>% pivot_wider(names_from=c(Trait),values_from=c(Class)) %>% mutate(across(!Predictor,as.numeric)) %>%
@@ -277,12 +287,12 @@ pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B','darkgoldenrod'))(4)
 
 col_letters = c("hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9", "nad1"="#009E73", "dnf1"="#009E73", "dnf2"="#009E73","dnf3"="#009E73", "dnf4"="#009E73","dnf6"="#009E73","dnf7"="#009E73", "dnf1/dnf2"="#009E73", "dnf5/dnf2"="#009E73", "rdn1"="#E69F00", "sunn1"="#E69F00","sunn4"="#E69F00","dmm1-2"="#56B4E9","dmi2-3"="#56B4E9","dmi3-1"="#56B4E9")
 
-pdf(file = "../figures/Figure2_Heatmap_SymbioticTraits.pdf",width = 6, height = 3)
+pdf(file = "../figures/Figure2.pdf",width = 6, height = 3)
 heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE, dendrogram = "none",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15),na.color='lightgrey',colCol = col_letters)
 dev.off()
 ```
 
-```{r Boxplots, echo=TRUE}
+```{r code for creating Fig 3 and Fig 4, echo=TRUE}
 
 cbPalette <- c("#B23214","#56B4E9", "#009E73", "#E69F00")
 
@@ -316,7 +326,7 @@ dev.off()
 
 ```
 
-```{r Heatmap of Strain Fitness, echo=TRUE}
+```{r code for creating Figure 5, echo=TRUE}
 
 pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))(length(seq(-7.9, 4, 0.1)))
 #pal = colorRampPalette(c('#2166AC','#F7F7F7', '#B2182B'))(length(seq(-7.9, 4, 0.1)))
@@ -327,7 +337,7 @@ col_letters = c("A17"="#B23214","hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9
 fit_mean_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
 fit_median_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
 
-pdf(file = "../figures/Figure5_StrainFitnessHeatmap.pdf",width = 5, height = 10)
+pdf(file = "../figures/Figure 5.pdf",width = 5, height = 10)
 heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=TRUE,dendrogram = "both", col=pal,hclustfun = function(d) hclust(d,method="ward.D2"),trace="none", scale="none",cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Mean Fitness", key.ylab =NA, tracecol="black",symbreaks=FALSE,key.title = NA,colCol = col_letters) #color key helps me understand the dynamics.
 
 heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = "both",col=pal,hclustfun = function(d) hclust(d,method="ward.D2"), trace="none", scale="none", cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE,key.title = NA,colCol = col_letters)
@@ -343,7 +353,7 @@ dev.off()
 
 ```
 
-``` {R Subset data for GWAS Analysis}
+```{R Subset data for GWAS Analysis}
 
 x<- as_tibble(t(fit_mean_matrix)) 
 # Choices "latd","ipd3", "nad1","dnf2","dnf3","dnf6","dnf7","sunn4" 
@@ -360,7 +370,7 @@ rda1_ev <-as.vector(eigenvals(rda_geno, model = c("constrained")))
 
 rdainfo<-data.frame(geno=levels(factor(fit_all$geno)),mycols=c("#B23214","#56B4E9","#56B4E9","#56B4E9","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#E69F00","#E69F00","#E69F00"), myshapes=c(19,19,18,17,19,18,17,1,2,3,4,5,6,19,18,17))
 
-pdf(file = "../figures/Figure4_RDA_A17Background.pdf",width = 5, height = 5)
+pdf(file = "../figures/Supplemental Figure3.pdf",width = 5, height = 5)
 
 ggplot(df1, aes(x=RDA1,y=RDA2,color=type))+
   scale_color_manual(values=cbPalette)+
@@ -381,3 +391,16 @@ ggplot(df1, aes(x=RDA3,y=RDA4,color=type))+
 dev.off()
 
 ```
+
+```{r cor plots}
+# Correlation Plot
+# Prep data for plotting combine soil and host fitness values only and turn into wide format
+mean_fit<- rbind(meso_fit_med, inplanta_fit_med, longterm_FS)
+fit_wide<-mean_fit%>% pivot_wider(names_from = Trt, values_from = median)
+# Calculate fitness correlations using the rcorr fuction in the Hmisc package
+fit_wide<-fit_wide[, c(1, 13, 2, 12, 6, 7, 8, 9, 3, 5, 4, 10, 11 ) ]
+M <- rcorr(as.matrix(fit_wide[,-1])) # correlation matrix # pvalue matrix
+col1 = colorRampPalette(c("#AA1F2A", 'white', "#4696C5"))
+pdf(file = "../figures/Fig4_fitnesscor.pdf",useDingbats = FALSE, height=6, width=6)
+corrplot(M$r, method = "ellipse", type = "upper", diag = FALSE, order= "original", tl.col="black",addCoef.col = TRUE, col = col1(10), title = "Phenotypic Correlations", mar=c(0,0,2,0))
+dev.off()
