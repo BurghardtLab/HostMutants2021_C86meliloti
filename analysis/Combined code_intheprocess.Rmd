@@ -285,16 +285,23 @@ Geno.Coef.Graphs$Class<-factor(Geno.Coef.Graphs$Class,levels=c("Down","None","Up
 Geno_matrix<-Geno.Coef.Graphs %>% select(c(Trait,Predictor,Class)) %>% pivot_wider(names_from=c(Trait),values_from=c(Class)) %>% mutate(across(!Predictor,as.numeric)) %>%
 column_to_rownames(var="Predictor")
 #Create your palette
-pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B','darkgoldenrod','lightblue'))(5)
+pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B','darkgoldenrod','#ccd6db'))(5)
 
 
 
 col_letters = c("hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9", "nad1"="#009E73", "dnf1"="#009E73", "dnf2"="#009E73","dnf3"="#009E73", "dnf4"="#009E73","dnf6"="#009E73","dnf7"="#009E73", "dnf1/dnf2"="#009E73", "dnf5/dnf2"="#009E73", "rdn1"="#E69F00", "sunn1"="#E69F00","sunn4"="#E69F00","dmm1-2"="#56B4E9","dmi2-3"="#56B4E9","dmi3-1"="#56B4E9")
 
 pdf(file = "../figures/Figure2.pdf",width = 6, height = 3)
-heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE, dendrogram = "none",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15),na.color='lightgrey',colCol = col_letters)
+heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE,dendrogram = "none",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15),na.color='#eaeef0',colCol = col_letters)
+
 dev.off()
 ```
+#heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE, sepwidth=c(0.001,0.001),
+           #sepcolor="black",
+           #colsep=1:ncol(t(as.matrix(Geno_matrix))),
+           #rowsep=1:nrow(t(as.matrix(Geno_matrix))),dendrogram = "none",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15),na.color='lightgrey',colCol = col_letters)
+#dev.off()
+
 
 ```{r code for creating Fig 3 and Fig 4, echo=TRUE}
 
