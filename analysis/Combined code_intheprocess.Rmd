@@ -277,7 +277,10 @@ p<-ggplot_build(Coef.Prop.Figure)
 
 ```{r code for creating Figure 2, echo=TRUE}
 
-Geno.Coef.Graphs$Class[Geno.Coef.Graphs$Predictor=="latd"]<-"Limited power"
+#Geno.Coef.Graphs$Class<-as.character(Geno.Coef.Graphs$Class)
+Geno.Coef.Graphs$Class[Geno.Coef.Graphs$Predictor =="latd"]<-"Limited power"
+#Geno.Coef.Graphs$Class<-as.factor(Geno.Coef.Graphs)
+
 Geno.Coef.Graphs$Class<-factor(Geno.Coef.Graphs$Class,levels=c("Down","None","Up","Change","Limited power"))
 Geno_matrix<-Geno.Coef.Graphs %>% select(c(Trait,Predictor,Class)) %>% pivot_wider(names_from=c(Trait),values_from=c(Class)) %>% mutate(across(!Predictor,as.numeric)) %>%
 column_to_rownames(var="Predictor")
