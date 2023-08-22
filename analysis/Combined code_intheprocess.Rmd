@@ -369,7 +369,7 @@ dev.off()
 x<- as_tibble(t(fit_mean_matrix)) 
 # Choices "latd","ipd3", "nad1","dnf2","dnf3","dnf6","dnf7","sunn4" 
 
-GWAS_traits<-tibble(strains=row.names(t(fit_mean_matrix)),A17=x$A17,latd.change=x$latd-x$A17,ipd3.change=x$ipd3-x$A17,nad1change=x$nad1-x$A17,dnf2.change=x$dnf2-x$A17,dnf3.change=x$dnf3-x$A17,dnf6.change=x$dnf6-x$A17,dnf7.change=x$dnf7-x$A17,sunn4.change=x$sunn4-x$A17)
+GWAS_traits<-tibble(strains=row.names(t(fit_mean_matrix)),A17=x$A17,latd.change=x$latd-x$A17,ipd3.change=x$ipd3-x$A17,nad1change=x$nad1-x$A17,dnf2.change=x$dnf2-x$A17,dnf3.change=x$dnf3-x$A17,dnf6.change=x$dnf6-x$A17,dnf7.change=x$dnf7-x$A17,sunn4.change=x$sunn4-x$A17,sunn1.change=x$sunn1-x$A17,rdn1.change=x$rdn1-x$A17,hcl.change=x$hcl-x$A17,dnf1.change=x$dnf1-x$A17,dnf4.change=x$dnf4-x$A17,dnf5dnf2.change=x$`dnf5/dnf2`-x$A17,dnf1dnf2.change=x$`dnf1/dnf2`-x$A17)
 
 write.table (GWAS_traits,file="../tables/TraitsforGWAS_mean.txt",sep = "\t",row.names = FALSE)
 ```
