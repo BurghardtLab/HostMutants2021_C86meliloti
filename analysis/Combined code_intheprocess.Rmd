@@ -33,7 +33,7 @@ knitr::opts_chunk$set(message = FALSE)
 freq_all<-read.table("../data/freq.tsv", header=TRUE)
 genotype_name <- read.table("../data/genotype_name.txt",sep = "\t",header=TRUE)
 
-genotype_name<-as_tibble(genotype_name)%>% mutate(across(!order, as.factor))
+genotype_name<-as_tibble(genotype_name)%>% mutate(across(!order, as.factor)) %>% filter(genotype_id!="838")
 
 # Subset initial inoculum replications and calculate mean fitness across technical replicates
 freq_initial<- freq_all %>% filter(str_detect(sample_id, "M_C86_NL")) %>% select(!sample_id) %>% summarise_all(mean)
@@ -42,7 +42,7 @@ freq_initial<- freq_all %>% filter(str_detect(sample_id, "M_C86_NL")) %>% select
 hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution")
 
 pdf(file = "../figures/Supplemental Fig1.pdf",width = 6, height = 6)
-hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution")
+hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution", xlab="Isolate Frequency", ylab="Number of Isolates")
 dev.off()
 
 #Break apart sample_id string into genotype id and replicate and convert into facotrs
@@ -353,6 +353,64 @@ dev.off()
 
 ```
 
+```{r code for creating Figure S5-Phylogentic Heatmap, echo=TRUE}
+
+library(ape)
+## Read in the tree file created by Brendan
+tree = read.tree('../data/parsnp_2020-12-26/rooted_by_figtree_2020-12-26.nw')
+
+keep.tip(phy = tree,tip= tree$tip.label[!tree$tip.label %in% species$strain])
+tree<-keep.tip(phy = tree,tip= paste(fitness$strain))
+
+
+heatmap.phylo <- function(x, Rowp, Colp, ...) {
+  l = length(seq(-9,4.9,0.1))
+  pal = colorRampPalette(c('#2166ac','#92c5de', '#f7f7f7', '#b2182b'))(l)
+  row_order = Rowp$tip.label[Rowp$edge[Rowp$edge[, 2] <= Ntip(Rowp), 2]] 
+  col_order = Colp$tip.label[Colp$edge[Colp$edge[, 2] <= Ntip(Colp), 2]] 
+  x <- x[row_order, col_order]
+  xl <- c(0.5, ncol(x)+0.5)
+  yl <- c(0.5, nrow(x)+0.5)
+  layout(matrix(c(0,1,0, 2,3,4, 0,5,0), nrow=3, byrow=TRUE),
+         width=c(3.5,    4.5, 1),
+         height=c(0.2, 3, 0.18))
+  par(mar=rep(0,4))
+  plot(Colp, direction="downwards", show.tip.label=FALSE,
+       xaxs="i", x.lim=xl)
+  par(mar=rep(0,4))
+  plot(Rowp, direction="rightwards", show.tip.label=FALSE, 
+       yaxs="i", y.lim=yl)
+  lpp = .PlotPhyloEnv$last_plot.phylo 
+  segments(lpp$xx[1:Ntip(Rowp)], lpp$yy[1:Ntip(Rowp)], par('usr')[2],
+           lpp$yy[1:Ntip(Rowp)], lty=3, col='grey50')
+  par(mar=rep(0,4), xpd=TRUE)
+  image((1:ncol(x))-0.5, (1:nrow(x))-0.5, t(x), col=pal,
+        xaxs="i", yaxs="i", axes=FALSE, xlab="",ylab="",breaks=seq(-9,5,0.1))
+  par(mar=rep(0,4))
+  plot(NA, axes=FALSE, ylab="", xlab="", yaxs="i", xlim=c(0,2), ylim=yl)
+  text(rep(0,nrow(x)),1:nrow(x), row_order, pos=4, family='Helvetica',
+       cex=.5, xpd=NA)
+  par(mar=rep(0,4))
+  plot(NA, axes=FALSE, ylab="", xlab="", xaxs="i", ylim=c(0,2), xlim=xl)
+  text(1:ncol(x),rep(2,ncol(x)), col_order, srt=90, adj=c(1,.5), family='Helvetica',
+       cex=.5)
+}
+
+#### Double check this. might need slightly different structure ######
+m = structure(as.matrix(fitness[, -1:-2]),
+              dimnames=list(unlist(fitness[, 'strain']),
+                            unlist(names(fitness)[-1:-2])))
+
+col_dendro = as.dendrogram(hclust(dist(t(m))))
+
+pdf(file="../figures/Mutant_Phylo_Heatmap_mean.pdf",width = 14,height=8, useDingbats=FALSE)
+  heatmap.phylo(x = m, Rowp = tree, Colp = as.phylo(as.hclust(col_dendro)))
+dev.off()
+
+
+
+```
+
 ```{R Subset data for GWAS Analysis}
 
 x<- as_tibble(t(fit_mean_matrix)) 
@@ -363,7 +421,7 @@ GWAS_traits<-tibble(strains=row.names(t(fit_mean_matrix)),A17=x$A17,latd.change=
 write.table (GWAS_traits,file="../tables/TraitsforGWAS_mean.txt",sep = "\t",row.names = FALSE)
 ```
 
-```{r RDA plots}
+```{r RDA plots- Supplemental Figure S3}
 
 df1  <- data.frame(geno=fit_all$geno,type=fit_all$type,summary(rda_geno)$site)    
 rda1_ev <-as.vector(eigenvals(rda_geno, model = c("constrained")))
@@ -395,12 +453,16 @@ dev.off()
 ```{r cor plots}
 # Correlation Plot
 # Prep data for plotting combine soil and host fitness values only and turn into wide format
-mean_fit<- rbind(meso_fit_med, inplanta_fit_med, longterm_FS)
+mean_trait<- rbind(meso_fit_med, inplanta_fit_med, longterm_FS)
 fit_wide<-mean_fit%>% pivot_wider(names_from = Trt, values_from = median)
+
+traits_all%>% select(c(3,18:27)) %>%  group_by(geno) %>% summarise_if(is.numeric,mean,na.rm=TRUE)
 # Calculate fitness correlations using the rcorr fuction in the Hmisc package
 fit_wide<-fit_wide[, c(1, 13, 2, 12, 6, 7, 8, 9, 3, 5, 4, 10, 11 ) ]
-M <- rcorr(as.matrix(fit_wide[,-1])) # correlation matrix # pvalue matrix
+
+library(corrplot)
+M <- cor(fit_mean_matrix) # correlation matrix # pvalue matrix
 col1 = colorRampPalette(c("#AA1F2A", 'white', "#4696C5"))
-pdf(file = "../figures/Fig4_fitnesscor.pdf",useDingbats = FALSE, height=6, width=6)
-corrplot(M$r, method = "ellipse", type = "upper", diag = FALSE, order= "original", tl.col="black",addCoef.col = TRUE, col = col1(10), title = "Phenotypic Correlations", mar=c(0,0,2,0))
+pdf(file = "../figures/FigS1_fitnesscor.pdf",useDingbats = FALSE, height=6, width=6)
+corrplot(M, method = "ellipse", type = "upper", diag = FALSE, order= "original", tl.col="black",addCoef.col = TRUE, col = col1(10), title = "Phenotypic Correlations", mar=c(0,0,2,0))
 dev.off()
