@@ -265,7 +265,7 @@ Coef.Prop.Figure<-ggplot(data = Geno.Coef.Graphs) +
   geom_bar(mapping = aes(x = Trait, fill = Class), position = "fill")+ 
   theme_bw()+
   coord_flip()+
-  scale_fill_manual(values=c('#F7F7F7','#2166AC', '#B2182B','darkgoldenrod'))+xlab ("")+ylab("Proportion of Genotypes")+theme_bw()
+  scale_fill_manual(values=c('#F7F7F7','#B2182B', '#2166AC','darkgoldenrod'))+xlab ("")+ylab("Proportion of Genotypes")+theme_bw()
 
 pdf(file = "../figures/Supplemental Figure2.pdf",width = 6, height = 6)
 Coef.Prop.Figure
