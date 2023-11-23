@@ -1,0 +1,37 @@
+##
+## GEMMA Version    = 0.98.3 (2020-11-28)
+## Build profile    = 
+## GCC version      = 7.5.0
+## GSL Version      = 1.16
+## OpenBlas         = OpenBLAS 0.3.12  - OpenBLAS 0.3.23 DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=128
+##   arch           = SkylakeX
+##   threads        = 20
+##   parallel type  = threaded
+##
+## Command Line Input = gemma -bfile psyma_subset_LD_plink -p phenos_subset.fam -k ./output/psyma_subset_LD_ksmat.sXX.txt -maf 0.05 -miss 0.2 -lmm 4 -n 7 -o psyma_subset_LD_ulmm_trait_7 
+##
+## Date = Wed Sep  6 12:32:32 2023
+##
+## Summary Statistics:
+## number of total individuals = 86
+## number of analyzed individuals = 86
+## number of covariates = 1
+## number of phenotypes = 1
+## number of total SNPs/var = 9369
+## number of analyzed SNPs/var = 9369
+## REMLE log-likelihood in the null model = -76.0606
+## MLE log-likelihood in the null model = -71.9519
+## pve estimate in the null model = 0.924925
+## se(pve) in the null model = 0.0886668
+## vg estimate in the null model = 0.583283
+## ve estimate in the null model = 0.0473443
+## beta estimate in the null model =   0.0088334
+## se(beta) =   0.0234631
+##
+## Computation Time:
+## total computation time = 0.0318335 min 
+## computation time break down: 
+##      time on eigen-decomposition = 0.00010845 min 
+##      time on calculating UtX = 0.00333433 min 
+##      time on optimization = 0.0240514 min 
+##

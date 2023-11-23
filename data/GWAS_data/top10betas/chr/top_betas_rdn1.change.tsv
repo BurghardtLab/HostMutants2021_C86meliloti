@@ -1,0 +1,11 @@
+ldg	run	chr	beta	like
+freebayes-variant-USDA1106-chr-565635-A	rdn1.change	USDA1106-chr	1.234804	0.001
+freebayes-variant-USDA1106-chr-676832-T	rdn1.change	USDA1106-chr	1.234804	0.001
+freebayes-variant-USDA1106-chr-935868-C	rdn1.change	USDA1106-chr	1.234804	0.001
+freebayes-variant-USDA1106-chr-983013-T	rdn1.change	USDA1106-chr	1.234804	0.001
+freebayes-variant-USDA1106-chr-3271269-AG	rdn1.change	USDA1106-chr	1.106856	0.002
+freebayes-variant-USDA1106-chr-540198-A	rdn1.change	USDA1106-chr	-0.9691749	0.002
+freebayes-variant-USDA1106-chr-557674-T	rdn1.change	USDA1106-chr	1.028539	0.0
+freebayes-variant-USDA1106-chr-714323-T	rdn1.change	USDA1106-chr	1.028539	0.0
+freebayes-variant-USDA1106-chr-1658230-T	rdn1.change	USDA1106-chr	1.171413	0.004
+freebayes-variant-USDA1106-chr-276586-T	rdn1.change	USDA1106-chr	1.023231	0.0

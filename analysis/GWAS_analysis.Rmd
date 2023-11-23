@@ -1,0 +1,22 @@
+---
+title: "GWASD analyses for the NSFPGRP_HostMutants_C86meliloti dataset"
+author: "Sohini Guha"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#Load packages needed. Tidyverse include dplyer
+require(tidyverse)
+require(ggpubr)
+require(ggplot2)
+require(qqman)
+knitr::opts_chunk$set(message = FALSE)
+```
+
+```{r setup,Import the data include=FALSE}
+
+```

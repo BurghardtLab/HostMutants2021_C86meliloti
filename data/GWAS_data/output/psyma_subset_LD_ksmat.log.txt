@@ -1,0 +1,27 @@
+##
+## GEMMA Version    = 0.98.3 (2020-11-28)
+## Build profile    = 
+## GCC version      = 7.5.0
+## GSL Version      = 1.16
+## OpenBlas         = OpenBLAS 0.3.12  - OpenBLAS 0.3.23 DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=128
+##   arch           = SkylakeX
+##   threads        = 20
+##   parallel type  = threaded
+##
+## Command Line Input = gemma -bfile psyma_subset_LD_plink -p phenos_subset.fam -gk 2 -maf 0.05 -miss 0.2 -o psyma_subset_LD_ksmat 
+##
+## Date = Wed Sep  6 12:32:05 2023
+##
+## Summary Statistics:
+## number of total individuals = 86
+## number of analyzed individuals = 86
+## number of covariates = 1
+## number of phenotypes = 1
+## number of total SNPs/var = 9369
+## number of analyzed SNPs/var = 9369
+##
+## Computation Time:
+## total computation time = 0.0211143 min 
+## computation time break down: 
+##      time on calculating relatedness matrix = 0.0163895 min 
+##
