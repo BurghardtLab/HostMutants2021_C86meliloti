@@ -13,10 +13,206 @@ knitr::opts_chunk$set(echo = TRUE)
 require(tidyverse)
 require(ggpubr)
 require(ggplot2)
-require(qqman)
+require(RColorBrewer)
+require(gplots)
+require(vegan)
 knitr::opts_chunk$set(message = FALSE)
+
+
+
 ```
 
 ```{r setup,Import the data include=FALSE}
+#Importing the psymA files
 
+merged_psyma_ipd3.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_ipd3.change.tsv", header=TRUE)
+merged_psyma_latd.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_latd.change.tsv",header=TRUE)
+merged_psyma_hcl.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_hcl.change.tsv",header=TRUE)
+merged_psyma_dnf1.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf1.change.tsv",header=TRUE)
+merged_psyma_dnf2.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf2.change.tsv",header=TRUE)
+merged_psyma_dnf3.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf3.change.tsv",header=TRUE)
+merged_psyma_dnf4.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf4.change.tsv",header=TRUE)
+merged_psyma_dnf6.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf6.change.tsv",header=TRUE)
+merged_psyma_dnf7.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf7.change.tsv",header=TRUE)
+merged_psyma_dnf1dnf2.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv",header=TRUE)
+merged_psyma_dnf5dnf2.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv",header=TRUE)
+merged_psyma_nad1.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_nad1change.tsv",header=TRUE)
+merged_psyma_rdn1.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_rdn1.change.tsv",header=TRUE)
+merged_psyma_sunn1.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn1.change.tsv",header=TRUE)
+merged_psyma_sunn4.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn4.change.tsv",header=TRUE)
+merged_psyma_A17<-read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_A17.tsv",header=TRUE)
+
+#Importing the psymB files
+merged_psymb_ipd3.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_ipd3.change.tsv",header=TRUE)
+merged_psymb_latd.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_latd.change.tsv",header=TRUE)
+merged_psymb_hcl.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_hcl.change.tsv",header=TRUE)
+merged_psymb_dnf1.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1.change.tsv",header=TRUE)
+merged_psymb_dnf2.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf2.change.tsv",header=TRUE)
+merged_psymb_dnf3.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf3.change.tsv",header=TRUE)
+merged_psymb_dnf4.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf4.change.tsv",header=TRUE)
+merged_psymb_dnf6.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf6.change.tsv",header=TRUE)
+merged_psymb_dnf7.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf7.change.tsv",header=TRUE)
+merged_psymb_dnf1dnf2.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1dnf2.change.tsv",header=TRUE)
+merged_psymb_dnf5dnf2.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf5dnf2.change.tsv",header=TRUE)
+merged_psymb_nad1.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_nad1change.tsv",header=TRUE)
+merged_psymb_rdn1.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_rdn1.change.tsv",header=TRUE)
+merged_psymb_sunn1.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn1.change.tsv",header=TRUE)
+merged_psymb_sunn4.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn4.change.tsv",header=TRUE)
+merged_psymb_A17<-read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_A17.tsv",header=TRUE)
+
+#Importing the chromosome files
+merged_chr_ipd3.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_ipd3.change.tsv",header=TRUE)
+merged_chr_latd.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_latd.change.tsv",header=TRUE)
+merged_chr_hcl.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_hcl.change.tsv",header=TRUE)
+merged_chr_dnf1.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1.change.tsv",header=TRUE)
+merged_chr_dnf2.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf2.change.tsv",header=TRUE)
+merged_chr_dnf3.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf3.change.tsv",header=TRUE)
+merged_chr_dnf4.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf4.change.tsv",header=TRUE)
+merged_chr_dnf6.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf6.change.tsv",header=TRUE)
+merged_chr_dnf7.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf7.change.tsv",header=TRUE)
+merged_chr_dnf1dnf2.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1dnf2.change.tsv",header=TRUE)
+merged_chr_dnf5dnf2.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf5dnf2.change.tsv",header=TRUE)
+merged_chr_nad1.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_nad1change.tsv",header=TRUE)
+merged_chr_rdn1.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_rdn1.change.tsv",header=TRUE)
+merged_chr_sunn1.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn1.change.tsv",header=TRUE)
+merged_chr_sunn4.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn4.change.tsv",header=TRUE)
+merged_chr_A17<-read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_A17.tsv",header=TRUE)
+```
+
+```{r setup,Import the beta include=FALSE}
+#importing the beta significances
+#chr
+top_betas_sunn4_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_sunn4.change.tsv",header=TRUE)
+top_betas_sunn1_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_sunn1.change.tsv",header=TRUE)
+top_betas_rdn1_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_rdn1.change.tsv",header=TRUE)
+top_betas_dnf5dnf2_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf5dnf2.change.tsv",header=TRUE)
+top_betas_dnf1dnf2_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf1dnf2.change.tsv",header=TRUE)
+top_betas_dnf7_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf7.change.tsv",header=TRUE)
+top_betas_dnf6_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf6.change.tsv",header=TRUE)
+top_betas_dnf4_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf4.change.tsv",header=TRUE)
+top_betas_dnf3_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf3.change.tsv",header=TRUE)
+top_betas_dnf2_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf2.change.tsv",header=TRUE)
+top_betas_dnf1_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf1.change.tsv",header=TRUE)
+top_betas_nad1_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_nad1.change.tsv",header=TRUE)
+top_betas_latd_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_latd.change.tsv",header=TRUE)
+top_betas_ipd3_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_ipd3.change.tsv",header=TRUE)
+top_betas_hcl_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_hcl.change.tsv",header=TRUE)
+top_betas_A17_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_A17.change.tsv",header=TRUE)
+
+#psyma
+top_betas_sunn4_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_sunn4.change.tsv",header=TRUE)
+top_betas_sunn1_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_sunn1.change.tsv",header=TRUE)
+top_betas_rdn1_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_rdn1.change.tsv",header=TRUE)
+top_betas_dnf5dnf2_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf5dnf2.change.tsv",header=TRUE)
+top_betas_dnf1dnf2_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf1dnf2.change.tsv",header=TRUE)
+top_betas_dnf7_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf7.change.tsv",header=TRUE)
+top_betas_dnf6_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf6.change.tsv",header=TRUE)
+top_betas_dnf4_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf4.change.tsv",header=TRUE)
+top_betas_dnf3_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf3.change.tsv",header=TRUE)
+top_betas_dnf2_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf2.change.tsv",header=TRUE)
+top_betas_dnf1_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf1.change.tsv",header=TRUE)
+top_betas_nad1_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_nad1.change.tsv",header=TRUE)
+top_betas_latd_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_latd.change.tsv",header=TRUE)
+top_betas_ipd3_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_ipd3.change.tsv",header=TRUE)
+top_betas_hcl_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_hcl.change.tsv",header=TRUE)
+top_betas_A17_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_A17.change.tsv",header=TRUE)
+
+
+
+#psymb
+top_betas_sunn4_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_sunn4.change.tsv",header=TRUE)
+top_betas_sunn1_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_sunn1.change.tsv",header=TRUE)
+top_betas_rdn1_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_rdn1.change.tsv",header=TRUE)
+top_betas_dnf5dnf2_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf5dnf2.change.tsv",header=TRUE)
+top_betas_dnf1dnf2_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf1dnf2.change.tsv",header=TRUE)
+top_betas_dnf7_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf7.change.tsv",header=TRUE)
+top_betas_dnf6_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf6.change.tsv",header=TRUE)
+top_betas_dnf4_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf4.change.tsv",header=TRUE)
+top_betas_dnf3_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf3.change.tsv",header=TRUE)
+top_betas_dnf2_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf2.change.tsv",header=TRUE)
+top_betas_dnf1_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf1.change.tsv",header=TRUE)
+top_betas_nad1_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_nad1.change.tsv",header=TRUE)
+top_betas_latd_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_latd.change.tsv",header=TRUE)
+top_betas_ipd3_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_ipd3.change.tsv",header=TRUE)
+top_betas_hcl_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_hcl.change.tsv",header=TRUE)
+top_betas_A17_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_A17.change.tsv",header=TRUE)
+
+
+#merge by replicons
+ 
+top10_beta_psyma<-rbind(top_betas_sunn4_psyma.change,top_betas_sunn1_psyma.change,top_betas_rdn1_psyma.change,top_betas_dnf5dnf2_psyma.change,top_betas_dnf1dnf2_psyma.change,top_betas_dnf7_psyma.change,top_betas_dnf6_psyma.change,top_betas_dnf4_psyma.change,top_betas_dnf3_psyma.change,top_betas_dnf2_psyma.change,top_betas_dnf1_psyma.change,top_betas_nad1_psyma.change,top_betas_latd_psyma.change,top_betas_ipd3_psyma.change,top_betas_hcl_psyma.change)
+
+top10_beta_psymb<-rbind(top_betas_sunn4_psymb.change,top_betas_sunn1_psymb.change,top_betas_rdn1_psymb.change,top_betas_dnf5dnf2_psymb.change,top_betas_dnf1dnf2_psymb.change,top_betas_dnf7_psymb.change,top_betas_dnf6_psymb.change,top_betas_dnf4_psymb.change,top_betas_dnf3_psymb.change,top_betas_dnf2_psymb.change,top_betas_dnf1_psymb.change,top_betas_nad1_psymb.change,top_betas_latd_psymb.change,top_betas_ipd3_psymb.change,top_betas_hcl_psymb.change)
+
+top10_beta_chr<-rbind(top_betas_sunn4_chr.change,top_betas_sunn1_chr.change,top_betas_rdn1_chr.change,top_betas_dnf5dnf2_chr.change,top_betas_dnf1dnf2_chr.change,top_betas_dnf7_chr.change,top_betas_dnf6_chr.change,top_betas_dnf4_chr.change,top_betas_dnf3_chr.change,top_betas_dnf2_chr.change,top_betas_dnf1_chr.change,top_betas_nad1_chr.change,top_betas_latd_chr.change,top_betas_ipd3_chr.change,top_betas_hcl_chr.change)
+```
+
+```{r top 10 candidates in small groups per genotype, echo=FALSE}
+#create three seperate lists for three replicons
+#psyma
+# List of file paths
+file_paths <- c("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_A17.tsv")
+# List to store data frames
+data_list <- list()
+
+read_and_store_data <- function(file_paths) {
+  data <- read.delim(file_paths, header = TRUE)
+  return(data)
+}
+
+# Read data frames and store in the list
+data_list <- lapply(file_paths, read_and_store_data)
+#top10candidates
+get_top_candidates_subset_and_combine <- function(data) {
+  top_candidates_subset <- subset(data, pr >= 1 & pr <= 10)
+  return(top_candidates_subset)
+}
+
+# Use lapply to apply the function to each data frame
+all_top_candidates_subsets <- lapply(data_list, get_top_candidates_subset_and_combine)
+
+# Combine all subsets into a single data frame
+combined_data <- do.call(rbind, all_top_candidates_subsets)
+#spereate the 'chr' col
+
+
+
+combined_top10_data<-combined_data%>% separate(chr,c('Organism','Replicon'))
+write.table(combined_top10_data,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top10candidates.tsv",sep = "\t",row.names = FALSE)
+
+#subset by each replicon
+combined_data_psyma<-subset(combined_top10_data,Replicon=="psyma")
+combined_data_psymb<-subset(combined_top10_data,Replicon=="psymb")
+combined_data_chr<-subset(combined_top10_data,Replicon=="chr")
+
+#adding the beta significance to the top10 candidates per replicon
+
+combined_top10data_psyma<-inner_join(combined_data_psyma,top10_beta_psyma,by="ldg")
+combined_top10data_psymb<-inner_join(combined_data_psymb,top10_beta_psymb,by="ldg")
+combined_top10data_chr<-inner_join(combined_data_chr,top10_beta_chr,by="ldg")
+
+#the select function filters out all the cols.
+
+#select the top5
+
+top5candidates_psyma<-subset(combined_top10data_psyma,prs>=1 & prs<=5)
+top5candidates_psymb<-subset(combined_top10data_psymb,prs>=1 & prs<=5)
+top5candidates_chr<-subset(combined_top10data_chr,prs>=1 & prs<=5)
+
+
+combined_top5<-rbind(top5candidates_psyma,top5candidates_psymb,top5candidates_chr)
+combined_top5<-combined_top5[combined_top5$p_lrt <= 1e-5, ]
+#listing out unique ld_group per run
+combined_top5<-combined_top5%>%group_by(run.x, ld_group) %>%slice_head(n = 1) %>% rename(beta=beta.x,run=run.x)%>% select(-"beta.y",-"run.y",-"replicon",-"chr")
+
+write.table(combined_top5,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5candidates.tsv",sep = "\t",row.names = FALSE)
+
+
+
+```
+
+```{r creating the crossranked tables, echo=FALSE}
+```
+
+```{r creating the heatmaps, echo=FALSE}
 ```
