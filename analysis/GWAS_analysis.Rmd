@@ -140,16 +140,14 @@ top_betas_A17_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top
 
 #merge by replicons
  
-top10_beta_psyma<-rbind(top_betas_sunn4_psyma.change,top_betas_sunn1_psyma.change,top_betas_rdn1_psyma.change,top_betas_dnf5dnf2_psyma.change,top_betas_dnf1dnf2_psyma.change,top_betas_dnf7_psyma.change,top_betas_dnf6_psyma.change,top_betas_dnf4_psyma.change,top_betas_dnf3_psyma.change,top_betas_dnf2_psyma.change,top_betas_dnf1_psyma.change,top_betas_nad1_psyma.change,top_betas_latd_psyma.change,top_betas_ipd3_psyma.change,top_betas_hcl_psyma.change)
+top10_beta_psyma<-rbind(top_betas_sunn4_psyma.change,top_betas_sunn1_psyma.change,top_betas_rdn1_psyma.change,top_betas_dnf5dnf2_psyma.change,top_betas_dnf1dnf2_psyma.change,top_betas_dnf7_psyma.change,top_betas_dnf6_psyma.change,top_betas_dnf4_psyma.change,top_betas_dnf3_psyma.change,top_betas_dnf2_psyma.change,top_betas_dnf1_psyma.change,top_betas_nad1_psyma.change,top_betas_latd_psyma.change,top_betas_ipd3_psyma.change,top_betas_hcl_psyma.change,top_betas_A17_psyma.change)
 
-top10_beta_psymb<-rbind(top_betas_sunn4_psymb.change,top_betas_sunn1_psymb.change,top_betas_rdn1_psymb.change,top_betas_dnf5dnf2_psymb.change,top_betas_dnf1dnf2_psymb.change,top_betas_dnf7_psymb.change,top_betas_dnf6_psymb.change,top_betas_dnf4_psymb.change,top_betas_dnf3_psymb.change,top_betas_dnf2_psymb.change,top_betas_dnf1_psymb.change,top_betas_nad1_psymb.change,top_betas_latd_psymb.change,top_betas_ipd3_psymb.change,top_betas_hcl_psymb.change)
+top10_beta_psymb<-rbind(top_betas_sunn4_psymb.change,top_betas_sunn1_psymb.change,top_betas_rdn1_psymb.change,top_betas_dnf5dnf2_psymb.change,top_betas_dnf1dnf2_psymb.change,top_betas_dnf7_psymb.change,top_betas_dnf6_psymb.change,top_betas_dnf4_psymb.change,top_betas_dnf3_psymb.change,top_betas_dnf2_psymb.change,top_betas_dnf1_psymb.change,top_betas_nad1_psymb.change,top_betas_latd_psymb.change,top_betas_ipd3_psymb.change,top_betas_hcl_psymb.change,top_betas_A17_psymb.change)
 
-top10_beta_chr<-rbind(top_betas_sunn4_chr.change,top_betas_sunn1_chr.change,top_betas_rdn1_chr.change,top_betas_dnf5dnf2_chr.change,top_betas_dnf1dnf2_chr.change,top_betas_dnf7_chr.change,top_betas_dnf6_chr.change,top_betas_dnf4_chr.change,top_betas_dnf3_chr.change,top_betas_dnf2_chr.change,top_betas_dnf1_chr.change,top_betas_nad1_chr.change,top_betas_latd_chr.change,top_betas_ipd3_chr.change,top_betas_hcl_chr.change)
+top10_beta_chr<-rbind(top_betas_sunn4_chr.change,top_betas_sunn1_chr.change,top_betas_rdn1_chr.change,top_betas_dnf5dnf2_chr.change,top_betas_dnf1dnf2_chr.change,top_betas_dnf7_chr.change,top_betas_dnf6_chr.change,top_betas_dnf4_chr.change,top_betas_dnf3_chr.change,top_betas_dnf2_chr.change,top_betas_dnf1_chr.change,top_betas_nad1_chr.change,top_betas_latd_chr.change,top_betas_ipd3_chr.change,top_betas_hcl_chr.change,top_betas_A17_chr.change)
 ```
 
-```{r top 10 candidates in small groups per genotype, echo=FALSE}
-#create three seperate lists for three replicons
-#psyma
+```{r top 10 candidates per genotype, echo=FALSE}
 # List of file paths
 file_paths <- c("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_A17.tsv")
 # List to store data frames
@@ -173,10 +171,7 @@ all_top_candidates_subsets <- lapply(data_list, get_top_candidates_subset_and_co
 
 # Combine all subsets into a single data frame
 combined_data <- do.call(rbind, all_top_candidates_subsets)
-#spereate the 'chr' col
-
-
-
+#seperate the 'chr' col
 combined_top10_data<-combined_data%>% separate(chr,c('Organism','Replicon'))
 write.table(combined_top10_data,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top10candidates.tsv",sep = "\t",row.names = FALSE)
 
@@ -190,8 +185,6 @@ combined_data_chr<-subset(combined_top10_data,Replicon=="chr")
 combined_top10data_psyma<-inner_join(combined_data_psyma,top10_beta_psyma,by="ldg")
 combined_top10data_psymb<-inner_join(combined_data_psymb,top10_beta_psymb,by="ldg")
 combined_top10data_chr<-inner_join(combined_data_chr,top10_beta_chr,by="ldg")
-
-#the select function filters out all the cols.
 
 #select the top5
 
@@ -212,7 +205,38 @@ write.table(combined_top5,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-
 ```
 
 ```{r creating the crossranked tables, echo=FALSE}
+
+
+  #Step1: define plant gene
+  #Step2: define replicon
+  
+  #Step3: Incorporate the data:combined_top10data_replicon<-
+  #Step4: Create the crossranked table
+ 
+
+
+
+
 ```
 
-```{r creating the heatmaps, echo=FALSE}
+```{r creating thE TOP 10 CANDIDATES AGAIN, echo=FALSE}
+
+
+top10candidates<-function(mutantline,replicon){
+  
+  #Step 1 :create a list of the mutant lines
+  #Step 2:create a list of the replicons involved
+  #step3: create the top 10 candidate gene list
+  
+  
+  
+}
+
+
+
+
+
+
+
+
 ```
