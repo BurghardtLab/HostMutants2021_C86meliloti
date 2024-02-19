@@ -235,4 +235,75 @@ table1<-data.frame(group=top10[match(unique(top10$ld_group),top10$ld_group),]$ld
 
 ```
 
+merged.bind<- rbind(merged_psyma_ipd3.change,
+merged_psyma_latd.change,merged_psyma_hcl.change,merged_psyma_dnf1.change,merged_psyma_dnf2.change,merged_psyma_dnf3.change,merged_psyma_dnf4.change,
+merged_psyma_dnf6.change,merged_psyma_dnf7.change,merged_psyma_dnf1dnf2.change,merged_psyma_dnf5dnf2.change,merged_psyma_nad1.change,merged_psyma_rdn1.change,
+merged_psyma_sunn1.change,merged_psyma_sunn4.change,merged_psyma_A17,merged_psymb_ipd3.change,
+merged_psymb_latd.change,merged_psymb_hcl.change,merged_psymb_dnf1.change,merged_psymb_dnf2.change,merged_psymb_dnf3.change,merged_psymb_dnf4.change,
+merged_psymb_dnf6.change,merged_psymb_dnf7.change,merged_psymb_dnf1dnf2.change,merged_psymb_dnf5dnf2.change,merged_psymb_nad1.change,merged_psymb_rdn1.change,
+merged_psymb_sunn1.change,merged_psymb_sunn4.change,merged_psymb_A17,merged_chr_ipd3.change,
+merged_chr_latd.change,merged_chr_hcl.change,merged_chr_dnf1.change,merged_chr_dnf2.change,merged_chr_dnf3.change,merged_chr_dnf4.change,
+merged_chr_dnf6.change,merged_chr_dnf7.change,merged_chr_dnf1dnf2.change,merged_chr_dnf5dnf2.change,merged_chr_nad1.change,merged_chr_rdn1.change,
+merged_chr_sunn1.change,merged_chr_sunn4.change,merged_chr_A17)
 
+#convert this to a list for lapply?
+
+#split the col 2 into chr and org
+merged.bind<-merged.bind%>%separate(chr,c("Organism","Replicon"))
+
+#merged[match(unique(top10$ld_group),merged$ld_group),]$pr
+
+
+
+
+merged.bind$run<-factor(merged.bind$run,levels=c("hcl.change","ipd3.change","latd.change","nad1.change","dnf1.change","dnf2.change","dnf3.change","dnf4.change","dnf6.change","dnf7.change","dnf1dnf2.change","dnf5dnf2.change","rdn1.change","sunn1.change","sunn4.change"))
+ #split col2 
+ #rename the col replicon
+
+lapply(merged.list,function(run) merged.bind[match(unique(top10$ld_group),merged.bind$ld_group),]$pr)
+
+#merge_genewise(data_frames_list_1,psyma)
+
+```
+```
+
+
+```{r creating the cross ranked table, echo=FALSE}
+
+# Function to generate the desired output format
+generate_output <- function(data) {
+  # Extract relevant columns
+  output <- data.frame(
+    group = data$group,
+    pr = data$pr,
+    Location = data$Location,
+    Pval = data$Pval,
+    Beta = data$Beta,
+    Br = data$Br,
+    WTrank = data$WTrank,
+    hclrank = data$hclrank,
+    ipd3rank = data$ipd3rank,
+    latdrank = data$latdrank,
+    nad1rank = data$nad1rank,
+    dnf1rank = data$dnf1rank,
+    dnf2rank = data$dnf2rank,
+    dnf3rank = data$dnf3rank,
+    dnf4rank = data$dnf4rank,
+    dnf6rank = data$dnf6rank,
+    dnf7rank = data$dnf7rank,
+    dnf1dnf2rank = data$dnf1dnf2rank,
+    dnf5dnf2rank = data$dnf5dnf2rank,
+    rdn1rank = data$rdn1rank,
+    sunn1rank = data$sunn1rank,
+    sunn4rank = data$sunn4rank,
+    Description = data$Description
+  )
+  return(output)
+}
+
+# Apply the function to each data frame
+modified_data_list <- lapply(totalcrossranked, generate_output)
+
+# Combine all data frames into a single data frame
+combined_modified_data <- do.call(rbind, modified_data_list)
+```
