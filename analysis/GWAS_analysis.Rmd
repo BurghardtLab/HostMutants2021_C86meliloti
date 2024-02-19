@@ -149,7 +149,13 @@ top10_beta_chr<-rbind(top_betas_sunn4_chr.change,top_betas_sunn1_chr.change,top_
 
 ```{r top 10 candidates per genotype, echo=FALSE}
 # List of file paths
-file_paths <- c("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_A17.tsv")
+#I think this is incorrect. I already have them imported.
+
+#file_paths <- list.files("~/OneDrive - The Pennsylvania State University/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/data/GWAS_data/annotation")
+
+#print(file_paths)
+# 
+ file_paths <- c("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_A17.tsv") #shorter 
 # List to store data frames
 data_list <- list()
 
@@ -186,6 +192,10 @@ combined_top10data_psyma<-inner_join(combined_data_psyma,top10_beta_psyma,by="ld
 combined_top10data_psymb<-inner_join(combined_data_psymb,top10_beta_psymb,by="ldg")
 combined_top10data_chr<-inner_join(combined_data_chr,top10_beta_chr,by="ldg")
 
+
+#combine the files
+top10<-rbind(combined_top10data_chr,combined_top10data_psyma,combined_top10data_psymb)
+
 #select the top5
 
 top5candidates_psyma<-subset(combined_top10data_psyma,prs>=1 & prs<=5)
@@ -204,39 +214,61 @@ write.table(combined_top5,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-
 
 ```
 
-```{r creating the crossranked tables, echo=FALSE}
 
 
-  #Step1: define plant gene
-  #Step2: define replicon
+```{r creating the cross ranked table, echo=FALSE}
+merged<- list(merged_psyma_ipd3.change,
+merged_psyma_latd.change,merged_psyma_hcl.change,merged_psyma_dnf1.change,merged_psyma_dnf2.change,merged_psyma_dnf3.change,merged_psyma_dnf4.change,
+merged_psyma_dnf6.change,merged_psyma_dnf7.change,merged_psyma_dnf1dnf2.change,merged_psyma_dnf5dnf2.change,merged_psyma_nad1.change,merged_psyma_rdn1.change,
+merged_psyma_sunn1.change,merged_psyma_sunn4.change,merged_psyma_A17,merged_psymb_ipd3.change,
+merged_psymb_latd.change,merged_psymb_hcl.change,merged_psymb_dnf1.change,merged_psymb_dnf2.change,merged_psymb_dnf3.change,merged_psymb_dnf4.change,
+merged_psymb_dnf6.change,merged_psymb_dnf7.change,merged_psymb_dnf1dnf2.change,merged_psymb_dnf5dnf2.change,merged_psymb_nad1.change,merged_psymb_rdn1.change,
+merged_psymb_sunn1.change,merged_psymb_sunn4.change,merged_psymb_A17,merged_chr_ipd3.change,
+merged_chr_latd.change,merged_chr_hcl.change,merged_chr_dnf1.change,merged_chr_dnf2.change,merged_chr_dnf3.change,merged_chr_dnf4.change,
+merged_chr_dnf6.change,merged_chr_dnf7.change,merged_chr_dnf1dnf2.change,merged_chr_dnf5dnf2.change,merged_chr_nad1.change,merged_chr_rdn1.change,
+merged_chr_sunn1.change,merged_chr_sunn4.change,merged_chr_A17)
+
+
+
+#convert this to a list for lapply?
+
+#split the col 2 into chr and org
+#merged<-merged%>%separate(Location,c("Organism","Replicon"))
+
+#merged[match(unique(top10$ld_group),merged$ld_group),]$pr
+
+
+
+
+x<- as.data.frame(merged[(merged[,run]),])
+ #split col2 
+ #rename the col replicon
+merge_genewise <- function(x) {
+    lapply(merged,function(x)x[match(unique(top10$ld_group),x$ld_group),]$pr)
   
-  #Step3: Incorporate the data:combined_top10data_replicon<-
-  #Step4: Create the crossranked table
- 
+return(merge_genewise)}
 
-
-
+#merge_genewise(data_frames_list_1,psyma)
 
 ```
 
-```{r creating thE TOP 10 CANDIDATES AGAIN, echo=FALSE}
 
+```{r creating the cross ranked table, echo=FALSE}
 
-top10candidates<-function(mutantline,replicon){
-  
-  #Step 1 :create a list of the mutant lines
-  #Step 2:create a list of the replicons involved
-  #step3: create the top 10 candidate gene list
-  
-  
-  
-}
+dnf3<- data.frame(group=top10_chr_dnf3[match(unique(top10_chr_dnf3$ld_group),top10_chr_dnf3$ld_group),]$ld_group,pr=top10_chr_dnf3[match(unique(top10_chr_dnf3$ld_group),top10_chr_dnf3$ld_group),]$pr,Location= top10_chr_dnf3[match(unique(top10_chr_dnf3$ld_group),top10_chr_dnf3$ld_group),]$chr,Pval=top10_chr_dnf3[match(unique(top10_chr_dnf3$ld_group),top10_chr_dnf3$ld_group),]$p_lrt,Beta=top10_chr_dnf3[match(unique(top10_chr_dnf3$ld_group),top10_chr_dnf3$ld_group),]$beta,Br=top10_chr_dnf3[match(unique(top10_chr_dnf3$ld_group),top10_chr_dnf3$ld_group),]$br,WTrank= A17_combined[match(unique(top10_chr_dnf3$ld_group),A17_combined$ld_group),]$pr,hclrank=hcl_combined[match(unique(top10_chr_dnf3$ld_group),hcl_combined$ld_group),]$pr,ipd3rank=ipd3_combined[match(unique(top10_chr_dnf3$ld_group),ipd3_combined$ld_group),]$pr,latdrank=latd_combined[match(unique(top10_chr_dnf3$ld_group),latd_combined$ld_group),]$pr,nad1rank=nad1_combined[match(unique(top10_chr_dnf3$ld_group),nad1_combined$ld_group),]$pr,dnf1rank=dnf1_combined[match(unique(top10_chr_dnf3$ld_group),dnf1_combined$ld_group),]$pr,dnf2rank=dnf2_combined[match(unique(top10_chr_dnf3$ld_group),dnf2_combined$ld_group),]$pr,dnf3rank=dnf3_combined[match(unique(top10_chr_dnf3$ld_group),dnf3_combined$ld_group),]$pr,dnf4rank=dnf4_combined[match(unique(top10_chr_dnf3$ld_group),dnf4_combined$ld_group),]$pr,dnf6rank=dnf6_combined[match(unique(top10_chr_dnf3$ld_group),dnf6_combined$ld_group),]$pr,dnf7rank=dnf7_combined[match(unique(top10_chr_dnf3$ld_group),dnf7_combined$ld_group),]$pr,dnf1dnf2rank=dnf1dnf2_combined[match(unique(top10_chr_dnf3$ld_group),dnf1dnf2_combined$ld_group),]$pr,dnf5dnf2rank=dnf5dnf2_combined[match(unique(top10_chr_dnf3$ld_group),dnf5dnf2_combined$ld_group),]$pr,rdn1rank=rdn1_combined[match(unique(top10_chr_dnf3$ld_group),rdn1_combined$ld_group),]$pr,sunn1rank=sunn1_combined[match(unique(top10_chr_dnf3$ld_group),sunn1_combined$ld_group),]$pr,sunn4rank=sunn4_combined[match(unique(top10_chr_dnf3$ld_group),sunn4_combined$ld_group),]$pr,Description=top10_chr_dnf3[match(unique(top10_chr_dnf3$ld_group),top10_chr_dnf3$ld_group),]$description)
 
 
 
+#what needs to be matched
+top10[match(unique(top10$ld_group),top10$ld_group),]$ld_group
 
 
+#to what should the matching be
 
 
+#first part of the crossranked table
+data.frame(group=top10[match(unique(top10$ld_group),top10$ld_group),]$ld_group,pr=top10[match(unique(top10$ld_group),top10$ld_group),]$pr,Location= top10[match(unique(top10$ld_group),top10$ld_group),]$chr,Pval=top10[match(unique(top10$ld_group),top10$ld_group),]$p_lrt,Beta=top10[match(unique(top10$ld_group),top10$ld_group),]$beta,Br=top10[match(unique(top10$ld_group),top10$ld_group),]$br,Description=top10[match(unique(top10$ld_group),top10$ld_group),]$description)
+
+table1<-data.frame(group=top10[match(unique(top10$ld_group),top10$ld_group),]$ld_group,pr=top10[match(unique(top10$ld_group),top10$ld_group),]$pr,Location= top10[match(unique(top10$ld_group),top10$ld_group),]$chr,Pval=top10[match(unique(top10$ld_group),top10$ld_group),]$p_lrt,Beta=top10[match(unique(top10$ld_group),top10$ld_group),]$beta,Br=top10[match(unique(top10$ld_group),top10$ld_group),]$br,Description=top10[match(unique(top10$ld_group),top10$ld_group),]$description)
 
 ```
