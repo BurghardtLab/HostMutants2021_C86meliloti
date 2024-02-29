@@ -307,3 +307,20 @@ modified_data_list <- lapply(totalcrossranked, generate_output)
 # Combine all data frames into a single data frame
 combined_modified_data <- do.call(rbind, modified_data_list)
 ```
+#idea to create the list of genes
+
+
+hospital_names <- list(
+  'Hospital#1'="Some Hospital",
+  'Hospital#2'="Another Hospital",
+  'Hospital#3'="Hospital Number 3",
+  'Hospital#4'="The Other Hospital"
+)
+Then create a 'labeller' function, and push it into your facet_grid call:
+
+hospital_labeller <- function(variable,value){
+  return(hospital_names[value])
+}
+
+ggplot(survey,aes(x=age)) + stat_bin(aes(n=nrow(h3),y=..count../n), binwidth=10)
+ + facet_grid(hospital ~ ., labeller=hospital_labeller)
