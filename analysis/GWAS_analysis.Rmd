@@ -179,12 +179,17 @@ all_top_candidates_subsets <- lapply(data_list, get_top_candidates_subset_and_co
 combined_data <- do.call(rbind, all_top_candidates_subsets)
 #seperate the 'chr' col
 combined_top10_data<-combined_data%>% separate(chr,c('Organism','Replicon'))
-write.table(combined_top10_data,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top10candidates.tsv",sep = "\t",row.names = FALSE)
-
+combined_top10_data<-combined_top10_data%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
 #subset by each replicon
+#for the landscape heatmap (Fig6)
 combined_data_psyma<-subset(combined_top10_data,Replicon=="psyma")
 combined_data_psymb<-subset(combined_top10_data,Replicon=="psymb")
 combined_data_chr<-subset(combined_top10_data,Replicon=="chr")
+#for Table S7
+combined_top10_data<-combined_top10_data[combined_top10_data$p_lrt<= 1e-5,]%>%group_by(ld_group) %>%filter(!duplicated(ld_group))
+
+write.table(combined_top10_data,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/SupplementalTable S7.tsv",sep = "\t",row.names = FALSE) 
+
 
 #adding the beta significance to the top10 candidates per replicon
 
@@ -193,134 +198,148 @@ combined_top10data_psymb<-inner_join(combined_data_psymb,top10_beta_psymb,by="ld
 combined_top10data_chr<-inner_join(combined_data_chr,top10_beta_chr,by="ldg")
 
 
-#combine the files
-top10<-rbind(combined_top10data_chr,combined_top10data_psyma,combined_top10data_psymb)
+#combine the files (Table S8)
+top10<-rbind(combined_top10data_chr,combined_top10data_psyma,combined_top10data_psymb) #for the crossranked table
 
 #select the top5
+#make a list of top5,pr>=1 & pr<=5 (this is for the heatmaps)
+top5_pr_candidates_psyma<-subset(combined_top10data_psyma,pr>=1 & pr<=5)
+top5_pr_candidates_psymb<-subset(combined_top10data_psymb,pr>=1 & pr<=5)
+top5_pr_candidates_chr<-subset(combined_top10data_chr,pr>=1 & pr<=5)
+#combine the files
+top5_pr<-rbind(top5_pr_candidates_psyma,top5_pr_candidates_psyma,top5_pr_candidates_psyma) #for the annotated heatmaps
+#combined_top5<-combined_top5[combined_top5$p_lrt <= 1e-5,] #where do we use this?
 
+
+#this will be used for the condensed table
 top5candidates_psyma<-subset(combined_top10data_psyma,prs>=1 & prs<=5)
 top5candidates_psymb<-subset(combined_top10data_psymb,prs>=1 & prs<=5)
 top5candidates_chr<-subset(combined_top10data_chr,prs>=1 & prs<=5)
-
-
 combined_top5<-rbind(top5candidates_psyma,top5candidates_psymb,top5candidates_chr)
-combined_top5<-combined_top5[combined_top5$p_lrt <= 1e-5, ]
+combined_top5<-combined_top5[combined_top5$p_lrt <= 1e-5, ]#is this line essential?
 #listing out unique ld_group per run
-combined_top5<-combined_top5%>%group_by(run.x, ld_group) %>%slice_head(n = 1) %>% rename(beta=beta.x,run=run.x)%>% select(-"beta.y",-"run.y",-"replicon",-"chr")
+#combined_top5<-combined_top5%>%group_by(run.x, ld_group) %>%slice_head(n = 1) %>% rename(beta=beta.x,run=run.x)%>% select(-"beta.y",-"run.y",-"replicon",-"chr")
 
-write.table(combined_top5,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5candidates.tsv",sep = "\t",row.names = FALSE)
-
-
-
+write.table(combined_top5,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5candidates_condensed table.tsv",sep = "\t",row.names = FALSE)
 ```
 
-```{r top 10 candidates per genotype, echo=FALSE}
-
-#crossranked
-crossranked<-function(data) {crossranked<-data.frame(group=unique(top10$ld_group),pr=top10[match(unique(top10$ld_group),top10$ld_group),]$pr,Location= top10[match(unique(top10$ld_group),top10$ld_group),]$chr,Pval=top10[match(unique(top10$ld_group),top10$ld_group),]$p_lrt,Beta=top10[match(unique(top10$ld_group),top10$ld_group),]$beta.x,Br=top10[match(unique(top10$ld_group),top10$ld_group),]$br,data[match(unique(top10$ld_group),data$ld_group),]$pr,Description=top10[match(unique(top10$ld_group),top10$ld_group),]$description)
-return(crossranked)
-
-}
 
 
-totalcrossranked<-lapply(data_list,crossranked)
-combined_data <- do.call(rbind, totalcrossranked)
+```{r crossranked tables, echo=FALSE}
 
-combined_data<-as.data.frame(combined_data)
-#Make the final table
+merge_GWAS_data <- function(gene){
+    # Construct file paths based on gene name
+    file_paths <- list(
+  A17=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_A17.tsv"),
+  hcl=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_hcl.change.tsv"),
+  ipd3=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_ipd3.change.tsv"),
+  nad1=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_nad1change.tsv"),
+  latd=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_latd.change.tsv"),
+  dnf1=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1.change.tsv"),
+  dnf2=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf2.change.tsv"),
+  dnf4=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf4.change.tsv"),
+  dnf6=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf6.change.tsv"),
+  dnf7=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf7.change.tsv"),
+  dnf1dnf2=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1dnf2.change.tsv"),
+dnf5dnf2=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf5dnf2.change.tsv"),
+rdn1=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_rdn1.change.tsv"),
+sunn1=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn1.change.tsv"),
+sunn4= c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn4.change.tsv")
+        
+    )
+    
+    # Check if gene argument is valid
+    if (!(gene %in% c("A17","hcl","ipd3","nad1","latd","dnf1","dnf2","dnf4","dnf6","dnf7","dnf1dnf2","dnf5dnf2","rdn1","sunn1","sunn4"))) {
+        stop("Gene argument must be one of: A17,hcl,ipd3,latd,nad1,dnf1,dnf2,dnf4,dnf6,dnf7,dnf1dnf2,dnf5dnf2,rdn1,sunn1,sunn4")
+    }
+    
+    # Read the corresponding files for the given gene
+    data <- lapply(file_paths[[gene]], read.delim, header = TRUE)
+    
+    # Merge the data
+    merged_data <- do.call(rbind, data)
+    
+    return(merged_data)
+    
+}    
+
+
+merged_sunn1 <- merge_GWAS_data("sunn1")
+merged_sunn4 <- merge_GWAS_data("sunn4")
+merged_A17 <- merge_GWAS_data("A17")
+merged_hcl<-merge_GWAS_data("hcl")
+merged_ipd3<-merge_GWAS_data("ipd3")
+merged_nad1<-merge_GWAS_data("nad1")
+merged_dnf1<-merge_GWAS_data("dnf1")
+merged_dnf2<-merge_GWAS_data("dnf2")
+merged_dnf4<-merge_GWAS_data("dnf4")
+merged_dnf6<-merge_GWAS_data("dnf6")
+merged_dnf7<-merge_GWAS_data("dnf7")
+merged_dnf1dnf2<-merge_GWAS_data("dnf1dnf2")
+merged_dnf5dnf2<-merge_GWAS_data("dnf5dnf2")
+merged_rdn1<-merge_GWAS_data("rdn1")
+merged_sunn1<-merge_GWAS_data("sunn1")
+merged_sunn4<-merge_GWAS_data("sunn4")
+
+
+#crossranked table:
+top_candidates_crossranked<-data.frame(WTrank= merged_A17[match(unique(top10$ld_group),merged_A17$ld_group),]$pr,hclrank= merged_hcl[match(unique(top10$ld_group),merged_hcl$ld_group),]$pr,ipd3rank= merged_ipd3[match(unique(top10$ld_group),merged_ipd3$ld_group),]$pr,nad1rank= merged_nad1[match(unique(top10$ld_group),merged_nad1$ld_group),]$pr,dnf1rank= merged_dnf1[match(unique(top10$ld_group),merged_dnf1$ld_group),]$pr,dnf2rank=merged_dnf2[match(unique(top10$ld_group),merged_dnf2$ld_group),]$pr,dnf4rank=merged_dnf4[match(unique(top10$ld_group),merged_dnf4$ld_group),]$pr,dnf6rank=merged_dnf6[match(unique(top10$ld_group),merged_dnf6$ld_group),]$pr,dnf7rank=merged_dnf7[match(unique(top10$ld_group),merged_dnf7$ld_group),]$pr,dnf5dnf2rank=merged_dnf5dnf2[match(unique(top10$ld_group),merged_dnf5dnf2$ld_group),]$pr,dnf1dnf2rank=merged_dnf1dnf2[match(unique(top10$ld_group),merged_dnf1dnf2$ld_group),]$pr,rdn1rank=merged_rdn1[match(unique(top10$ld_group),merged_rdn1$ld_group),]$pr,sunn1rank=merged_sunn1[match(unique(top10$ld_group),merged_sunn1$ld_group),]$pr,sunn1rank=merged_sunn1[match(unique(top10$ld_group),merged_sunn1$ld_group),]$pr,sunn4rank=merged_sunn4[match(unique(top10$ld_group),merged_sunn4$ld_group),]$pr)
+
+#final table
 table1<-data.frame(group=top10[match(unique(top10$ld_group),top10$ld_group),]$ld_group,pr=top10[match(unique(top10$ld_group),top10$ld_group),]$pr,Location= top10[match(unique(top10$ld_group),top10$ld_group),]$chr,Pval=top10[match(unique(top10$ld_group),top10$ld_group),]$p_lrt,Beta=top10[match(unique(top10$ld_group),top10$ld_group),]$beta.x,Br=top10[match(unique(top10$ld_group),top10$ld_group),]$br,Description=top10[match(unique(top10$ld_group),top10$ld_group),]$description)
 
+df<-cbind(table1,top_candidates_crossranked)
+
+```
+
+```{r Heatmaps, echo=FALSE}
+
+#based on the top5 candidates
+#no p-cutoff
+
+top_candidates_crossranked_top5<-data.frame(group=top5_pr[match(unique(top5_pr$ld_group),top5_pr$ld_group),]$ld_group,Location= top5_pr[match(unique(top5_pr$ld_group),top5_pr$ld_group),]$chr,WTrank= merged_A17[match(unique(  top5_pr$ld_group),merged_A17$ld_group),]$pr,hclrank= merged_hcl[match(unique(  top5_pr$ld_group),merged_hcl$ld_group),]$pr,ipd3rank= merged_ipd3[match(unique(  top5_pr$ld_group),merged_ipd3$ld_group),]$pr,nad1rank= merged_nad1[match(unique(  top5_pr$ld_group),merged_nad1$ld_group),]$pr,dnf1rank= merged_dnf1[match(unique(  top5_pr$ld_group),merged_dnf1$ld_group),]$pr,dnf2rank=merged_dnf2[match(unique(  top5_pr$ld_group),merged_dnf2$ld_group),]$pr,dnf4rank=merged_dnf4[match(unique(  top5_pr$ld_group),merged_dnf4$ld_group),]$pr,dnf6rank=merged_dnf6[match(unique(  top5_pr$ld_group),merged_dnf6$ld_group),]$pr,dnf7rank=merged_dnf7[match(unique(  top5_pr$ld_group),merged_dnf7$ld_group),]$pr,dnf5dnf2rank=merged_dnf5dnf2[match(unique(  top5_pr$ld_group),merged_dnf5dnf2$ld_group),]$pr,dnf1dnf2rank=merged_dnf1dnf2[match(unique(  top5_pr$ld_group),merged_dnf1dnf2$ld_group),]$pr,rdn1rank=merged_rdn1[match(unique(  top5_pr$ld_group),merged_rdn1$ld_group),]$pr,sunn1rank=merged_sunn1[match(unique(  top5_pr$ld_group),merged_sunn1$ld_group),]$pr,sunn1rank=merged_sunn1[match(unique(  top5_pr$ld_group),merged_sunn1$ld_group),]$pr,sunn4rank=merged_sunn4[match(unique(  top5_pr$ld_group),merged_sunn4$ld_group),]$pr)
+
+top_candidates_crossranked_top5<-top_candidates_crossranked_top5%>% separate(Location,c('Organism','Replicon'))
+
+#divide by replicons
+top_candidates_crossranked_top5_psyma<-subset(top_candidates_crossranked_top5,Replicon=="psyma")
+top_candidates_crossranked_top5_psymb<-subset(top_candidates_crossranked_top5,Replicon=="psymb")
+top_candidates_crossranked_top5_chr<-subset(top_candidates_crossranked_top5,Replicon=="chr")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#heatmap_Chromosome
+chr_data <- df[df$Replicon == "chr", -c(1:3)]
+data_matrix <- as.matrix(chr_data)
+data_matrix<-(1/data_matrix)
+rownames(data_matrix) <- df$group[df$Replicon == "chr"]
+col_letters = c("A17"="#B23214","hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9", "nad1"="#009E73", "dnf1"="#009E73", "dnf2"="#009E73","dnf3"="#009E73", "dnf4"="#009E73","dnf6"="#009E73","dnf7"="#009E73", "dnf1/dnf2"="#009E73", "dnf5/dnf2"="#009E73", "rdn1"="#E69F00", "sunn1"="#E69F00","sunn4"="#E69F00")
+
+ pal = colorRampPalette(c("lightgrey", "wheat", "gold", "orange", "darkorange","red", "darkred"))(500)
+heatmap.2(data_matrix,Rowv = TRUE,Colv=TRUE,dendrogram = "both", col=pal,hclustfun = function(d) hclust(d,method="ward.D2"),trace="none", scale="none",cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Rank", key.ylab =NA, tracecol="black",keysize = 2,symbreaks=FALSE,key.title = "chr_prank",colCol = col_letters,margins = c(8,15))
+
+#psyma heatmap
+psyma_data <- df[df$Replicon == "psyma", -c(1:3)]
+data_matrix <- as.matrix(psyma_data)
+data_matrix<-(1/data_matrix)
+rownames(data_matrix) <- df$group[df$Replicon == "psyma"]
+col_letters = c("A17"="#B23214","hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9", "nad1"="#009E73", "dnf1"="#009E73", "dnf2"="#009E73","dnf3"="#009E73", "dnf4"="#009E73","dnf6"="#009E73","dnf7"="#009E73", "dnf1/dnf2"="#009E73", "dnf5/dnf2"="#009E73", "rdn1"="#E69F00", "sunn1"="#E69F00","sunn4"="#E69F00")
+
+ pal = colorRampPalette(c("lightgrey", "wheat", "gold", "orange", "darkorange","red", "darkred"))(500)
+heatmap.2(data_matrix,Rowv = TRUE,Colv=TRUE,dendrogram = "both",hclustfun = function(d) hclust(d,method="ward.D2"), col=pal,trace="none", scale="none",cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Rank", key.ylab =NA, tracecol="black",keysize = 2,symbreaks=FALSE,key.title = "psyma_prank",colCol = col_letters,margins = c(8,15))
+
 
 
 
 ```
-
-merged.bind<- rbind(merged_psyma_ipd3.change,
-merged_psyma_latd.change,merged_psyma_hcl.change,merged_psyma_dnf1.change,merged_psyma_dnf2.change,merged_psyma_dnf3.change,merged_psyma_dnf4.change,
-merged_psyma_dnf6.change,merged_psyma_dnf7.change,merged_psyma_dnf1dnf2.change,merged_psyma_dnf5dnf2.change,merged_psyma_nad1.change,merged_psyma_rdn1.change,
-merged_psyma_sunn1.change,merged_psyma_sunn4.change,merged_psyma_A17,merged_psymb_ipd3.change,
-merged_psymb_latd.change,merged_psymb_hcl.change,merged_psymb_dnf1.change,merged_psymb_dnf2.change,merged_psymb_dnf3.change,merged_psymb_dnf4.change,
-merged_psymb_dnf6.change,merged_psymb_dnf7.change,merged_psymb_dnf1dnf2.change,merged_psymb_dnf5dnf2.change,merged_psymb_nad1.change,merged_psymb_rdn1.change,
-merged_psymb_sunn1.change,merged_psymb_sunn4.change,merged_psymb_A17,merged_chr_ipd3.change,
-merged_chr_latd.change,merged_chr_hcl.change,merged_chr_dnf1.change,merged_chr_dnf2.change,merged_chr_dnf3.change,merged_chr_dnf4.change,
-merged_chr_dnf6.change,merged_chr_dnf7.change,merged_chr_dnf1dnf2.change,merged_chr_dnf5dnf2.change,merged_chr_nad1.change,merged_chr_rdn1.change,
-merged_chr_sunn1.change,merged_chr_sunn4.change,merged_chr_A17)
-
-#convert this to a list for lapply?
-
-#split the col 2 into chr and org
-merged.bind<-merged.bind%>%separate(chr,c("Organism","Replicon"))
-
-#merged[match(unique(top10$ld_group),merged$ld_group),]$pr
-
-
-
-
-merged.bind$run<-factor(merged.bind$run,levels=c("hcl.change","ipd3.change","latd.change","nad1.change","dnf1.change","dnf2.change","dnf3.change","dnf4.change","dnf6.change","dnf7.change","dnf1dnf2.change","dnf5dnf2.change","rdn1.change","sunn1.change","sunn4.change"))
- #split col2 
- #rename the col replicon
-
-lapply(merged.list,function(run) merged.bind[match(unique(top10$ld_group),merged.bind$ld_group),]$pr)
-
-#merge_genewise(data_frames_list_1,psyma)
-
-```
-```
-
-
-```{r creating the cross ranked table, echo=FALSE}
-
-# Function to generate the desired output format
-generate_output <- function(data) {
-  # Extract relevant columns
-  output <- data.frame(
-    group = data$group,
-    pr = data$pr,
-    Location = data$Location,
-    Pval = data$Pval,
-    Beta = data$Beta,
-    Br = data$Br,
-    WTrank = data$WTrank,
-    hclrank = data$hclrank,
-    ipd3rank = data$ipd3rank,
-    latdrank = data$latdrank,
-    nad1rank = data$nad1rank,
-    dnf1rank = data$dnf1rank,
-    dnf2rank = data$dnf2rank,
-    dnf3rank = data$dnf3rank,
-    dnf4rank = data$dnf4rank,
-    dnf6rank = data$dnf6rank,
-    dnf7rank = data$dnf7rank,
-    dnf1dnf2rank = data$dnf1dnf2rank,
-    dnf5dnf2rank = data$dnf5dnf2rank,
-    rdn1rank = data$rdn1rank,
-    sunn1rank = data$sunn1rank,
-    sunn4rank = data$sunn4rank,
-    Description = data$Description
-  )
-  return(output)
-}
-
-# Apply the function to each data frame
-modified_data_list <- lapply(totalcrossranked, generate_output)
-
-# Combine all data frames into a single data frame
-combined_modified_data <- do.call(rbind, modified_data_list)
-```
-#idea to create the list of genes
-
-
-hospital_names <- list(
-  'Hospital#1'="Some Hospital",
-  'Hospital#2'="Another Hospital",
-  'Hospital#3'="Hospital Number 3",
-  'Hospital#4'="The Other Hospital"
-)
-Then create a 'labeller' function, and push it into your facet_grid call:
-
-hospital_labeller <- function(variable,value){
-  return(hospital_names[value])
-}
-
-ggplot(survey,aes(x=age)) + stat_bin(aes(n=nrow(h3),y=..count../n), binwidth=10)
- + facet_grid(hospital ~ ., labeller=hospital_labeller)
