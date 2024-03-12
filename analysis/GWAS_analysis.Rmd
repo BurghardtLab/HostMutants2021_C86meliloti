@@ -197,8 +197,23 @@ combined_top10_candidates_data<-inner_join(combined_top10_candidates_data,top10_
 #top5_candidates<-rbind(combined_top5_candidatesdata_chr,combined_top5_candidatesdata_psyma,combined_top5_candidatesdata_psymb) #for the crossranked table
 
 #select the top5 for fig6, supplement annotated heatmap and the crossranked tables
-top5_candidates<-subset(combined_top10_candidates_data,pr>=1 & pr<=5)
+#top5_candidates<-subset(combined_top10_candidates_data,pr>=1 & pr<=5)
+get_top_candidates_subset_and_combine <- function(data) {
+  top_candidates_subset <- subset(data, pr >= 1 & pr <= 5)
+  return(top_candidates_subset)
+}
 
+# Use lapply to apply the function to each data frame
+all_top_candidates_subsets <- lapply(data_list, get_top_candidates_subset_and_combine)
+
+# Combine all subsets into a single data frame
+combined_data <- do.call(rbind, all_top_candidates_subsets)
+#seperate the 'chr' col
+top5_candidates<-combined_data%>% separate(chr,c('Organism','Replicon'))
+top5_candidates<-top5_candidates%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
+#for Table S7
+top5_candidates<-top5_candidates%>%group_by(ld_group) %>%filter(!duplicated(ld_group))
+write.table(top5_candidates,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5_candidates.tsv",sep = "\t",row.names = FALSE) 
 
 #this will be used for the condensed table
 top5_candidates_prs<-subset(top5_candidates,prs>=1 & prs<=5)
@@ -208,7 +223,8 @@ top5_candidates_prs<- top5_candidates_prs[top5_candidates_prs$p_lrt <= 1e-5, ]
 #combined_top5<-rbind(top5candidates_psyma,top5candidates_psymb,top5candidates_chr)
 #combined_top5<-combined_top5[combined_top5$p_lrt <= 1e-5, ]#is this line essential?
 #listing out unique ld_group per run
-top5_candidates_prs<-top5_candidates_prs%>%group_by(run.x, ld_group) %>%slice_head(n = 1) %>% rename(beta=beta.x,run=run.x)%>% select(-"beta.y",-"run.y",-"chr")
+top5_candidates_prs<-top5_candidates_prs%>%group_by(ld_group) %>%slice_head(n = 1) 
+#%>% rename(beta=beta.x)%>% select(-"beta.y",-"run.y",-"chr")
 
 write.table(top5_candidates_prs,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5candidates_condensed table.tsv",sep = "\t",row.names = FALSE)
 ```
@@ -255,11 +271,11 @@ sunn4= c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn4.cha
 }    
 
 
-merged_sunn1 <- merge_GWAS_data("sunn1")
-merged_sunn4 <- merge_GWAS_data("sunn4")
+
 merged_A17 <- merge_GWAS_data("A17")
 merged_hcl<-merge_GWAS_data("hcl")
 merged_ipd3<-merge_GWAS_data("ipd3")
+merged_latd<-merge_GWAS_data("latd")
 merged_nad1<-merge_GWAS_data("nad1")
 merged_dnf1<-merge_GWAS_data("dnf1")
 merged_dnf2<-merge_GWAS_data("dnf2")
@@ -272,10 +288,10 @@ merged_dnf5dnf2<-merge_GWAS_data("dnf5dnf2")
 merged_rdn1<-merge_GWAS_data("rdn1")
 merged_sunn1<-merge_GWAS_data("sunn1")
 merged_sunn4<-merge_GWAS_data("sunn4")
-merged_latd<-merge_GWAS_data("latd")
+
 
 #crossranked table:
-top5_candidates_crossranked<-data.frame(group=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$ld_group,pr=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$pr,Location= top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$chr,Pval=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$p_lrt,Beta=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$beta.x,Br=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$br,WT= merged_A17[match(unique(top5_candidates$ld_group),merged_A17$ld_group),]$pr,hcl= merged_hcl[match(unique(top5_candidates$ld_group),merged_hcl$ld_group),]$pr,ipd3= merged_ipd3[match(unique(top5_candidates$ld_group),merged_ipd3$ld_group),]$pr,latd=merged_latd[match(unique(top5_candidates$ld_group),merged_latd$ld_group),]$pr,nad1= merged_nad1[match(unique(top5_candidates$ld_group),merged_nad1$ld_group),]$pr,dnf1= merged_dnf1[match(unique(top5_candidates$ld_group),merged_dnf1$ld_group),]$pr,dnf2=merged_dnf2[match(unique(top5_candidates$ld_group),merged_dnf2$ld_group),]$pr,dnf3=merged_dnf3[match(unique(top5_candidates$ld_group),merged_dnf3$ld_group),]$pr,dnf4=merged_dnf4[match(unique(top5_candidates$ld_group),merged_dnf4$ld_group),]$pr,dnf6=merged_dnf6[match(unique(top5_candidates$ld_group),merged_dnf6$ld_group),]$pr,dnf7=merged_dnf7[match(unique(top5_candidates$ld_group),merged_dnf7$ld_group),]$pr,dnf1dnf2=merged_dnf1dnf2[match(unique(top5_candidates$ld_group),merged_dnf1dnf2$ld_group),]$pr,dnf5dnf2=merged_dnf5dnf2[match(unique(top5_candidates$ld_group),merged_dnf5dnf2$ld_group),]$pr,rdn1=merged_rdn1[match(unique(top5_candidates$ld_group),merged_rdn1$ld_group),]$pr,sunn1=merged_sunn1[match(unique(top5_candidates$ld_group),merged_sunn1$ld_group),]$pr,sunn4=merged_sunn4[match(unique(top5_candidates$ld_group),merged_sunn4$ld_group),]$pr,Description=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$description)
+top5_candidates_crossranked<-data.frame(group=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$ld_group,pr=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$pr,Location= top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$Replicon,Pval=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$p_lrt,Beta=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$beta,Br=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$br,WT= merged_A17[match(unique(top5_candidates$ld_group),merged_A17$ld_group),]$pr,hcl= merged_hcl[match(unique(top5_candidates$ld_group),merged_hcl$ld_group),]$pr,ipd3= merged_ipd3[match(unique(top5_candidates$ld_group),merged_ipd3$ld_group),]$pr,latd=merged_latd[match(unique(top5_candidates$ld_group),merged_latd$ld_group),]$pr,nad1= merged_nad1[match(unique(top5_candidates$ld_group),merged_nad1$ld_group),]$pr,dnf1= merged_dnf1[match(unique(top5_candidates$ld_group),merged_dnf1$ld_group),]$pr,dnf2=merged_dnf2[match(unique(top5_candidates$ld_group),merged_dnf2$ld_group),]$pr,dnf3=merged_dnf3[match(unique(top5_candidates$ld_group),merged_dnf3$ld_group),]$pr,dnf4=merged_dnf4[match(unique(top5_candidates$ld_group),merged_dnf4$ld_group),]$pr,dnf6=merged_dnf6[match(unique(top5_candidates$ld_group),merged_dnf6$ld_group),]$pr,dnf7=merged_dnf7[match(unique(top5_candidates$ld_group),merged_dnf7$ld_group),]$pr,dnf1dnf2=merged_dnf1dnf2[match(unique(top5_candidates$ld_group),merged_dnf1dnf2$ld_group),]$pr,dnf5dnf2=merged_dnf5dnf2[match(unique(top5_candidates$ld_group),merged_dnf5dnf2$ld_group),]$pr,rdn1=merged_rdn1[match(unique(top5_candidates$ld_group),merged_rdn1$ld_group),]$pr,sunn1=merged_sunn1[match(unique(top5_candidates$ld_group),merged_sunn1$ld_group),]$pr,sunn4=merged_sunn4[match(unique(top5_candidates$ld_group),merged_sunn4$ld_group),]$pr,Description=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$description)
  
 write.table(top5_candidates_crossranked,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5_candidates_crossranked.tsv",sep = "\t",row.names = FALSE)
 ```
@@ -291,11 +307,10 @@ replicon <- c("chr", "psyma", "psymb")
 # Keeping only meaningful columns
 df <- function(replicon) {
   # Separate Location column into Organism and Replicon
-  separated <- top5_candidates_crossranked %>%
-    separate(Location, c("Organism", "Replicon"))
+ #top5_candidates_crossranked1  <- top5_candidates_crossranked %>%separate(Location, c("Organism", "Replicon"))
   
   # Filter the data for the specified replicon
-  result <- separated[separated$Replicon == replicon, ]
+  result <- top5_candidates_crossranked[top5_candidates_crossranked$Location == replicon, ]
   
   # Check if any rows are filtered
   if (nrow(result) == 0) {
@@ -304,7 +319,7 @@ df <- function(replicon) {
   
   # Remove Description and irrelevant columns
   result2 <- result %>%
-    select(-c(1:7)) %>%
+    select(-c(1:6)) %>%
     select(-Description)
   
   # Convert data to matrix
@@ -324,7 +339,7 @@ df <- function(replicon) {
   pal <- colorRampPalette(c("lightgrey", "wheat", "gold", "orange", "darkorange", "red", "darkred"))(500)
   
   # Generate heatmap
-  heatmap.2(data_matrix, Rowv = TRUE, Colv = TRUE, col = pal, 
+  heatmap.2(data_matrix, Rowv = TRUE,Colv=TRUE,dendrogram = "row", col = pal, 
             hclustfun = function(d) hclust(d, method = "ward.D2"), trace = "none", 
             scale = "none", cexCol = 1, cexRow = 0.5, key = TRUE, 
             key.xlab = "Rank", key.ylab = NA, tracecol = "black", keysize = 2, 
