@@ -183,7 +183,7 @@ combined_data <- do.call(rbind, all_top_candidates_subsets)
 combined_top10_candidates_data<-combined_data%>% separate(chr,c('Organism','Replicon'))
 combined_top10_candidates_data<-combined_top10_candidates_data%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
 #for Table S7
-combined_top10_candidates_data<-combined_top10_candidates_data%>%group_by(ld_group) %>%filter(!duplicated(ld_group))
+#combined_top10_candidates_data<-combined_top10_candidates_data%>%group_by(ld_group) %>%filter(!duplicated(ld_group))
 
 write.table(combined_top10_candidates_data,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/SupplementalTable S7.tsv",sep = "\t",row.names = FALSE) 
 
@@ -210,23 +210,23 @@ all_top_candidates_subsets <- lapply(data_list, get_top_candidates_subset_and_co
 combined_data <- do.call(rbind, all_top_candidates_subsets)
 #seperate the 'chr' col
 top5_candidates<-combined_data%>% separate(chr,c('Organism','Replicon'))
-top5_candidates<-top5_candidates%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
+#top5_candidates<-top5_candidates%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
 #for Table S7
-top5_candidates<-top5_candidates%>%group_by(ld_group) %>%filter(!duplicated(ld_group))
+#top5_candidates<-top5_candidates%>%group_by(ld_group) %>%filter(!duplicated(ld_group)) 
 write.table(top5_candidates,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5_candidates.tsv",sep = "\t",row.names = FALSE) 
 
 #this will be used for the condensed table
 top5_candidates_prs<-subset(top5_candidates,prs>=1 & prs<=5)
-top5_candidates_prs<- top5_candidates_prs[top5_candidates_prs$p_lrt <= 1e-5, ]
+top5_candidates_prs.1<- top5_candidates_prs[top5_candidates_prs$p_lrt <= 1e-5, ]
 #top5candidates_psymb<-subset(combined_top5_candidatesdata_psymb,prs>=1 & prs<=5)
 #top5candidates_chr<-subset(combined_top5_candidatesdata_chr,prs>=1 & prs<=5)
 #combined_top5<-rbind(top5candidates_psyma,top5candidates_psymb,top5candidates_chr)
 #combined_top5<-combined_top5[combined_top5$p_lrt <= 1e-5, ]#is this line essential?
 #listing out unique ld_group per run
-top5_candidates_prs<-top5_candidates_prs%>%group_by(ld_group) %>%slice_head(n = 1) 
+#top5_candidates_prs<-top5_candidates_prs.1%>%group_by(ld_group) %>%slice_head(n = 1) #omit?
 #%>% rename(beta=beta.x)%>% select(-"beta.y",-"run.y",-"chr")
 
-write.table(top5_candidates_prs,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5candidates_condensed table.tsv",sep = "\t",row.names = FALSE)
+write.table(top5_candidates_prs.1,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5candidates_condensed table.tsv",sep = "\t",row.names = FALSE)
 ```
 
 
