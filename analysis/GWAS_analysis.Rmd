@@ -211,7 +211,7 @@ combined_data <- do.call(rbind, all_top_candidates_subsets)
 #seperate the 'chr' col
 top5_candidates<-combined_data%>% separate(chr,c('Organism','Replicon'))
 #top5_candidates<-top5_candidates%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
-#for Table S7
+#for Table S7 and heatmaps
 #top5_candidates<-top5_candidates%>%group_by(ld_group) %>%filter(!duplicated(ld_group)) 
 write.table(top5_candidates,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5_candidates.tsv",sep = "\t",row.names = FALSE) 
 
