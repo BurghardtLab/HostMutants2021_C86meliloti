@@ -8,7 +8,6 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
 #Load packages needed. Tidyverse include dplyer
 require(tidyverse)
 require(ggpubr)
@@ -198,18 +197,18 @@ combined_top10_candidates_data<-inner_join(combined_top10_candidates_data,top10_
 
 #select the top5 for fig6, supplement annotated heatmap and the crossranked tables
 #top5_candidates<-subset(combined_top10_candidates_data,pr>=1 & pr<=5)
-get_top_candidates_subset_and_combine <- function(data) {
-  top_candidates_subset <- subset(data, pr >= 1 & pr <= 5)
-  return(top_candidates_subset)
+get_top_candidates_subset_and_combine.1 <- function(data) {
+  top_candidates_subset.1 <- subset(data, pr >= 1 & pr <= 5)
+  return(top_candidates_subset.1)
 }
 
 # Use lapply to apply the function to each data frame
-all_top_candidates_subsets <- lapply(data_list, get_top_candidates_subset_and_combine)
+all_top_candidates_subsets.1 <- lapply(data_list, get_top_candidates_subset_and_combine.1)
 
 # Combine all subsets into a single data frame
-combined_data <- do.call(rbind, all_top_candidates_subsets)
+combined_data2 <- do.call(rbind, all_top_candidates_subsets.1)
 #seperate the 'chr' col
-top5_candidates<-combined_data%>% separate(chr,c('Organism','Replicon'))
+top5_candidates<-combined_data2%>% separate(chr,c('Organism','Replicon'))
 #top5_candidates<-top5_candidates%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
 #for Table S7 and heatmaps
 #top5_candidates<-top5_candidates%>%group_by(ld_group) %>%filter(!duplicated(ld_group)) 
@@ -234,7 +233,7 @@ write.table(top5_candidates_prs.1,file="/Users/sohiniguha/Library/CloudStorage/O
 ```{r crossranked tables, echo=FALSE}
 
 merge_GWAS_data <- function(gene){
-    # Construct file paths based on gene name
+    # Construct file paths based on gene  name
     file_paths <- list(
   A17=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_A17.tsv"),
   hcl=c("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_hcl.change.tsv"),
@@ -290,14 +289,35 @@ merged_sunn1<-merge_GWAS_data("sunn1")
 merged_sunn4<-merge_GWAS_data("sunn4")
 
 
-#crossranked table based on the p-ranks:
-top5_candidates_crossranked<-data.frame(group=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$ld_group,pr=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$pr,Location= top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$Replicon,Pval=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$p_lrt,Beta=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$beta,Br=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$br,WT= merged_A17[match(unique(top5_candidates$ld_group),merged_A17$ld_group),]$pr,hcl= merged_hcl[match(unique(top5_candidates$ld_group),merged_hcl$ld_group),]$pr,ipd3= merged_ipd3[match(unique(top5_candidates$ld_group),merged_ipd3$ld_group),]$pr,latd=merged_latd[match(unique(top5_candidates$ld_group),merged_latd$ld_group),]$pr,nad1= merged_nad1[match(unique(top5_candidates$ld_group),merged_nad1$ld_group),]$pr,dnf1= merged_dnf1[match(unique(top5_candidates$ld_group),merged_dnf1$ld_group),]$pr,dnf2=merged_dnf2[match(unique(top5_candidates$ld_group),merged_dnf2$ld_group),]$pr,dnf3=merged_dnf3[match(unique(top5_candidates$ld_group),merged_dnf3$ld_group),]$pr,dnf4=merged_dnf4[match(unique(top5_candidates$ld_group),merged_dnf4$ld_group),]$pr,dnf6=merged_dnf6[match(unique(top5_candidates$ld_group),merged_dnf6$ld_group),]$pr,dnf7=merged_dnf7[match(unique(top5_candidates$ld_group),merged_dnf7$ld_group),]$pr,dnf1dnf2=merged_dnf1dnf2[match(unique(top5_candidates$ld_group),merged_dnf1dnf2$ld_group),]$pr,dnf5dnf2=merged_dnf5dnf2[match(unique(top5_candidates$ld_group),merged_dnf5dnf2$ld_group),]$pr,rdn1=merged_rdn1[match(unique(top5_candidates$ld_group),merged_rdn1$ld_group),]$pr,sunn1=merged_sunn1[match(unique(top5_candidates$ld_group),merged_sunn1$ld_group),]$pr,sunn4=merged_sunn4[match(unique(top5_candidates$ld_group),merged_sunn4$ld_group),]$pr,Description=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$description)
+split_data <- split(data_matrix, data_matrix$group_column)
+
+#split the top5 candidate list based on the replicons
+top5_candidates<-split(top5_candidates,top5_candidates$Replicon)
  
+#crossranked table of ld_groups on the chromosome based on the p-ranks:
+top5_candidates_crossranked_chr<-data.frame(group=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$ld_group,pr=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$pr,Location= top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$Replicon,Pval=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$p_lrt,Beta=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$beta,Br=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$br,WT= merged_chr_A17[match(unique(top5_candidates$chr$ld_group),merged_chr_A17$ld_group),]$pr,hcl= merged_chr_hcl.change[match(unique(top5_candidates$chr$ld_group),merged_chr_hcl.change$ld_group),]$pr,ipd3= merged_chr_ipd3.change[match(unique(top5_candidates$chr$ld_group),merged_chr_ipd3.change$ld_group),]$pr,latd=merged_chr_latd.change[match(unique(top5_candidates$chr$ld_group),merged_chr_latd.change$ld_group),]$pr,nad1= merged_chr_nad1.change[match(unique(top5_candidates$chr$ld_group),merged_chr_nad1.change$ld_group),]$pr,dnf1= merged_chr_dnf1.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf1.change$ld_group),]$pr,dnf2=merged_chr_dnf2.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf2.change$ld_group),]$pr,dnf3=merged_chr_dnf3.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf3.change$ld_group),]$pr,dnf4=merged_chr_dnf4.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf4.change$ld_group),]$pr,dnf6=merged_chr_dnf6.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf6.change$ld_group),]$pr,dnf7=merged_chr_dnf7.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf7.change$ld_group),]$pr,dnf1dnf2=merged_chr_dnf1dnf2.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf1dnf2.change$ld_group),]$pr,dnf5dnf2=merged_chr_dnf5dnf2.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf5dnf2.change$ld_group),]$pr,rdn1=merged_chr_rdn1.change[match(unique(top5_candidates$chr$ld_group),merged_chr_rdn1.change$ld_group),]$pr,sunn1=merged_chr_sunn1.change[match(unique(top5_candidates$chr$ld_group),merged_chr_sunn1.change$ld_group),]$pr,sunn4=merged_chr_sunn4.change[match(unique(top5_candidates$chr$ld_group),merged_chr_sunn4.change$ld_group),]$pr,Description=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$description)
+
+
+
+#crossranked table of ld_groups on the psymb based on the p-ranks
+
+
+top5_candidates_crossranked_psymb<-data.frame(group=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$ld_group,pr=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$pr,Location= top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$Replicon,Pval=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$p_lrt,Beta=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$beta,Br=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$br,WT= merged_psymb_A17[match(unique(top5_candidates$psymb$ld_group),merged_psymb_A17$ld_group),]$pr,hcl= merged_psymb_hcl.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_hcl.change$ld_group),]$pr,ipd3= merged_psymb_ipd3.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_ipd3.change$ld_group),]$pr,latd=merged_psymb_latd.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_latd.change$ld_group),]$pr,nad1= merged_psymb_nad1.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_nad1.change$ld_group),]$pr,dnf1= merged_psymb_dnf1.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf1.change$ld_group),]$pr,dnf2=merged_psymb_dnf2.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf2.change$ld_group),]$pr,dnf3=merged_psymb_dnf3.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf3.change$ld_group),]$pr,dnf4=merged_psymb_dnf4.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf4.change$ld_group),]$pr,dnf6=merged_psymb_dnf6.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf6.change$ld_group),]$pr,dnf7=merged_psymb_dnf7.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf7.change$ld_group),]$pr,dnf1dnf2=merged_psymb_dnf1dnf2.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf1dnf2.change$ld_group),]$pr,dnf5dnf2=merged_psymb_dnf5dnf2.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf5dnf2.change$ld_group),]$pr,rdn1=merged_psymb_rdn1.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_rdn1.change$ld_group),]$pr,sunn1=merged_psymb_sunn1.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_sunn1.change$ld_group),]$pr,sunn4=merged_psymb_sunn4.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_sunn4.change$ld_group),]$pr,Description=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$description)
+
+#crossranked table of ld_groups on the psyma based on the p-ranks
+
+
+top5_candidates_crossranked_psyma<-data.frame(group=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$ld_group,pr=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$pr,Location= top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$Replicon,Pval=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$p_lrt,Beta=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$beta,Br=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$br,WT= merged_psyma_A17[match(unique(top5_candidates$psyma$ld_group),merged_psyma_A17$ld_group),]$pr,hcl= merged_psyma_hcl.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_hcl.change$ld_group),]$pr,ipd3= merged_psyma_ipd3.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_ipd3.change$ld_group),]$pr,latd=merged_psyma_latd.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_latd.change$ld_group),]$pr,nad1= merged_psyma_nad1.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_nad1.change$ld_group),]$pr,dnf1= merged_psyma_dnf1.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf1.change$ld_group),]$pr,dnf2=merged_psyma_dnf2.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf2.change$ld_group),]$pr,dnf3=merged_psyma_dnf3.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf3.change$ld_group),]$pr,dnf4=merged_psyma_dnf4.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf4.change$ld_group),]$pr,dnf6=merged_psyma_dnf6.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf6.change$ld_group),]$pr,dnf7=merged_psyma_dnf7.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf7.change$ld_group),]$pr,dnf1dnf2=merged_psyma_dnf1dnf2.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf1dnf2.change$ld_group),]$pr,dnf5dnf2=merged_psyma_dnf5dnf2.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf5dnf2.change$ld_group),]$pr,rdn1=merged_psyma_rdn1.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_rdn1.change$ld_group),]$pr,sunn1=merged_psyma_sunn1.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_sunn1.change$ld_group),]$pr,sunn4=merged_psyma_sunn4.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_sunn4.change$ld_group),]$pr,Description=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$description)
+
+
+top5_candidates_crossranked<-rbind (top5_candidates_crossranked_chr,top5_candidates_crossranked_psyma,top5_candidates_crossranked_psymb)
 write.table(top5_candidates_crossranked,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5_candidates_crossranked.tsv",sep = "\t",row.names = FALSE)
 #crossranked table based on the  beta:
 top5_candidates_crossranked_beta<-data.frame(group=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$ld_group,pr=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$pr,Location= top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$Replicon,Pval=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$p_lrt,Beta=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$beta,Br=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$br,WT= merged_A17[match(unique(top5_candidates$ld_group),merged_A17$ld_group),]$beta,hcl= merged_hcl[match(unique(top5_candidates$ld_group),merged_hcl$ld_group),]$beta,ipd3= merged_ipd3[match(unique(top5_candidates$ld_group),merged_ipd3$ld_group),]$beta,latd=merged_latd[match(unique(top5_candidates$ld_group),merged_latd$ld_group),]$beta,nad1= merged_nad1[match(unique(top5_candidates$ld_group),merged_nad1$ld_group),]$beta,dnf1= merged_dnf1[match(unique(top5_candidates$ld_group),merged_dnf1$ld_group),]$beta,dnf2=merged_dnf2[match(unique(top5_candidates$ld_group),merged_dnf2$ld_group),]$beta,dnf3=merged_dnf3[match(unique(top5_candidates$ld_group),merged_dnf3$ld_group),]$beta,dnf4=merged_dnf4[match(unique(top5_candidates$ld_group),merged_dnf4$ld_group),]$beta,dnf6=merged_dnf6[match(unique(top5_candidates$ld_group),merged_dnf6$ld_group),]$beta,dnf7=merged_dnf7[match(unique(top5_candidates$ld_group),merged_dnf7$ld_group),]$beta,dnf1dnf2=merged_dnf1dnf2[match(unique(top5_candidates$ld_group),merged_dnf1dnf2$ld_group),]$beta,dnf5dnf2=merged_dnf5dnf2[match(unique(top5_candidates$ld_group),merged_dnf5dnf2$ld_group),]$beta,rdn1=merged_rdn1[match(unique(top5_candidates$ld_group),merged_rdn1$ld_group),]$beta,sunn1=merged_sunn1[match(unique(top5_candidates$ld_group),merged_sunn1$ld_group),]$beta,sunn4=merged_sunn4[match(unique(top5_candidates$ld_group),merged_sunn4$ld_group),]$beta,Description=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$description)
  
 ```
+
+
 
 ```{r Heatmaps, echo=FALSE}
 
@@ -422,5 +442,33 @@ dev.off()
 
 ```
 
-```{r Heatmaps, echo=FALSE}
+```{r Nucleotide diversity analysis, echo=FALSE}
+
+summarized_rhizobia_data <- read.delim("~/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Burghardt Lab Shared Folder/Projects/TiffinLabSharedData/popgen/rhizobia/summarized_rhizobia_data.tsv")
+
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+split_data <- strsplit(as.character(df$x), ":")
+split_data <- sapply(split_data, function(x) x[1])
+split_data
+library(ggplot2)
+
+# Plotting all data points
+p <- ggplot(summarized_rhizobia_data, aes(y = tajD, x = start)) +
+  geom_point(color = cbPalette[3], alpha = 0.5) +  # Plot all data points with reduced opacity
+  geom_smooth(method = "loess", span = 0.1, color = cbPalette[3]) +
+  ggtitle("rhizobia Tajima's D") +
+  xlab("position on the genome") +
+  ylab("Tajima D") +
+  theme(axis.text = element_text(size = 14), 
+        plot.title = element_text(size = 18), 
+        axis.title = element_text(size = 18, face = "bold"))
+
+# Overlay points for specified locus tags
+a<-p + geom_point(data = summarized_rhizobia_data[summarized_rhizobia_data$ncbi_locus_tag %in% split_data, ], 
+               aes(y = tajD, x = start), 
+               color = "red", 
+               size = 1)
+a
+
+#plot them replicon wise.
 ```
