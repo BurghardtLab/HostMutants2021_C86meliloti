@@ -17,6 +17,7 @@ require(ggplot2)
 require(RColorBrewer)
 require(gplots)
 require(vegan)
+require(corrplot)
 knitr::opts_chunk$set(message = FALSE)
 ```
 ```{r setup, include=FALSE}
@@ -464,16 +465,9 @@ dev.off()
 ```{r cor plots}
 # Correlation Plot
 # Prep data for plotting combine soil and host fitness values only and turn into wide format
-mean_trait<- rbind(meso_fit_med, inplanta_fit_med, longterm_FS)
-fit_wide<-mean_fit%>% pivot_wider(names_from = Trt, values_from = median)
+pdf(file = "../figures/Supplemental Figure_corr.pdf",width = 9, height = 9)
 
-traits_all%>% select(c(3,18:27)) %>%  group_by(geno) %>% summarise_if(is.numeric,mean,na.rm=TRUE)
-# Calculate fitness correlations using the rcorr fuction in the Hmisc package
-fit_wide<-fit_wide[, c(1, 13, 2, 12, 6, 7, 8, 9, 3, 5, 4, 10, 11 ) ]
-
-library(corrplot)
-M <- cor(fit_mean_matrix) # correlation matrix # pvalue matrix
-col1 = colorRampPalette(c("#AA1F2A", 'white', "#4696C5"))
-pdf(file = "../figures/FigS1_fitnesscor.pdf",useDingbats = FALSE, height=6, width=6)
-corrplot(M, method = "ellipse", type = "upper", diag = FALSE, order= "original", tl.col="black",addCoef.col = TRUE, col = col1(10), title = "Phenotypic Correlations", mar=c(0,0,2,0))
+ correlation_matrix <- cor(Geno_matrix, method = "pearson", use = "pairwise.complete.obs")
+corrplot(correlation_matrix, method = "number")
 dev.off()
+```
