@@ -78,76 +78,6 @@ merged_chr_sunn4.change <- read.delim("../data/GWAS_data/annotation/merged_chr_s
 merged_chr_A17<-read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_A17.tsv",header=TRUE)
 ```
 
-```{r setup,Import the beta include=FALSE}
-#importing the beta significances
-#chr
-top_betas_sunn4_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_sunn4.change.tsv",header=TRUE)
-top_betas_sunn1_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_sunn1.change.tsv",header=TRUE)
-top_betas_rdn1_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_rdn1.change.tsv",header=TRUE)
-top_betas_dnf5dnf2_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf5dnf2.change.tsv",header=TRUE)
-top_betas_dnf1dnf2_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf1dnf2.change.tsv",header=TRUE)
-top_betas_dnf7_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf7.change.tsv",header=TRUE)
-top_betas_dnf6_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf6.change.tsv",header=TRUE)
-top_betas_dnf4_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf4.change.tsv",header=TRUE)
-top_betas_dnf3_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf3.change.tsv",header=TRUE)
-top_betas_dnf2_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf2.change.tsv",header=TRUE)
-top_betas_dnf1_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_dnf1.change.tsv",header=TRUE)
-top_betas_nad1_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_nad1.change.tsv",header=TRUE)
-top_betas_latd_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_latd.change.tsv",header=TRUE)
-top_betas_ipd3_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_ipd3.change.tsv",header=TRUE)
-top_betas_hcl_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_hcl.change.tsv",header=TRUE)
-top_betas_A17_chr.change <- read.delim("../data/GWAS_data/top10betas/chr/top_betas_A17.change.tsv",header=TRUE)
-
-#psyma
-top_betas_sunn4_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_sunn4.change.tsv",header=TRUE)
-top_betas_sunn1_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_sunn1.change.tsv",header=TRUE)
-top_betas_rdn1_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_rdn1.change.tsv",header=TRUE)
-top_betas_dnf5dnf2_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf5dnf2.change.tsv",header=TRUE)
-top_betas_dnf1dnf2_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf1dnf2.change.tsv",header=TRUE)
-top_betas_dnf7_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf7.change.tsv",header=TRUE)
-top_betas_dnf6_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf6.change.tsv",header=TRUE)
-top_betas_dnf4_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf4.change.tsv",header=TRUE)
-top_betas_dnf3_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf3.change.tsv",header=TRUE)
-top_betas_dnf2_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf2.change.tsv",header=TRUE)
-top_betas_dnf1_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_dnf1.change.tsv",header=TRUE)
-top_betas_nad1_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_nad1.change.tsv",header=TRUE)
-top_betas_latd_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_latd.change.tsv",header=TRUE)
-top_betas_ipd3_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_ipd3.change.tsv",header=TRUE)
-top_betas_hcl_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_hcl.change.tsv",header=TRUE)
-top_betas_A17_psyma.change <- read.delim("../data/GWAS_data/top10betas/psyma/top_betas_A17.change.tsv",header=TRUE)
-
-
-
-#psymb
-top_betas_sunn4_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_sunn4.change.tsv",header=TRUE)
-top_betas_sunn1_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_sunn1.change.tsv",header=TRUE)
-top_betas_rdn1_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_rdn1.change.tsv",header=TRUE)
-top_betas_dnf5dnf2_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf5dnf2.change.tsv",header=TRUE)
-top_betas_dnf1dnf2_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf1dnf2.change.tsv",header=TRUE)
-top_betas_dnf7_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf7.change.tsv",header=TRUE)
-top_betas_dnf6_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf6.change.tsv",header=TRUE)
-top_betas_dnf4_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf4.change.tsv",header=TRUE)
-top_betas_dnf3_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf3.change.tsv",header=TRUE)
-top_betas_dnf2_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf2.change.tsv",header=TRUE)
-top_betas_dnf1_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_dnf1.change.tsv",header=TRUE)
-top_betas_nad1_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_nad1.change.tsv",header=TRUE)
-top_betas_latd_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_latd.change.tsv",header=TRUE)
-top_betas_ipd3_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_ipd3.change.tsv",header=TRUE)
-top_betas_hcl_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_hcl.change.tsv",header=TRUE)
-top_betas_A17_psymb.change <- read.delim("../data/GWAS_data/top10betas/psymb/top_betas_A17.change.tsv",header=TRUE)
-
-
-#merge by replicons
- 
-top10_candidates_beta_psyma<-rbind(top_betas_sunn4_psyma.change,top_betas_sunn1_psyma.change,top_betas_rdn1_psyma.change,top_betas_dnf5dnf2_psyma.change,top_betas_dnf1dnf2_psyma.change,top_betas_dnf7_psyma.change,top_betas_dnf6_psyma.change,top_betas_dnf4_psyma.change,top_betas_dnf3_psyma.change,top_betas_dnf2_psyma.change,top_betas_dnf1_psyma.change,top_betas_nad1_psyma.change,top_betas_latd_psyma.change,top_betas_ipd3_psyma.change,top_betas_hcl_psyma.change,top_betas_A17_psyma.change)
-
-top10_candidates_beta_psymb<-rbind(top_betas_sunn4_psymb.change,top_betas_sunn1_psymb.change,top_betas_rdn1_psymb.change,top_betas_dnf5dnf2_psymb.change,top_betas_dnf1dnf2_psymb.change,top_betas_dnf7_psymb.change,top_betas_dnf6_psymb.change,top_betas_dnf4_psymb.change,top_betas_dnf3_psymb.change,top_betas_dnf2_psymb.change,top_betas_dnf1_psymb.change,top_betas_nad1_psymb.change,top_betas_latd_psymb.change,top_betas_ipd3_psymb.change,top_betas_hcl_psymb.change,top_betas_A17_psymb.change)
-
-top10_candidates_beta_chr<-rbind(top_betas_sunn4_chr.change,top_betas_sunn1_chr.change,top_betas_rdn1_chr.change,top_betas_dnf5dnf2_chr.change,top_betas_dnf1dnf2_chr.change,top_betas_dnf7_chr.change,top_betas_dnf6_chr.change,top_betas_dnf4_chr.change,top_betas_dnf3_chr.change,top_betas_dnf2_chr.change,top_betas_dnf1_chr.change,top_betas_nad1_chr.change,top_betas_latd_chr.change,top_betas_ipd3_chr.change,top_betas_hcl_chr.change,top_betas_A17_chr.change)
-#combine all the top10_candidates beta
-top10_candidates_beta<-rbind(top10_candidates_beta_psyma,top10_candidates_beta_psymb,top10_candidates_beta_chr)
-```
-
 ```{r top 10 and top 5 candidates per genotype, echo=FALSE}
 # List of file paths
 #I think this is incorrect. I already have them imported.
@@ -182,8 +112,6 @@ combined_data <- do.call(rbind, all_top_candidates_subsets)
 combined_top10_candidates_data<-combined_data%>% separate(chr,c('Organism','Replicon'))
 combined_top10_candidates_data<-combined_top10_candidates_data%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
 #adding the beta significance to the top5_candidates candidates per replicon
-
-combined_top10_candidates_data<-inner_join(combined_top10_candidates_data,top10_candidates_beta,by="ldg")
 #for Table S7
 #combined_top10_candidates_data<-combined_top10_candidates_data%>%group_by(ld_group) %>%filter(!duplicated(ld_group))
 write.table(combined_top10_candidates_data,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/SupplementalTable S7.tsv",sep = "\t",row.names = FALSE) 
@@ -205,8 +133,8 @@ all_top_candidates_subsets.1 <- lapply(data_list, get_top_candidates_subset_and_
 combined_data2 <- do.call(rbind, all_top_candidates_subsets.1)
 #seperate the 'chr' col
 top5_candidates<-combined_data2%>% separate(chr,c('Organism','Replicon'))
-#top5_candidates<-top5_candidates%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
-#for Table S7 and heatmaps
+top5_candidates<-top5_candidates%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
+#for  heatmaps
 #top5_candidates<-top5_candidates%>%group_by(ld_group) %>%filter(!duplicated(ld_group)) 
 write.table(top5_candidates,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5_candidates.tsv",sep = "\t",row.names = FALSE) 
 
@@ -313,7 +241,7 @@ write.table(top5_candidates_crossranked,file="/Users/sohiniguha/Library/CloudSto
 #based on the top5 candidates
 #no p-cutoff
 replicon <- c("chr", "psyma", "psymb")
-#For Fig6 theheatmap below will be used sans annotations
+#For Fig6 the heatmap below will be used sans annotations
 
 # Keeping only meaningful columns
 df <- function(replicon) {

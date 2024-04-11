@@ -46,7 +46,7 @@ pdf(file = "../figures/Supplemental Fig1.pdf",width = 6, height = 6)
 hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution", xlab="Isolate Frequency", ylab="Number of Isolates")
 dev.off()
 
-#Break apart sample_id string into genotype id and replicate and convert into facotrs
+#Break apart sample_id string into genotype id and replicate and convert into factors
 freq_all<-freq_all %>% mutate(genotype_id = substr(sample_id, 3,5), rep = substr(sample_id, 6,6),.before = sample_id) %>% mutate(across(c(genotype_id,rep,sample_id), as.factor))
                                                                                       
  #join the dataset of genotype names with the genotype ids
@@ -467,7 +467,14 @@ dev.off()
 # Prep data for plotting combine soil and host fitness values only and turn into wide format
 pdf(file = "../figures/Supplemental Figure_corr.pdf",width = 9, height = 9)
 
- correlation_matrix <- cor(Geno_matrix, method = "pearson", use = "pairwise.complete.obs")
-corrplot(correlation_matrix, method = "number")
+#merging the RDA analyses with the traits table
+traits_all.1 <- left_join(traits_all, df1, by = "geno")
+#retaining only the meaningful cols
+traits_all.2<-traits_all.1%>% select(-sample_id,-rep,-genotype_id,-background,-date_biomass_harvested,-num_plants,-average_size,-percent_herbivory,-flowering,-num_plants_picked_nods,-type.y,-above_biomass_g,-below_biomass_g,-cfu_ml,-RDA3,-RDA4,-RDA5,-RDA6,-type.x,-Count,-total_area,-below_biomass_per_plant,-above_biomass_per_plant,-total_area)%>%group_by(geno)%>%summarise_if(is.numeric, mean, na.rm = TRUE)%>%filter(!geno %in% c("dmi1-2", "dmi2-3", "dmi3-1", "skl"))
+#converting it to a matrix
+traits_all.2<-as.matrix(traits_all.2[,-1])
+#corrplot
+correlation_matrix <- cor(traits_all.2, method = "pearson", use = "pairwise.complete.obs")
+corrplot.mixed(correlation_matrix, number.cex=0.6,upper = "ellipse", lower = "number",tl.pos = "lt", tl.col = "black",order = 'hclust', tl.offset=1, tl.srt = 90)
 dev.off()
 ```
