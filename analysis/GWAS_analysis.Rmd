@@ -110,7 +110,7 @@ all_top_candidates_subsets <- lapply(data_list, get_top_candidates_subset_and_co
 combined_data <- do.call(rbind, all_top_candidates_subsets)
 #seperate the 'chr' col
 combined_top10_candidates_data<-combined_data%>% separate(chr,c('Organism','Replicon'))
-combined_top10_candidates_data<-combined_top10_candidates_data%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
+#combined_top10_candidates_data<-combined_top10_candidates_data%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
 #adding the beta significance to the top5_candidates candidates per replicon
 #for Table S7
 #combined_top10_candidates_data<-combined_top10_candidates_data%>%group_by(ld_group) %>%filter(!duplicated(ld_group))
@@ -132,11 +132,11 @@ all_top_candidates_subsets.1 <- lapply(data_list, get_top_candidates_subset_and_
 # Combine all subsets into a single data frame
 combined_data2 <- do.call(rbind, all_top_candidates_subsets.1)
 #seperate the 'chr' col
-top5_candidates<-combined_data2%>% separate(chr,c('Organism','Replicon'))
-top5_candidates<-top5_candidates%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
+top5_candidates.1<-combined_data2%>% separate(chr,c('Organism','Replicon'))
+top5_candidates<-top5_candidates.1%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
 #for  heatmaps
 #top5_candidates<-top5_candidates%>%group_by(ld_group) %>%filter(!duplicated(ld_group)) 
-write.table(top5_candidates,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5_candidates.tsv",sep = "\t",row.names = FALSE) 
+write.table(top5_candidates.1,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5_candidates.tsv",sep = "\t",row.names = FALSE) 
 
 #this will be used for the condensed table
 top5_candidates_prs<-subset(top5_candidates,prs>=1 & prs<=5)
@@ -318,7 +318,7 @@ df <- function(replicon) {
   
   # Remove Description and irrelevant columns
   result_beta2 <- result_beta %>%
-    select(-c(1:7)) %>%
+    select(-c(1:6)) %>%
     select(-Description)
  
   
