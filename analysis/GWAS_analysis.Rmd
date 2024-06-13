@@ -219,10 +219,10 @@ top5_candidates_crossranked_psyma<-data.frame(group=top5_candidates$psyma[match(
 
 
 top5_candidates_crossranked<-rbind (top5_candidates_crossranked_chr,top5_candidates_crossranked_psyma,top5_candidates_crossranked_psymb)
-within_rank10_counts <- rowSums(top5_candidates_crossranked[, -(1:6)] <= 10, na.rm = TRUE)
-top5_candidates_crossranked<-cbind(top5_candidates_crossranked,within_rank10_counts)
+Rank_top10 <- rowSums(top5_candidates_crossranked[, -(1:6)] <= 10, na.rm = TRUE)
+top5_candidates_crossranked.1<-cbind(top5_candidates_crossranked,Rank_top10)
 
-write.table(top5_candidates_crossranked,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/SupplementalTable S8.tsv",sep = "\t",row.names = FALSE)
+write.table(top5_candidates_crossranked.1,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/SupplementalTable S8.tsv",sep = "\t",row.names = FALSE)
 
 ```
 
@@ -253,7 +253,6 @@ df <- function(replicon) {
   result2 <- result %>%
     select(-c(1:6)) %>%
     select(-Description)
- 
   
   # Convert data to matrix
   data_matrix <- as.matrix(result2)
@@ -320,6 +319,128 @@ df <- function(replicon) {
 
   # Reciprocal transformation
   rownames(data_matrix_beta) <- result_beta$Description
+
+  # Define color palette
+  col_letters <- c("WT" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
+                   "nad1" = "#009E73", "dnf1" = "#009E73", "dnf2" = "#009E73", "dnf3" = "#009E73", 
+                   "dnf4" = "#009E73", "dnf6" = "#009E73", "dnf7" = "#009E73", "dnf1/dnf2" = "#009E73", 
+                   "dnf5/dnf2" = "#009E73", "rdn1" = "#E69F00", "sunn1" = "#E69F00", "sunn4" = "#E69F00")
+
+  # Define color palette
+pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))
+  # Generate heatmap
+  heatmap.2(data_matrix_beta, Rowv = TRUE,Colv=TRUE,dendrogram = "row", col = pal, 
+            hclustfun = function(d) hclust(d, method = "ward.D2"), trace = "none", 
+            scale = "none", cexCol = 1, cexRow = 0.5, key = TRUE, 
+            key.xlab = "Beta", key.ylab = NA, tracecol = "black", keysize = 2, 
+            symbreaks = FALSE, key.title = replicon, colCol = col_letters,
+            margins = c(8, 15))
+  
+  
+  
+  # Return the filtered data
+  return(result_beta)
+
+}
+
+df("chr")
+df("psyma")
+df("psymb")
+dev.off()
+
+##Adding the ranks in the prank heatmaps
+
+df <- function(replicon) {
+  # Separate Location column into Organism and Replicon
+ #top5_candidates_crossranked1  <- top5_candidates_crossranked %>%separate(Location, c("Organism", "Replicon"))
+  top5_candidates_crossranked.1
+  # Filter the data for the specified replicon
+  result <- top5_candidates_crossranked.1[top5_candidates_crossranked.1$Location == replicon, ]
+
+  # Check if any rows are filtered
+  if (nrow(result) == 0) {
+    stop("No data found for the specified replicon.")
+  }
+  
+  # Remove Description and irrelevant columns
+ result3<- result %>%
+    select(-c(1:6)) %>%select(-Description)%>%
+    select(-Rank_top10)
+ 
+  
+  # Convert data to matrix
+  data_matrix <- as.matrix(result3)
+
+  # Reciprocal transformation
+  data_matrix <- 1 / data_matrix
+  rownames(data_matrix) <- result$Rank_top10
+
+  # Define color palette
+  col_letters <- c("WT" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
+                   "nad1" = "#009E73", "dnf1" = "#009E73", "dnf2" = "#009E73", "dnf3" = "#009E73", 
+                   "dnf4" = "#009E73", "dnf6" = "#009E73", "dnf7" = "#009E73", "dnf1/dnf2" = "#009E73", 
+                   "dnf5/dnf2" = "#009E73", "rdn1" = "#E69F00", "sunn1" = "#E69F00", "sunn4" = "#E69F00")
+
+  # Define color palette
+  pal <- colorRampPalette(c("lightgrey", "wheat", "gold", "orange", "darkorange", "red", "darkred"))(500)
+  
+  # Generate heatmap
+  heatmap.2(data_matrix, Rowv = TRUE,Colv=TRUE,dendrogram = "row", col = pal, 
+            hclustfun = function(d) hclust(d, method = "ward.D2"), trace = "none", 
+            scale = "none", cexCol = 1, cexRow = 0.5, key = TRUE, 
+            key.xlab = "Rank", key.ylab = NA, tracecol = "black", keysize = 2, 
+            symbreaks = FALSE, key.title = replicon, colCol = col_letters,
+            margins = c(8, 15))
+  
+  
+  
+  # Return the filtered data
+  return(result3)
+
+}
+
+pdf(file = "/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/figures/Supplemental Figure4.1.pdf",width = 6.78, height = 6.78)
+
+
+df("chr")
+df("psyma")
+df("psymb")
+dev.off()
+
+
+
+
+
+
+
+
+
+#Adding the beta values in the beta heatmaps
+pdf(file = "/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/figures/Supplemental Figure5.1.pdf",width = 6.78, height = 6.78)
+
+df <- function(replicon) {
+  # Separate Location column into Organism and Replicon
+ #top5_candidates_crossranked1  <- top5_candidates_crossranked %>%separate(Location, c("Organism", "Replicon"))
+  
+  # Filter the data for the specified replicon
+  result_beta <- top5_candidates_crossranked_beta[top5_candidates_crossranked_beta$Location == replicon, ]
+
+  # Check if any rows are filtered
+  if (nrow(result_beta) == 0) {
+    stop("No data found for the specified replicon.")
+  }
+  
+  # Remove Description and irrelevant columns
+  result_beta2 <- result_beta %>%
+    select(-c(1:7)) %>%
+    select(-Description)
+ 
+  
+  # Convert data to matrix
+  data_matrix_beta <- as.matrix(result_beta2)
+
+  # Reciprocal transformation
+  rownames(data_matrix_beta) <- result_beta$Beta
 
   # Define color palette
   col_letters <- c("WT" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
