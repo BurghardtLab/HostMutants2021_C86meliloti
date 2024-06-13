@@ -97,7 +97,7 @@ read_and_store_data <- function(file_paths) {
 
 # Read data frames and store in the list
 data_list <- lapply(file_paths, read_and_store_data)
-#top5_candidatescandidates
+#top5_candidates
 get_top_candidates_subset_and_combine <- function(data) {
   top_candidates_subset <- subset(data, pr >= 1 & pr <= 10)
   return(top_candidates_subset)
@@ -105,41 +105,31 @@ get_top_candidates_subset_and_combine <- function(data) {
 
 # Use lapply to apply the function to each data frame
 all_top_candidates_subsets <- lapply(data_list, get_top_candidates_subset_and_combine)
-
 # Combine all subsets into a single data frame
 combined_data <- do.call(rbind, all_top_candidates_subsets)
 #seperate the 'chr' col
 combined_top10_candidates_data<-combined_data%>% separate(chr,c('Organism','Replicon'))
-#combined_top10_candidates_data<-combined_top10_candidates_data%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
-#adding the beta significance to the top5_candidates candidates per replicon
 #for Table S7
-#combined_top10_candidates_data<-combined_top10_candidates_data%>%group_by(ld_group) %>%filter(!duplicated(ld_group))
 write.table(combined_top10_candidates_data,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/SupplementalTable S7.tsv",sep = "\t",row.names = FALSE) 
-
-#combine the files (Table S8)
-#top5_candidates<-rbind(combined_top5_candidatesdata_chr,combined_top5_candidatesdata_psyma,combined_top5_candidatesdata_psymb) #for the crossranked table
-
 #select the top5 for fig6, supplement annotated heatmap and the crossranked tables
 #top5_candidates<-subset(combined_top10_candidates_data,pr>=1 & pr<=5)
 get_top_candidates_subset_and_combine.1 <- function(data) {
   top_candidates_subset.1 <- subset(data, pr >= 1 & pr <= 5)
   return(top_candidates_subset.1)
 }
-
 # Use lapply to apply the function to each data frame
 all_top_candidates_subsets.1 <- lapply(data_list, get_top_candidates_subset_and_combine.1)
-
 # Combine all subsets into a single data frame
 combined_data2 <- do.call(rbind, all_top_candidates_subsets.1)
 #seperate the 'chr' col
 top5_candidates.1<-combined_data2%>% separate(chr,c('Organism','Replicon'))
+#for crossranked table  and for the heatmaps ##no pcut,no small groups,unique
+
 top5_candidates<-top5_candidates.1%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
-#for  heatmaps
-#top5_candidates<-top5_candidates%>%group_by(ld_group) %>%filter(!duplicated(ld_group)) 
 write.table(top5_candidates.1,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5_candidates.tsv",sep = "\t",row.names = FALSE) 
 
-#this will be used for the condensed table
-top5_candidates_prs<-subset(top5_candidates,prs>=1 & prs<=5)
+# for Table 3
+top5_candidates_prs<-subset(top5_candidates.1,prs>=1 & prs<=5)
 top5_candidates_prs.1<- top5_candidates_prs[top5_candidates_prs$p_lrt <= 1e-5, ]
 
 write.table(top5_candidates_prs.1,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5candidates_condensed table.tsv",sep = "\t",row.names = FALSE)
@@ -147,7 +137,7 @@ write.table(top5_candidates_prs.1,file="/Users/sohiniguha/Library/CloudStorage/O
 
 
 
-```{r crossranked tables, echo=FALSE}
+```{r Code for SupplementalTableS8, echo=FALSE}
 
 merge_GWAS_data <- function(gene){
     # Construct file paths based on gene  name
@@ -206,7 +196,7 @@ merged_sunn1<-merge_GWAS_data("sunn1")
 merged_sunn4<-merge_GWAS_data("sunn4")
 #crossranked table based on the  beta:
 
-top5_candidates_crossranked_beta<-data.frame(group=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$ld_group,pr=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$pr,Location= top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$Replicon,Pval=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$p_lrt,Beta=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$beta,Br=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$br,WT= merged_A17[match(unique(top5_candidates$ld_group),merged_A17$ld_group),]$beta,hcl= merged_hcl[match(unique(top5_candidates$ld_group),merged_hcl$ld_group),]$beta,ipd3= merged_ipd3[match(unique(top5_candidates$ld_group),merged_ipd3$ld_group),]$beta,latd=merged_latd[match(unique(top5_candidates$ld_group),merged_latd$ld_group),]$beta,nad1= merged_nad1[match(unique(top5_candidates$ld_group),merged_nad1$ld_group),]$beta,dnf1= merged_dnf1[match(unique(top5_candidates$ld_group),merged_dnf1$ld_group),]$beta,dnf2=merged_dnf2[match(unique(top5_candidates$ld_group),merged_dnf2$ld_group),]$beta,dnf3=merged_dnf3[match(unique(top5_candidates$ld_group),merged_dnf3$ld_group),]$beta,dnf4=merged_dnf4[match(unique(top5_candidates$ld_group),merged_dnf4$ld_group),]$beta,dnf6=merged_dnf6[match(unique(top5_candidates$ld_group),merged_dnf6$ld_group),]$beta,dnf7=merged_dnf7[match(unique(top5_candidates$ld_group),merged_dnf7$ld_group),]$beta,dnf1dnf2=merged_dnf1dnf2[match(unique(top5_candidates$ld_group),merged_dnf1dnf2$ld_group),]$beta,dnf5dnf2=merged_dnf5dnf2[match(unique(top5_candidates$ld_group),merged_dnf5dnf2$ld_group),]$beta,rdn1=merged_rdn1[match(unique(top5_candidates$ld_group),merged_rdn1$ld_group),]$beta,sunn1=merged_sunn1[match(unique(top5_candidates$ld_group),merged_sunn1$ld_group),]$beta,sunn4=merged_sunn4[match(unique(top5_candidates$ld_group),merged_sunn4$ld_group),]$beta,Description=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$description)
+top5_candidates_crossranked_beta<-data.frame(group=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$ld_group,pr=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$pr,Location= top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$Replicon,Pval=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$p_lrt,Beta=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$beta,Br=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$br,WT=merged_A17[match(unique(top5_candidates$ld_group),merged_A17$ld_group),]$beta,hcl=merged_hcl[match(unique(top5_candidates$ld_group),merged_hcl$ld_group),]$beta,ipd3=merged_ipd3[match(unique(top5_candidates$ld_group),merged_ipd3$ld_group),]$beta,latd=merged_latd[match(unique(top5_candidates$ld_group),merged_latd$ld_group),]$beta,nad1=merged_nad1[match(unique(top5_candidates$ld_group),merged_nad1$ld_group),]$beta,dnf1=merged_dnf1[match(unique(top5_candidates$ld_group),merged_dnf1$ld_group),]$beta,dnf2=merged_dnf2[match(unique(top5_candidates$ld_group),merged_dnf2$ld_group),]$beta,dnf3=merged_dnf3[match(unique(top5_candidates$ld_group),merged_dnf3$ld_group),]$beta,dnf4=merged_dnf4[match(unique(top5_candidates$ld_group),merged_dnf4$ld_group),]$beta,dnf6=merged_dnf6[match(unique(top5_candidates$ld_group),merged_dnf6$ld_group),]$beta,dnf7=merged_dnf7[match(unique(top5_candidates$ld_group),merged_dnf7$ld_group),]$beta,dnf1dnf2=merged_dnf1dnf2[match(unique(top5_candidates$ld_group),merged_dnf1dnf2$ld_group),]$beta,dnf5dnf2=merged_dnf5dnf2[match(unique(top5_candidates$ld_group),merged_dnf5dnf2$ld_group),]$beta,rdn1=merged_rdn1[match(unique(top5_candidates$ld_group),merged_rdn1$ld_group),]$beta,sunn1=merged_sunn1[match(unique(top5_candidates$ld_group),merged_sunn1$ld_group),]$beta,sunn4=merged_sunn4[match(unique(top5_candidates$ld_group),merged_sunn4$ld_group),]$beta,Description=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$description)
  
 
 #split the top5 candidate list based on the replicons
@@ -229,13 +219,16 @@ top5_candidates_crossranked_psyma<-data.frame(group=top5_candidates$psyma[match(
 
 
 top5_candidates_crossranked<-rbind (top5_candidates_crossranked_chr,top5_candidates_crossranked_psyma,top5_candidates_crossranked_psymb)
-write.table(top5_candidates_crossranked,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5_candidates_crossranked.tsv",sep = "\t",row.names = FALSE)
+within_rank10_counts <- rowSums(top5_candidates_crossranked[, -(1:6)] <= 10, na.rm = TRUE)
+top5_candidates_crossranked<-cbind(top5_candidates_crossranked,within_rank10_counts)
+
+write.table(top5_candidates_crossranked,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/SupplementalTable S8.tsv",sep = "\t",row.names = FALSE)
 
 ```
 
 
 
-```{r Heatmaps, echo=FALSE}
+```{r Code for Figure5 and Supplemental Figure4, echo=FALSE}
 
 #For corresponding Supplementary Fig. SX
 #based on the top5 candidates
@@ -293,7 +286,7 @@ df <- function(replicon) {
 
 }
 
-pdf(file = "/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/figures/HEATMAPS_pranks.pdf",width = 6.78, height = 6.78)
+pdf(file = "/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/figures/Supplemental Figure4.pdf",width = 6.78, height = 6.78)
 
 
 df("chr")
@@ -302,7 +295,7 @@ df("psymb")
 dev.off()
 
 #beta heatmaps
-pdf(file = "/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/figures/HEATMAPS_beta.pdf",width = 6.78, height = 6.78)
+pdf(file = "/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/figures/Supplemental Figure5.pdf",width = 6.78, height = 6.78)
 
 df <- function(replicon) {
   # Separate Location column into Organism and Replicon
@@ -318,7 +311,7 @@ df <- function(replicon) {
   
   # Remove Description and irrelevant columns
   result_beta2 <- result_beta %>%
-    select(-c(1:6)) %>%
+    select(-c(1:7)) %>%
     select(-Description)
  
   
@@ -475,3 +468,28 @@ ggplot(summarized_rhizobia_data, aes(x=tajD,fill=replicon))+ geom_density(aes(gr
 
 dev.off()
 ```
+
+```{r CREATING the histograms of shared genomic basis, echo=FALSE}
+
+
+crossranked_combined <- read.delim("~/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Burghardt Lab Shared Folder/Projects/NSFPGRP_HostMutants/Data/GWAS_SOHINI/crossranked_combined.tsv")
+
+
+crossranked_combined<-crossranked_combined%>% separate(Location,c('Organism','Replicon'))
+crossranked_combined_psymA<-crossranked_combined[crossranked_combined$Replicon=="psyma",-c(2:7)]
+within_rank10_counts_psyma <- rowSums(crossranked_combined_psymA[, -1] <= 10, na.rm = TRUE)
+
+
+crossranked_combined_psymB<-crossranked_combined[crossranked_combined$Replicon=="psymb",-c(2:7)]
+within_rank10_counts_psymb <- rowSums(crossranked_combined_psymB[, -1] <= 10, na.rm = TRUE)
+
+crossranked_combined_chr<-crossranked_combined[crossranked_combined$Replicon=="chr",-c(2:7)]
+within_rank10_counts_chr <- rowSums(crossranked_combined_chr[, -1] <= 10, na.rm = TRUE)
+
+df.psyma<-data.frame(group=crossranked_combined_psymA$group,Occurence=within_rank10_counts_psyma)
+df.psymb<-data.frame(group=crossranked_combined_psymB$group,Occurence=within_rank10_counts_psymb)
+df.chr<-data.frame(group=crossranked_combined_chr$group,Occurence=within_rank10_counts_chr)
+occurrence_counts.psyma <- table(df.psyma$Occurence)
+occurrence_counts.psymb <- table(df.psymb$Occurence)
+occurrence_counts.chr <- table(df.chr$Occurence)
+p<-ggplot(df, aes(x=Occurence, color=Replicon,fill=Replicon)) +geom_histogram(position="dodge",bins=10)+ylab("Frequency")+theme_minimal()

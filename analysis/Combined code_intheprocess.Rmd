@@ -241,7 +241,6 @@ rda.model.geno<-anova(rda_geno, step=1000, perm.max=1000, by= "terms")
 
 rda_type<-rda(fit_all[,c(8:93)]~type+rep,fit_all, scale=TRUE)
 rda.model.type<-anova(rda_type, step=1000, perm.max=1000, by= "terms") 
-#rda1<-rda(rel_mine[,c(2:69)]~rel_mine$treat,rel_mine, scale=TRUE)
 
 rda.strainfitness<-data.frame(Response=c("nodule_isolate_fitness"),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(rda.model.geno$Variance,rda.model.type$Variance),PctExp=c(rda.model.geno$Variance/sum(rda.model.geno$Variance)*100,rda.model.type$Variance/sum(rda.model.type$Variance)*100),Df=c(rda.model.geno$Df,rda.model.type$Df),Fval=c(rda.model.geno$F,rda.model.type$F), Pval=c(rda.model.geno$`Pr(>F)`,rda.model.type$`Pr(>F)`),R.adj=c(round(RsquareAdj(rda_geno)$adj.r.squared,4),"NA","NA",round(RsquareAdj(rda_type)$adj.r.squared,4),"NA","NA"))
 ```
@@ -255,7 +254,7 @@ write.table (ANOVA.Trait.Summary,file="../tables/Supplemental Table S2.txt",sep 
 
 #Visualizing Results
 
-```{r code for creating Supplemental Figure S2, echo=TRUE}
+```{r code for creating Supplemental Figure 3, echo=TRUE}
 Geno.Coef.Summary<-Geno.Coef.Summary %>% mutate(Predictor=substr(Predictor,5,14))
 Geno.Coef.Graphs<-rbind(Geno.Coef.Summary[,c(1,2,6,7)], Geno.Coef.RDA[,c(1,2,6,7)])
 Geno.Coef.Graphs$Class<-factor(Geno.Coef.Graphs$Class,levels=c("None","Up","Down","Change"))
@@ -268,7 +267,7 @@ Coef.Prop.Figure<-ggplot(data = Geno.Coef.Graphs) +
   coord_flip()+
   scale_fill_manual(values=c('#F7F7F7','#B2182B', '#2166AC','darkgoldenrod'))+xlab ("")+ylab("Proportion of Genotypes")+theme_bw()
 
-pdf(file = "../figures/Supplemental Figure2.pdf",width = 6, height = 6)
+pdf(file = "../figures/Supplemental Figure 3.pdf",width = 6, height = 6)
 Coef.Prop.Figure
 dev.off()
 #Should this line be added to the code?
@@ -462,15 +461,14 @@ dev.off()
 
 ```
 
-```{r cor plots}
+```{r Code for creating the Supplemental Figure 2}
 # Correlation Plot
-# Prep data for plotting combine soil and host fitness values only and turn into wide format
-pdf(file = "../figures/Supplemental Figure_corr.pdf",width = 9, height = 9)
+pdf(file = "../figures/Supplemental Figure 2.pdf",width = 9, height = 9)
 
 #merging the RDA analyses with the traits table
-traits_all.1 <- left_join(traits_all, df1, by = "geno")
+#traits_all.1 <- left_join(traits_all, df1, by = "geno")
 #retaining only the meaningful cols
-traits_all.2<-traits_all.1%>% select(-sample_id,-rep,-genotype_id,-background,-date_biomass_harvested,-num_plants,-average_size,-percent_herbivory,-flowering,-num_plants_picked_nods,-type.y,-above_biomass_g,-below_biomass_g,-cfu_ml,-RDA3,-RDA4,-RDA5,-RDA6,-type.x,-Count,-total_area,-below_biomass_per_plant,-above_biomass_per_plant,-total_area)%>%group_by(geno)%>%summarise_if(is.numeric, mean, na.rm = TRUE)%>%filter(!geno %in% c("dmi1-2", "dmi2-3", "dmi3-1", "skl"))
+traits_all.2<-traits_all%>% select(-sample_id,-rep,-genotype_id,-background,-date_biomass_harvested,-num_plants,-average_size,-percent_herbivory,-flowering,-num_plants_picked_nods,-above_biomass_g,-type,-below_biomass_g,-cfu_ml,-type,-Count,-total_area,-below_biomass_per_plant,-above_biomass_per_plant,-total_area)%>%group_by(geno)%>%summarise_if(is.numeric, mean, na.rm = TRUE)%>%filter(!geno %in% c("dmi1-2", "dmi2-3", "dmi3-1", "skl"))
 #converting it to a matrix
 traits_all.2<-as.matrix(traits_all.2[,-1])
 #corrplot
