@@ -24,13 +24,9 @@ knitr::opts_chunk$set(message = FALSE)
 
 
 ###Compiling the data for analysis
-```{r Strain Frequency: Import Data/Code for FigS1, echo=TRUE}
-# This file takes as input various files included in the Github repository including
-# Strain frequency files - freq.tsv
-#Names of the Medicago genotypes in A17 background along with their genotype ids, disruption type and order-genotype_name.txt
-#Nodule numbers and individual nodule sizes for each sample-data_HostMutants2021_nod_counts.txt
-#Sample ids, replicates for each genotype,CFU per ml,aboveground biomass,belowground biomass for each sample-data_nsfpgrp_hostmutants_C86meliloti.txt
 
+```{r Code for creating FigS1, echo=TRUE}
+# Strain frequency files - freq.tsv
 freq_all<-read.table("../data/freq.tsv", header=TRUE)
 genotype_name <- read.table("../data/genotype_name.txt",sep = "\t",header=TRUE)
 
@@ -75,14 +71,15 @@ div_all<-rowwise(freq_all) %>% transmute(geno=geno,type=type, rep=rep,sample_id=
 ```
 
 ```{r Merge all trait data sets, echo=TRUE}
+#Names of the Medicago genotypes in A17 background along with their genotype ids, disruption type and order-genotype_name.txt
+#Nodule numbers and individual nodule sizes for each sample- data_HostMutants2021_nod_counts.txt
+#Sample ids, replicates for each genotype,CFU per ml,aboveground biomass,belowground biomass for each sample-data_nsfpgrp_hostmutants_C86meliloti.txt
 
-# Import the text file of nodule data
+# Import the files
 data_HostMutants2021_nod_counts <- read.table("../data/data_HostMutants2021_nod_counts.txt",sep = "\t",header=TRUE)
 
-#import the text file with the CFU and nodule count data
 data_nsfpgrp_hostmutants_C86meliloti <- read.table("../data/data_nsfpgrp_hostmutants_C86meliloti.txt",sep = "\t",header=TRUE)
-
-# Merge all three datasets sequentially
+# Merge the datasets sequentially
 traits_all <-as_tibble(full_join (data_HostMutants2021_nod_counts,data_nsfpgrp_hostmutants_C86meliloti,by=c("sample_id","genotype_id","rep"))) %>% mutate(across(c(genotype_id,rep),as.factor))
 
 traits_all <-full_join (genotype_name,traits_all,by = "genotype_id") %>% filter(background=="A17")%>% rename(geno=name)
@@ -93,8 +90,8 @@ traits_all <- full_join(traits_all,div_all,by=NULL)
 # Choose only columns to keep that are meaningful for our analysis
 traits_all<-subset (traits_all,select=c(sample_id,genotype_id,geno,type,rep,background,date_biomass_harvested,num_plants,percent_herbivory,flowering,above_biomass_g,below_biomass_g,Count,num_plants_picked_nods,total_area,average_size,cfu_ml,nodule_isolate_diversity))
 
-# Calculate additional measurements 
-# Simplified code by combining all of them here and subbed in your new names
+# Calculate additional measurements
+#Rename the traits
 traits_all<-traits_all%>% mutate(
   above_biomass_per_plant=above_biomass_g/num_plants,
   below_biomass_per_plant=below_biomass_g/num_plants,
@@ -106,16 +103,14 @@ traits_all<-traits_all%>% mutate(
   total_nodulated_area_per_plant=total_area/num_plants_picked_nods,
   average_area_per_nodule=total_nodulated_area_per_plant/nodule_number_per_plant)
 
-#replacing  'NAN' and 'Inf' with 'NA'
+#Replacing  'NAN' and 'Inf' with 'NA'
 traits_all[is.na(traits_all) | traits_all == "Inf"] <- NA
 traits_all[is.na(traits_all) | traits_all == "NaN"] <- NA
 
 #Turning traits_all$type into a factor.
-  traits_all$type<-factor(traits_all$type, levels = c("WT","Early","Late","AON"))
+traits_all$type<-factor(traits_all$type, levels = c("WT","Early","Late","AON"))
 #Changing the order of the genotypes
-  traits_all$geno<-factor(traits_all$geno,levels=c("A17", "dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd", "nad1", "dnf1", "dnf2","dnf3", "dnf4","dnf6","dnf7", "dnf1/dnf2", "dnf5/dnf2", "rdn1", "sunn1","sunn4"))
-  
-#write.table (traits_all,file="../data/Traits_MedicagoMutants_A17.txt",sep = "\t",row.names = FALSE)
+traits_all$geno<-factor(traits_all$geno,levels=c("A17", "dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd", "nad1", "dnf1", "dnf2","dnf3", "dnf4","dnf6","dnf7", "dnf1/dnf2", "dnf5/dnf2", "rdn1", "sunn1","sunn4"))
 ```
 
 ### Statistical Analysis: Coeffecients from ANOVA's and RDAs
@@ -158,7 +153,7 @@ ANOVA.Trait.Summary<-rbind(extract.anova("nodule_number_per_plant"),extract.anov
 write.table (ANOVA.Trait.Summary,file="../tables/TableS2.txt",sep = "\t",row.names = FALSE)
 ```
 
-```{r Write Function to extract Statistical summary on geno coefficients, echo=FALSE}
+```{r Statistical summary on geno coefficients, echo=FALSE}
 
 extract.coefs<-function(trait, predictor="geno", p.threshold=0.05) {
 
@@ -242,7 +237,7 @@ write.table (Geno.Coef.RDA,file="../tables/TableS6.txt",sep = "\t",row.names = F
 
 
 ###Visualizing Results
-```{r Code for creating FigS2}
+```{r Code for creating FigS2,echo=TRUE}
 # Correlation Plot
 pdf(file = "../figures/FigS2.pdf",width = 9, height = 9)
 
@@ -255,7 +250,7 @@ corrplot.mixed(correlation_matrix, number.cex=1,upper = "ellipse", lower = "numb
 dev.off()
 ```
 
-```{r code for creating FigS3, echo=TRUE}
+```{r Code for creating FigS3, echo=TRUE}
 #Fig S4a
 Geno.Coef.Summary<-Geno.Coef.Summary %>% mutate(Predictor=substr(Predictor,5,14))
 Geno.Coef.Graphs<-rbind(Geno.Coef.Summary[,c(1,2,6,7)], Geno.Coef.RDA[,c(1,2,6,7)])
@@ -288,7 +283,7 @@ heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE,dendrogram = "none",c
 dev.off()
 ```
 
-```{r code for creating Fig2 and Fig3, echo=TRUE}
+```{r Code for creating Fig2 and Fig3, echo=TRUE}
 
 cbPalette <- c("#B23214","#56B4E9", "#009E73", "#E69F00")
 
@@ -325,7 +320,7 @@ dev.off()
 
 ```
 
-```{r code for creating Fig4, echo=TRUE}
+```{r Code for creating Fig4, echo=TRUE}
 
 pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))(length(seq(-7.9, 4, 0.1)))
 #pal = colorRampPalette(c('#2166AC','#F7F7F7', '#B2182B'))(length(seq(-7.9, 4, 0.1)))
@@ -352,65 +347,7 @@ dev.off()
 
 ```
 
-```#{r code for creating Figure S5-Phylogentic Heatmap, echo=TRUE}
-
-library(ape)
-## Read in the tree file created by Brendan
-tree = read.tree('../data/parsnp_2020-12-26/rooted_by_figtree_2020-12-26.nw')
-
-keep.tip(phy = tree,tip= tree$tip.label[!tree$tip.label %in% species$strain])
-tree<-keep.tip(phy = tree,tip= paste(fitness$strain))
-
-
-heatmap.phylo <- function(x, Rowp, Colp, ...) {
-  l = length(seq(-9,4.9,0.1))
-  pal = colorRampPalette(c('#2166ac','#92c5de', '#f7f7f7', '#b2182b'))(l)
-  row_order = Rowp$tip.label[Rowp$edge[Rowp$edge[, 2] <= Ntip(Rowp), 2]] 
-  col_order = Colp$tip.label[Colp$edge[Colp$edge[, 2] <= Ntip(Colp), 2]] 
-  x <- x[row_order, col_order]
-  xl <- c(0.5, ncol(x)+0.5)
-  yl <- c(0.5, nrow(x)+0.5)
-  layout(matrix(c(0,1,0, 2,3,4, 0,5,0), nrow=3, byrow=TRUE),
-         width=c(3.5,    4.5, 1),
-         height=c(0.2, 3, 0.18))
-  par(mar=rep(0,4))
-  plot(Colp, direction="downwards", show.tip.label=FALSE,
-       xaxs="i", x.lim=xl)
-  par(mar=rep(0,4))
-  plot(Rowp, direction="rightwards", show.tip.label=FALSE, 
-       yaxs="i", y.lim=yl)
-  lpp = .PlotPhyloEnv$last_plot.phylo 
-  segments(lpp$xx[1:Ntip(Rowp)], lpp$yy[1:Ntip(Rowp)], par('usr')[2],
-           lpp$yy[1:Ntip(Rowp)], lty=3, col='grey50')
-  par(mar=rep(0,4), xpd=TRUE)
-  image((1:ncol(x))-0.5, (1:nrow(x))-0.5, t(x), col=pal,
-        xaxs="i", yaxs="i", axes=FALSE, xlab="",ylab="",breaks=seq(-9,5,0.1))
-  par(mar=rep(0,4))
-  plot(NA, axes=FALSE, ylab="", xlab="", yaxs="i", xlim=c(0,2), ylim=yl)
-  text(rep(0,nrow(x)),1:nrow(x), row_order, pos=4, family='Helvetica',
-       cex=.5, xpd=NA)
-  par(mar=rep(0,4))
-  plot(NA, axes=FALSE, ylab="", xlab="", xaxs="i", ylim=c(0,2), xlim=xl)
-  text(1:ncol(x),rep(2,ncol(x)), col_order, srt=90, adj=c(1,.5), family='Helvetica',
-       cex=.5)
-}
-
-#### Double check this. might need slightly different structure ######
-m = structure(as.matrix(fitness[, -1:-2]),
-              dimnames=list(unlist(fitness[, 'strain']),
-                            unlist(names(fitness)[-1:-2])))
-
-col_dendro = as.dendrogram(hclust(dist(t(m))))
-
-pdf(file="../figures/Mutant_Phylo_Heatmap_mean.pdf",width = 14,height=8, useDingbats=FALSE)
-  heatmap.phylo(x = m, Rowp = tree, Colp = as.phylo(as.hclust(col_dendro)))
-dev.off()
-
-
-
-```
-
-```{r RDA plots- FigS5}
+```{r Code for creating FigS5,echo=TRUE}
 
 df1  <- data.frame(geno=fit_all$geno,type=fit_all$type,summary(rda_geno)$site)    
 rda1_ev <-as.vector(eigenvals(rda_geno, model = c("constrained")))
