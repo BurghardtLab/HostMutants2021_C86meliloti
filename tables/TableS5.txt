@@ -1,0 +1,4 @@
+"Trait"	"Predictor"	"R.adj"	"Prop.Var"	"f.value"	"P.value"	"Class"
+"nodule_isolate_fitness"	"AON"	0.0455	0.1137	1.66758369706955	0.023	"Change"
+"nodule_isolate_fitness"	"Early"	0.057	0.1356	1.72513575014475	0.032	"Change"
+"nodule_isolate_fitness"	"Late"	0.0358	0.0619	2.3748123977015	0.001	"Change"

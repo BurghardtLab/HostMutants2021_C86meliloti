@@ -16,14 +16,12 @@ require(RColorBrewer)
 require(gplots)
 require(vegan)
 knitr::opts_chunk$set(message = FALSE)
-
-
-
 ```
 
 ```{r setup,Import the data include=FALSE}
-#Importing the psymA files
+##Importing the GWAS files
 
+#pSymA
 merged_psyma_ipd3.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_ipd3.change.tsv", header=TRUE)
 merged_psyma_latd.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_latd.change.tsv",header=TRUE)
 merged_psyma_hcl.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_hcl.change.tsv",header=TRUE)
@@ -41,7 +39,7 @@ merged_psyma_sunn1.change <- read.delim("../data/GWAS_data/annotation/merged_psy
 merged_psyma_sunn4.change <- read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn4.change.tsv",header=TRUE)
 merged_psyma_A17<-read.delim("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_A17.tsv",header=TRUE)
 
-#Importing the psymB files
+#pSymB
 merged_psymb_ipd3.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_ipd3.change.tsv",header=TRUE)
 merged_psymb_latd.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_latd.change.tsv",header=TRUE)
 merged_psymb_hcl.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_hcl.change.tsv",header=TRUE)
@@ -59,7 +57,7 @@ merged_psymb_sunn1.change <- read.delim("../data/GWAS_data/annotation/merged_psy
 merged_psymb_sunn4.change <- read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn4.change.tsv",header=TRUE)
 merged_psymb_A17<-read.delim("../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_A17.tsv",header=TRUE)
 
-#Importing the chromosome files
+#Chromosome 
 merged_chr_ipd3.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_ipd3.change.tsv",header=TRUE)
 merged_chr_latd.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_latd.change.tsv",header=TRUE)
 merged_chr_hcl.change <- read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_hcl.change.tsv",header=TRUE)
@@ -78,14 +76,9 @@ merged_chr_sunn4.change <- read.delim("../data/GWAS_data/annotation/merged_chr_s
 merged_chr_A17<-read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_A17.tsv",header=TRUE)
 ```
 
-```{r top 10 and top 5 candidates per genotype, echo=FALSE}
+```{r Code for creating the tables for the top5 candidates: TableS7 and Table3, echo=FALSE}
 # List of file paths
-#I think this is incorrect. I already have them imported.
 
-#file_paths <- list.files("~/OneDrive - The Pennsylvania State University/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/data/GWAS_data/annotation")
-
-#print(file_paths)
-# 
  file_paths <- c("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_A17.tsv") #shorter 
 # List to store data frames
 data_list <- list()
@@ -109,8 +102,9 @@ all_top_candidates_subsets <- lapply(data_list, get_top_candidates_subset_and_co
 combined_data <- do.call(rbind, all_top_candidates_subsets)
 #seperate the 'chr' col
 combined_top10_candidates_data<-combined_data%>% separate(chr,c('Organism','Replicon'))
-#for Table S7
-write.table(combined_top10_candidates_data,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/SupplementalTable S7.tsv",sep = "\t",row.names = FALSE) 
+#Table for Fig S6,S7
+write.table(combined_top10_candidates_data,file="../tables/SupplementalTable S7.tsv",sep = "\t",row.names = FALSE) 
+
 #select the top5 for fig6, supplement annotated heatmap and the crossranked tables
 #top5_candidates<-subset(combined_top10_candidates_data,pr>=1 & pr<=5)
 get_top_candidates_subset_and_combine.1 <- function(data) {
@@ -123,21 +117,23 @@ all_top_candidates_subsets.1 <- lapply(data_list, get_top_candidates_subset_and_
 combined_data2 <- do.call(rbind, all_top_candidates_subsets.1)
 #seperate the 'chr' col
 top5_candidates.1<-combined_data2%>% separate(chr,c('Organism','Replicon'))
+
 #for crossranked table  and for the heatmaps ##no pcut,no small groups,unique
 
+#for Table S7
 top5_candidates<-top5_candidates.1%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
-write.table(top5_candidates.1,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5_candidates.tsv",sep = "\t",row.names = FALSE) 
+write.table(top5_candidates.1,file="../tables/TableS7.tsv",sep = "\t",row.names = FALSE) 
 
 # for Table 3
 top5_candidates_prs<-subset(top5_candidates.1,prs>=1 & prs<=5)
 top5_candidates_prs.1<- top5_candidates_prs[top5_candidates_prs$p_lrt <= 1e-5, ]
 
-write.table(top5_candidates_prs.1,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/top5candidates_condensed table.tsv",sep = "\t",row.names = FALSE)
+write.table(top5_candidates_prs.1,file="../tables/Table3.tsv",sep = "\t",row.names = FALSE)
 ```
 
 
 
-```{r Code for SupplementalTableS8, echo=FALSE}
+```{r Code for creating the cross-ranked candidates: TableS8, echo=FALSE}
 
 merge_GWAS_data <- function(gene){
     # Construct file paths based on gene  name
@@ -222,13 +218,13 @@ top5_candidates_crossranked<-rbind (top5_candidates_crossranked_chr,top5_candida
 Rank_top10 <- rowSums(top5_candidates_crossranked[, -(1:6)] <= 10, na.rm = TRUE)
 top5_candidates_crossranked.1<-cbind(top5_candidates_crossranked,Rank_top10)
 
-write.table(top5_candidates_crossranked.1,file="/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/tables/SupplementalTable S8.tsv",sep = "\t",row.names = FALSE)
+write.table(top5_candidates_crossranked.1,file="../tables/TableS8.tsv",sep = "\t",row.names = FALSE)
 
 ```
 
 
 
-```{r Code for Figure5 and Supplemental Figure4, echo=FALSE}
+```#{r Code for FigS6 and FigS7, echo=FALSE}
 
 #For corresponding Supplementary Fig. SX
 #based on the top5 candidates
@@ -285,7 +281,7 @@ df <- function(replicon) {
 
 }
 
-pdf(file = "/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/figures/Supplemental Figure4.pdf",width = 6.78, height = 6.78)
+pdf(file = "../figures/FigS6.pdf",width = 6.78, height = 6.78)
 
 
 df("chr")
@@ -294,7 +290,7 @@ df("psymb")
 dev.off()
 
 #beta heatmaps
-pdf(file = "/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/figures/Supplemental Figure5.pdf",width = 6.78, height = 6.78)
+pdf(file = "../figures/FigS7.pdf",width = 6.78, height = 6.78)
 
 df <- function(replicon) {
   # Separate Location column into Organism and Replicon
@@ -347,7 +343,9 @@ df("chr")
 df("psyma")
 df("psymb")
 dev.off()
+```
 
+```{r Code for FigS6 and FigS7, echo=FALSE}
 ##Adding the ranks in the prank heatmaps
 
 df <- function(replicon) {
@@ -399,7 +397,7 @@ df <- function(replicon) {
 
 }
 
-pdf(file = "/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/figures/Supplemental Figure4.1.pdf",width = 6.78, height = 6.78)
+pdf(file = "../figures/FigS6.pdf",width = 6.78, height = 6.78)
 
 
 df("chr")
@@ -407,16 +405,8 @@ df("psyma")
 df("psymb")
 dev.off()
 
-
-
-
-
-
-
-
-
 #Adding the beta values in the beta heatmaps
-pdf(file = "/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/figures/Supplemental Figure5.1.pdf",width = 6.78, height = 6.78)
+pdf(file = "../figures/FigS7.pdf",width = 6.78, height = 6.78)
 
 df <- function(replicon) {
   # Separate Location column into Organism and Replicon
@@ -472,7 +462,7 @@ dev.off()
 
 ```
 
-```{r Nucleotide diversity analysis, echo=FALSE}
+```#{r Nucleotide diversity analysis, echo=FALSE}
 pdf(file = "/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/figures/tajima.pdf",width = 6.78, height = 6.78)
 
 summarized_rhizobia_data <- read.delim("~/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Burghardt Lab Shared Folder/Projects/TiffinLabSharedData/popgen/rhizobia/summarized_rhizobia_data.tsv")
@@ -590,27 +580,20 @@ ggplot(summarized_rhizobia_data, aes(x=tajD,fill=replicon))+ geom_density(aes(gr
 dev.off()
 ```
 
-```{r CREATING the histograms of shared genomic basis, echo=FALSE}
-
-
-crossranked_combined <- read.delim("~/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Burghardt Lab Shared Folder/Projects/NSFPGRP_HostMutants/Data/GWAS_SOHINI/crossranked_combined.tsv")
-
-
-crossranked_combined<-crossranked_combined%>% separate(Location,c('Organism','Replicon'))
-crossranked_combined_psymA<-crossranked_combined[crossranked_combined$Replicon=="psyma",-c(2:7)]
-within_rank10_counts_psyma <- rowSums(crossranked_combined_psymA[, -1] <= 10, na.rm = TRUE)
-
-
-crossranked_combined_psymB<-crossranked_combined[crossranked_combined$Replicon=="psymb",-c(2:7)]
-within_rank10_counts_psymb <- rowSums(crossranked_combined_psymB[, -1] <= 10, na.rm = TRUE)
-
-crossranked_combined_chr<-crossranked_combined[crossranked_combined$Replicon=="chr",-c(2:7)]
-within_rank10_counts_chr <- rowSums(crossranked_combined_chr[, -1] <= 10, na.rm = TRUE)
-
-df.psyma<-data.frame(group=crossranked_combined_psymA$group,Occurence=within_rank10_counts_psyma)
-df.psymb<-data.frame(group=crossranked_combined_psymB$group,Occurence=within_rank10_counts_psymb)
-df.chr<-data.frame(group=crossranked_combined_chr$group,Occurence=within_rank10_counts_chr)
-occurrence_counts.psyma <- table(df.psyma$Occurence)
-occurrence_counts.psymb <- table(df.psymb$Occurence)
-occurrence_counts.chr <- table(df.chr$Occurence)
-p<-ggplot(df, aes(x=Occurence, color=Replicon,fill=Replicon)) +geom_histogram(position="dodge",bins=10)+ylab("Frequency")+theme_minimal()
+```{r Code for creating FigS8, echo=FALSE}
+pdf(file = "../figures/FigS8.pdf",width = 6.78, height = 6.78)
+ggplot(top5_candidates_crossranked.1, aes(x=Rank_top10, color=Location, fill=Location)) +
+    geom_histogram(position="dodge", bins=10, alpha=0.7) +
+    labs(x="Ocurrence",
+         y="Number of candidates occuring in the top5") +
+    theme_minimal(base_size=15) +
+    theme(axis.title.x = element_text(margin=margin(t=10)),
+         axis.title.y = element_text(margin=margin(r=10)),
+        legend.position = "top",
+        legend.title = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color="gray", size=0.5)) +
+    scale_fill_manual(values=c("black", "firebrick", "forestgreen")) +
+    scale_color_manual(values=c("black", "firebrick", "forestgreen"))
+dev.off()
+```

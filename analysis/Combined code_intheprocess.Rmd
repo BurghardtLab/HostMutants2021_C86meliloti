@@ -10,6 +10,7 @@ Analysis file for NSF Host Mutant C86 Sinorhizobium meliloti select and resequen
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+
 #Load packages needed. Tidyverse include dplyer
 require(tidyverse)
 require(ggpubr)
@@ -20,16 +21,15 @@ require(vegan)
 require(corrplot)
 knitr::opts_chunk$set(message = FALSE)
 ```
-```{r setup, include=FALSE}
+
+
+###Compiling the data for analysis
+```{r Strain Frequency: Import Data/Code for FigS1, echo=TRUE}
 # This file takes as input various files included in the Github repository including
 # Strain frequency files - freq.tsv
 #Names of the Medicago genotypes in A17 background along with their genotype ids, disruption type and order-genotype_name.txt
 #Nodule numbers and individual nodule sizes for each sample-data_HostMutants2021_nod_counts.txt
 #Sample ids, replicates for each genotype,CFU per ml,aboveground biomass,belowground biomass for each sample-data_nsfpgrp_hostmutants_C86meliloti.txt
-
-```
-
-```{r Strain Frequency: Import Data/Code for Supplemental Figure 1, echo=TRUE}
 
 freq_all<-read.table("../data/freq.tsv", header=TRUE)
 genotype_name <- read.table("../data/genotype_name.txt",sep = "\t",header=TRUE)
@@ -42,7 +42,7 @@ freq_initial<- freq_all %>% filter(str_detect(sample_id, "M_C86_NL")) %>% select
 # Graph the initial frequency histogram
 hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution")
 
-pdf(file = "../figures/Supplemental Fig1.pdf",width = 6, height = 6)
+pdf(file = "../figures/FigS1.pdf",width = 6, height = 6)
 hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution", xlab="Isolate Frequency", ylab="Number of Isolates")
 dev.off()
 
@@ -110,24 +110,53 @@ traits_all<-traits_all%>% mutate(
 traits_all[is.na(traits_all) | traits_all == "Inf"] <- NA
 traits_all[is.na(traits_all) | traits_all == "NaN"] <- NA
 
-write.table (traits_all,file="../data/Traits_MedicagoMutants_A17.txt",sep = "\t",row.names = FALSE)
-```
-
-```{r Importing Data and defining factor levels, echo=TRUE}
-# Import the data if starting here 
-#Traits_MedicagoMutants<- read.table("../data/Traits_MedicagoMutants_A17.txt",sep = "\t",header=TRUE)
-#convert the genotype_id into integer
-#Traits_MedicagoMutants$genotype_id = as.integer(Traits_MedicagoMutants$genotype_id)
-
-### Make sure factors are in the right order for analysis
 #Turning traits_all$type into a factor.
   traits_all$type<-factor(traits_all$type, levels = c("WT","Early","Late","AON"))
 #Changing the order of the genotypes
   traits_all$geno<-factor(traits_all$geno,levels=c("A17", "dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd", "nad1", "dnf1", "dnf2","dnf3", "dnf4","dnf6","dnf7", "dnf1/dnf2", "dnf5/dnf2", "rdn1", "sunn1","sunn4"))
   
+#write.table (traits_all,file="../data/Traits_MedicagoMutants_A17.txt",sep = "\t",row.names = FALSE)
 ```
 
-###### Statistical Analysis: Coeffecients from ANOVA's and RDAs
+### Statistical Analysis: Coeffecients from ANOVA's and RDAs
+
+```{r Perform analogous RDA Permanova on strain fitness data}
+rda_geno<-rda(fit_all[,c(8:93)]~geno+rep,fit_all, scale=TRUE)
+rda.model.geno<-anova(rda_geno, step=1000, perm.max=1000, by= "terms")  
+
+rda_type<-rda(fit_all[,c(8:93)]~type+rep,fit_all, scale=TRUE)
+rda.model.type<-anova(rda_type, step=1000, perm.max=1000, by= "terms") 
+
+rda.strainfitness<-data.frame(Response=c("nodule_isolate_fitness"),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(rda.model.geno$Variance,rda.model.type$Variance),PctExp=c(rda.model.geno$Variance/sum(rda.model.geno$Variance)*100,rda.model.type$Variance/sum(rda.model.type$Variance)*100),Df=c(rda.model.geno$Df,rda.model.type$Df),Fval=c(rda.model.geno$F,rda.model.type$F), Pval=c(rda.model.geno$`Pr(>F)`,rda.model.type$`Pr(>F)`),R.adj=c(round(RsquareAdj(rda_geno)$adj.r.squared,4),"NA","NA",round(RsquareAdj(rda_type)$adj.r.squared,4),"NA","NA")) #do we need to compile this in a table??
+```
+
+```{r Write Function to run anova and summarize results each Phenotype, echo=TRUE}
+
+extract.anova<- function(trait) {
+#Dropping rows with NA
+
+traits_all<-as.data.frame(traits_all[!is.na(traits_all[,trait]),]) 
+
+# Run a model with genotype and replicate as predictors
+NodNum.G <- lm(traits_all[,trait] ~ geno + rep, data = traits_all)
+# Run a model with type and replicate as predictors
+NodNum.T<-lm(traits_all[,trait] ~ type + rep, data = traits_all)
+#Examine the Analysis of Variance tables and save output
+a.G<-anova(NodNum.G)
+a.T<-anova(NodNum.T)
+
+#Compile results into a dataframe
+myresults<-data.frame(Response=c(paste(trait)),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(a.G$"Sum Sq",a.T$"Sum Sq"),PctExp=c(a.G$"Sum Sq"/sum(a.G$"Sum Sq")*100,a.T$"Sum Sq"/sum(a.T$"Sum Sq")*100),Df=c(a.G$"Df",a.T$"Df"),Fval=c(a.G$"F value",a.T$"F value"), Pval=c(a.G$"Pr(>F)",a.T$"Pr(>F)"),R.adj=c(summary(NodNum.G)$adj.r.squared,"NA","NA",summary(NodNum.T)$adj.r.squared,"NA","NA"))
+
+return(myresults)
+
+}
+
+#Compile Anova results across Traits
+ANOVA.Trait.Summary<-rbind(extract.anova("nodule_number_per_plant"),extract.anova("average_area_per_nodule"),extract.anova("total_nodulated_area_per_plant"),extract.anova("total_biomass_per_plant"),extract.anova("root_to_shoot_ratio"),extract.anova("cfu_per_nodule_LOG10"),extract.anova("cfu_per_plant_LOG10"),extract.anova("nodule_isolate_diversity"),rda.strainfitness)
+
+write.table (ANOVA.Trait.Summary,file="../tables/TableS2.txt",sep = "\t",row.names = FALSE)
+```
 
 ```{r Write Function to extract Statistical summary on geno coefficients, echo=FALSE}
 
@@ -166,11 +195,12 @@ return(my.coefs)
 
 Geno.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant"),extract.coefs("average_area_per_nodule"),extract.coefs("total_nodulated_area_per_plant"),extract.coefs("total_biomass_per_plant"),extract.coefs("root_to_shoot_ratio"),extract.coefs("cfu_per_nodule_LOG10"),extract.coefs("cfu_per_plant_LOG10"),extract.coefs("nodule_isolate_diversity"))
 
-write.table (Geno.Coef.Summary,file="../tables/Supplemental Table S5.txt",sep = "\t",row.names = FALSE)
+
 
 Type.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant",predictor="type"),extract.coefs("average_area_per_nodule",predictor="type"),extract.coefs("total_nodulated_area_per_plant",predictor="type"),extract.coefs("total_biomass_per_plant",predictor="type"),extract.coefs("root_to_shoot_ratio",predictor="type"),extract.coefs("cfu_per_nodule_LOG10",predictor="type"),extract.coefs("cfu_per_plant_LOG10",predictor="type"),extract.coefs("nodule_isolate_diversity",predictor="type"))
 
-write.table (Type.Coef.Summary,file="../tables/Supplemental Table S3.txt",sep = "\t",row.names = FALSE)
+write.table (Type.Coef.Summary,file="../tables/TableS3.txt",sep = "\t",row.names = FALSE)
+write.table (Geno.Coef.Summary,file="../tables/TableS4.txt",sep = "\t",row.names = FALSE)
 ```
 
 ```{r RDA Model results for Strain Isolate Fitness}
@@ -204,83 +234,45 @@ Geno.Coef.RDA<-rbind(extract.rda("hcl"),extract.rda("ipd3"),extract.rda("latd"),
 
 Type.Coef.RDA<-rbind(extract.rda("AON",predictor="type"),extract.rda("Early",predictor = "type"),extract.rda("Late",predictor = "type"))
 
-write.table (Geno.Coef.RDA,file="../tables/Supplemental Table S6.txt",sep = "\t",row.names = FALSE)
-write.table (Type.Coef.RDA,file="../tables/Supplemental Table S4.txt",sep = "\t",row.names = FALSE)
+write.table (Type.Coef.RDA,file="../tables/TableS5.txt",sep = "\t",row.names = FALSE)
+write.table (Geno.Coef.RDA,file="../tables/TableS6.txt",sep = "\t",row.names = FALSE)
 
 
 ```
 
-###ANOVA's comparing Geno and type predictors
 
-```{r Write Function to run anova and summarize results each Phenotype, echo=TRUE}
+###Visualizing Results
+```{r Code for creating FigS2}
+# Correlation Plot
+pdf(file = "../figures/FigS2.pdf",width = 9, height = 9)
 
-extract.anova<- function(trait) {
-#Dropping rows with NA
-
-traits_all<-as.data.frame(traits_all[!is.na(traits_all[,trait]),]) 
-
-# Run a model with genotype and replicate as predictors
-NodNum.G <- lm(traits_all[,trait] ~ geno + rep, data = traits_all)
-# Run a model with type and replicate as predictors (why the ,?)
-NodNum.T<-lm(traits_all[,trait] ~ type + rep, data = traits_all)
-#Examine the Analysis of Variance tables and save output
-a.G<-anova(NodNum.G)
-a.T<-anova(NodNum.T)
-
-#Compile results into a dataframe
-myresults<-data.frame(Response=c(paste(trait)),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(a.G$"Sum Sq",a.T$"Sum Sq"),PctExp=c(a.G$"Sum Sq"/sum(a.G$"Sum Sq")*100,a.T$"Sum Sq"/sum(a.T$"Sum Sq")*100),Df=c(a.G$"Df",a.T$"Df"),Fval=c(a.G$"F value",a.T$"F value"), Pval=c(a.G$"Pr(>F)",a.T$"Pr(>F)"),R.adj=c(summary(NodNum.G)$adj.r.squared,"NA","NA",summary(NodNum.T)$adj.r.squared,"NA","NA"))
-
-return(myresults)
-
-}
+traits_all.2<-traits_all%>% select(-sample_id,-rep,-genotype_id,-background,-date_biomass_harvested,-num_plants,-average_size,-percent_herbivory,-flowering,-num_plants_picked_nods,-above_biomass_g,-type,-below_biomass_g,-cfu_ml,-type,-Count,-total_area,-below_biomass_per_plant,-above_biomass_per_plant,-total_area)%>%group_by(geno)%>%summarise_if(is.numeric, mean, na.rm = TRUE)%>%filter(!geno %in% c("dmi1-2", "dmi2-3", "dmi3-1", "skl"))
+#converting it to a matrix
+traits_all.2<-as.matrix(traits_all.2[,-1])
+#corrplot
+correlation_matrix <- cor(traits_all.2, method = "pearson", use = "pairwise.complete.obs")
+corrplot.mixed(correlation_matrix, number.cex=1,upper = "ellipse", lower = "number",tl.pos = "lt", tl.col = "black",order = 'hclust', tl.offset=1, tl.srt = 90)
+dev.off()
 ```
 
-```{r Perform analogous RDA Permanova on strain fitness data}
-rda_geno<-rda(fit_all[,c(8:93)]~geno+rep,fit_all, scale=TRUE)
-rda.model.geno<-anova(rda_geno, step=1000, perm.max=1000, by= "terms")  
-
-rda_type<-rda(fit_all[,c(8:93)]~type+rep,fit_all, scale=TRUE)
-rda.model.type<-anova(rda_type, step=1000, perm.max=1000, by= "terms") 
-
-rda.strainfitness<-data.frame(Response=c("nodule_isolate_fitness"),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(rda.model.geno$Variance,rda.model.type$Variance),PctExp=c(rda.model.geno$Variance/sum(rda.model.geno$Variance)*100,rda.model.type$Variance/sum(rda.model.type$Variance)*100),Df=c(rda.model.geno$Df,rda.model.type$Df),Fval=c(rda.model.geno$F,rda.model.type$F), Pval=c(rda.model.geno$`Pr(>F)`,rda.model.type$`Pr(>F)`),R.adj=c(round(RsquareAdj(rda_geno)$adj.r.squared,4),"NA","NA",round(RsquareAdj(rda_type)$adj.r.squared,4),"NA","NA"))
-```
-
-```{r Compile Anova results across Traits}
-ANOVA.Trait.Summary<-rbind(extract.anova("nodule_number_per_plant"),extract.anova("average_area_per_nodule"),extract.anova("total_nodulated_area_per_plant"),extract.anova("total_biomass_per_plant"),extract.anova("root_to_shoot_ratio"),extract.anova("cfu_per_nodule_LOG10"),extract.anova("cfu_per_plant_LOG10"),extract.anova("nodule_isolate_diversity"),rda.strainfitness)
-
-write.table (ANOVA.Trait.Summary,file="../tables/Supplemental Table S2.txt",sep = "\t",row.names = FALSE)
-
-```
-
-#Visualizing Results
-
-```{r code for creating Supplemental Figure 3, echo=TRUE}
+```{r code for creating FigS3, echo=TRUE}
+#Fig S4a
 Geno.Coef.Summary<-Geno.Coef.Summary %>% mutate(Predictor=substr(Predictor,5,14))
 Geno.Coef.Graphs<-rbind(Geno.Coef.Summary[,c(1,2,6,7)], Geno.Coef.RDA[,c(1,2,6,7)])
 Geno.Coef.Graphs$Class<-factor(Geno.Coef.Graphs$Class,levels=c("None","Up","Down","Change"))
 Geno.Coef.Graphs$Trait<-factor(Geno.Coef.Graphs$Trait,levels=c("nodule_number_per_plant","average_area_per_nodule","total_nodulated_area_per_plant","total_biomass_per_plant","root_to_shoot_ratio", "cfu_per_nodule_LOG10","cfu_per_plant_LOG10","nodule_isolate_diversity", "nodule_isolate_fitness"))
 
-### First pass graph
 Coef.Prop.Figure<-ggplot(data = Geno.Coef.Graphs) + 
   geom_bar(mapping = aes(x = Trait, fill = Class), position = "fill")+ 
   theme_bw()+
   coord_flip()+
   scale_fill_manual(values=c('#F7F7F7','#B2182B', '#2166AC','darkgoldenrod'))+xlab ("")+ylab("Proportion of Genotypes")+theme_bw()
 
-pdf(file = "../figures/Supplemental Figure 3.pdf",width = 6, height = 6)
+pdf(file = "../figures/FigS4a.pdf",width = 6, height = 6)
 Coef.Prop.Figure
 dev.off()
-#Should this line be added to the code?
-p<-ggplot_build(Coef.Prop.Figure)
 
-```
-
-```{r code for creating Figure 2, echo=TRUE}
-
-#Geno.Coef.Graphs$Class<-as.character(Geno.Coef.Graphs$Class)
-#Geno.Coef.Graphs$Class[Geno.Coef.Graphs$Predictor =="latd"]<-"Limited power"
-#Geno.Coef.Graphs$Class<-as.factor(Geno.Coef.Graphs)
-
+#Fig S4b
 Geno.Coef.Graphs$Class<-factor(Geno.Coef.Graphs$Class,levels=c("Down","None","Up","Change"))
 Geno_matrix<-Geno.Coef.Graphs %>% select(c(Trait,Predictor,Class)) %>% pivot_wider(names_from=c(Trait),values_from=c(Class)) %>% mutate(across(!Predictor,as.numeric)) %>%
 column_to_rownames(var="Predictor")
@@ -291,19 +283,12 @@ pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B','darkgoldenrod'))(4)
 
 col_letters = c("hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9", "nad1"="#009E73", "dnf1"="#009E73", "dnf2"="#009E73","dnf3"="#009E73", "dnf4"="#009E73","dnf6"="#009E73","dnf7"="#009E73", "dnf1/dnf2"="#009E73", "dnf5/dnf2"="#009E73", "rdn1"="#E69F00", "sunn1"="#E69F00","sunn4"="#E69F00","dmm1-2"="#56B4E9","dmi2-3"="#56B4E9","dmi3-1"="#56B4E9")
 
-pdf(file = "../figures/Figure2.pdf",width = 6, height = 3)
+pdf(file = "../figures/FigS4b.pdf",width = 6, height = 3)
 heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE,dendrogram = "none",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15),na.color='lightgrey',colCol = col_letters)
-
 dev.off()
 ```
-#heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE, sepwidth=c(0.001,0.001),
-           #sepcolor="black",
-           #colsep=1:ncol(t(as.matrix(Geno_matrix))),
-           #rowsep=1:nrow(t(as.matrix(Geno_matrix))),dendrogram = "none",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15),na.color='lightgrey',colCol = col_letters)
-#dev.off()
 
-
-```{r code for creating Fig 3 and Fig 4, echo=TRUE}
+```{r code for creating Fig2 and Fig3, echo=TRUE}
 
 cbPalette <- c("#B23214","#56B4E9", "#009E73", "#E69F00")
 
@@ -323,21 +308,24 @@ trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE,trait_all=traits_all) {
  
 }
 
-pdf(file = "../figures/Fig3+Sup_Boxplots_SymbioticTraits.pdf",width = 6, height = 6)
+pdf(file = "../figures/Fig2.pdf",width = 6, height = 6)
 trait.boxplot(trait = "nodule_number_per_plant")
 trait.boxplot(trait = "total_nodulated_area_per_plant")
 trait.boxplot(trait = "average_area_per_nodule")
 trait.boxplot(trait = "root_to_shoot_ratio")
 trait.boxplot(trait = "total_biomass_per_plant")
+dev.off()
+
+pdf(file = "../figures/Fig3.pdf",width = 6, height = 6)
 trait.boxplot(trait = "cfu_per_nodule_LOG10")
-trait.boxplot(trait = "cfu_per_plant_LOG10",trait_all = traits_all[traits_all$geno!="latd",])
+trait.boxplot(trait = "cfu_per_plant_LOG10",trait_all = traits_all[traits_all$geno!="latd",]) ## we are sticking to this???
 trait.boxplot(trait = "nodule_isolate_diversity")
 dev.off()
 
 
 ```
 
-```{r code for creating Figure 5, echo=TRUE}
+```{r code for creating Fig4, echo=TRUE}
 
 pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))(length(seq(-7.9, 4, 0.1)))
 #pal = colorRampPalette(c('#2166AC','#F7F7F7', '#B2182B'))(length(seq(-7.9, 4, 0.1)))
@@ -348,7 +336,7 @@ col_letters = c("A17"="#B23214","hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9
 fit_mean_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
 fit_median_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
 
-pdf(file = "../figures/Figure 5.pdf",width = 5, height = 10)
+pdf(file = "../figures/Fig4.pdf",width = 5, height = 10)
 heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=TRUE,dendrogram = "both", col=pal,hclustfun = function(d) hclust(d,method="ward.D2"),trace="none", scale="none",cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Mean Fitness", key.ylab =NA, tracecol="black",symbreaks=FALSE,key.title = NA,colCol = col_letters) #color key helps me understand the dynamics.
 
 heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = "both",col=pal,hclustfun = function(d) hclust(d,method="ward.D2"), trace="none", scale="none", cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE,key.title = NA,colCol = col_letters)
@@ -364,7 +352,7 @@ dev.off()
 
 ```
 
-```{r code for creating Figure S5-Phylogentic Heatmap, echo=TRUE}
+```#{r code for creating Figure S5-Phylogentic Heatmap, echo=TRUE}
 
 library(ape)
 ## Read in the tree file created by Brendan
@@ -422,24 +410,14 @@ dev.off()
 
 ```
 
-```{R Subset data for GWAS Analysis}
-
-x<- as_tibble(t(fit_mean_matrix)) 
-# Choices "latd","ipd3", "nad1","dnf2","dnf3","dnf6","dnf7","sunn4" 
-
-GWAS_traits<-tibble(strains=row.names(t(fit_mean_matrix)),A17=x$A17,latd.change=x$latd-x$A17,ipd3.change=x$ipd3-x$A17,nad1change=x$nad1-x$A17,dnf2.change=x$dnf2-x$A17,dnf3.change=x$dnf3-x$A17,dnf6.change=x$dnf6-x$A17,dnf7.change=x$dnf7-x$A17,sunn4.change=x$sunn4-x$A17,sunn1.change=x$sunn1-x$A17,rdn1.change=x$rdn1-x$A17,hcl.change=x$hcl-x$A17,dnf1.change=x$dnf1-x$A17,dnf4.change=x$dnf4-x$A17,dnf5dnf2.change=x$`dnf5/dnf2`-x$A17,dnf1dnf2.change=x$`dnf1/dnf2`-x$A17)
-
-write.table (GWAS_traits,file="../tables/TraitsforGWAS_mean.txt",sep = "\t",row.names = FALSE)
-```
-
-```{r RDA plots- Supplemental Figure S3}
+```{r RDA plots- FigS5}
 
 df1  <- data.frame(geno=fit_all$geno,type=fit_all$type,summary(rda_geno)$site)    
 rda1_ev <-as.vector(eigenvals(rda_geno, model = c("constrained")))
 
 rdainfo<-data.frame(geno=levels(factor(fit_all$geno)),mycols=c("#B23214","#56B4E9","#56B4E9","#56B4E9","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#E69F00","#E69F00","#E69F00"), myshapes=c(19,19,18,17,19,18,17,1,2,3,4,5,6,19,18,17))
 
-pdf(file = "../figures/Supplemental Figure3.pdf",width = 5, height = 5)
+pdf(file = "../figures/FigS5.pdf",width = 5, height = 5)
 
 ggplot(df1, aes(x=RDA1,y=RDA2,color=type))+
   scale_color_manual(values=cbPalette)+
@@ -461,18 +439,13 @@ dev.off()
 
 ```
 
-```{r Code for creating the Supplemental Figure 2}
-# Correlation Plot
-pdf(file = "../figures/Supplemental Figure 2.pdf",width = 9, height = 9)
+```{R Subset data for GWAS Analysis}
 
-#merging the RDA analyses with the traits table
-#traits_all.1 <- left_join(traits_all, df1, by = "geno")
-#retaining only the meaningful cols
-traits_all.2<-traits_all%>% select(-sample_id,-rep,-genotype_id,-background,-date_biomass_harvested,-num_plants,-average_size,-percent_herbivory,-flowering,-num_plants_picked_nods,-above_biomass_g,-type,-below_biomass_g,-cfu_ml,-type,-Count,-total_area,-below_biomass_per_plant,-above_biomass_per_plant,-total_area)%>%group_by(geno)%>%summarise_if(is.numeric, mean, na.rm = TRUE)%>%filter(!geno %in% c("dmi1-2", "dmi2-3", "dmi3-1", "skl"))
-#converting it to a matrix
-traits_all.2<-as.matrix(traits_all.2[,-1])
-#corrplot
-correlation_matrix <- cor(traits_all.2, method = "pearson", use = "pairwise.complete.obs")
-corrplot.mixed(correlation_matrix, number.cex=0.6,upper = "ellipse", lower = "number",tl.pos = "lt", tl.col = "black",order = 'hclust', tl.offset=1, tl.srt = 90)
-dev.off()
+x<- as_tibble(t(fit_mean_matrix)) 
+# Choices "latd","ipd3", "nad1","dnf2","dnf3","dnf6","dnf7","sunn4" 
+
+GWAS_traits<-tibble(strains=row.names(t(fit_mean_matrix)),A17=x$A17,latd.change=x$latd-x$A17,ipd3.change=x$ipd3-x$A17,nad1change=x$nad1-x$A17,dnf2.change=x$dnf2-x$A17,dnf3.change=x$dnf3-x$A17,dnf6.change=x$dnf6-x$A17,dnf7.change=x$dnf7-x$A17,sunn4.change=x$sunn4-x$A17,sunn1.change=x$sunn1-x$A17,rdn1.change=x$rdn1-x$A17,hcl.change=x$hcl-x$A17,dnf1.change=x$dnf1-x$A17,dnf4.change=x$dnf4-x$A17,dnf5dnf2.change=x$`dnf5/dnf2`-x$A17,dnf1dnf2.change=x$`dnf1/dnf2`-x$A17)
+
+write.table (GWAS_traits,file="../tables/TraitsforGWAS_mean.txt",sep = "\t",row.names = FALSE)
 ```
+
