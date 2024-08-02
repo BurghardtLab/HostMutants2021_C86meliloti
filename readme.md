@@ -5,7 +5,7 @@ Sohini Guha,Gina Bledsoe,Liana T. Burghardt
 
 ## Contents
 
-This repository contains the raw data and scripts for eunning the
+This repository contains the raw data and scripts for running the
 analyses presenting in the following manuscript
 
 “Perturbation of known Medicago symbiosis genes tend to influence host

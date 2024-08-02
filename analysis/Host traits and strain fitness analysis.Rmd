@@ -369,7 +369,7 @@ ggplot(df1, aes(x=RDA3,y=RDA4,color=type))+
   geom_text(aes(label=geno),size=3) +
   geom_hline(yintercept=0, linetype="dotted") +
   geom_vline(xintercept=0, linetype="dotted") +
-  labs(x=paste("RDA 1 (",round(rda1_ev[3],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[4],2),"%)"), color="Type") +
+  labs(x=paste("RDA 3 (",round(rda1_ev[3],2),"%)"),y=paste("RDA 4 (",round(rda1_ev[4],2),"%)"), color="Type") +
   theme_classic() + theme(legend.position="top", text = element_text(size=12)) 
 
 dev.off()

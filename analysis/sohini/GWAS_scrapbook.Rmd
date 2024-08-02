@@ -535,13 +535,130 @@ ipd3<- data.frame(group=ipd3_combined[match(unique(top10_ipd3$ld_group),ipd3_com
                           WTrank=A17_combined[match(unique(top10_ipd3$ld_group),A17_combined$ld_group),]$pr,hclrank=hcl_combined[match(unique(top10_ipd3$ld_group),hcl_combined$ld_group),]$pr,ipd3rank=ipd3_combined[match(unique(top10_ipd3$ld_group),ipd3_combined$ld_group),]$pr,latdrank=latd_combined[match(unique(top10_ipd3$ld_group),latd_combined$ld_group),]$pr,nad1rank=nad1_combined[match(unique(top10_ipd3$ld_group),nad1_combined$ld_group),]$pr,dnf1rank=dnf1_combined[match(unique(top10_ipd3$ld_group),dnf1_combined$ld_group),]$pr,dnf2rank=dnf2_combined[match(unique(top10_ipd3$ld_group),dnf2_combined$ld_group),]$pr,dnf3rank=dnf3_combined[match(unique(top10_ipd3$ld_group),dnf3_combined$ld_group),]$pr,dnf4rank=dnf4_combined[match(unique(top10_ipd3$ld_group),dnf4_combined$ld_group),]$pr,dnf6rank=dnf6_combined[match(unique(top10_ipd3$ld_group),dnf6_combined$ld_group),]$pr,dnf7rank=dnf7_combined[match(unique(top10_ipd3$ld_group),dnf7_combined$ld_group),]$pr,dnf1dnf2rank=dnf1dnf2_combined[match(unique(top10_ipd3$ld_group),dnf1dnf2_combined$ld_group),]$pr,dnf5dnf2rank=dnf5dnf2_combined[match(unique(top10_ipd3$ld_group),dnf5dnf2_combined$ld_group),]$pr,sunn1rank=sunn1_combined[match(unique(top10_ipd3$ld_group),sunn1_combined$ld_group),]$pr,sunn4rank=sunn4_combined[match(unique(top10_ipd3$ld_group),sunn4_combined$ld_group),]$pr,rdn1rank=rdn1_combined[match(unique(top10_ipd3$ld_group),rdn1_combined$ld_group),]$pr)
 
 #Merge
+
 GWAS_crosslinked<-rbind(hcl,ipd3,latd,nad1,dnf1,dnf2,dnf3,dnf4,dnf6,dnf7,dnf1dnf2,dnf5dnf2,rdn1,sunn1,sunn4)
 write.table<(GWAS_crosslinked, file="~/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Burghardt Lab Shared Folder/Projects/NSFPGRP_HostMutants/Data/GWAS_SOHINI/top 10 candidates/crosslinked_GWAS.tsv",sep = "\t",row.names = FALSE))
 ```               
                          
                          
 ```  
+```#{r Nucleotide diversity analysis, echo=FALSE}
+pdf(file = "/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/figures/tajima.pdf",width = 6.78, height = 6.78)
 
+summarized_rhizobia_data <- read.delim("~/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Burghardt Lab Shared Folder/Projects/TiffinLabSharedData/popgen/rhizobia/summarized_rhizobia_data.tsv")
+
+#top5 in the small group
+split_data <- strsplit(top5_candidates_prs.1$description, ":")
+split_data <- sapply(split_data, function(top5_candidates_prs.1) top5_candidates_prs.1[1])
+split_data
+# Assuming split_data contains the locus tags you want to filter by
+filtered_data <- summarized_rhizobia_data[summarized_rhizobia_data$ncbi_locus_tag %in% split_data, ]
+
+# Extracting the tajD values from the filtered data
+filtered_tajD_values <- filtered_data$tajD
+
+# Set theme options
+theme_set(theme_minimal(base_size = 12))
+
+# Plotting the density and vertical lines
+ggplot(summarized_rhizobia_data, aes(x = tajD)) +
+     geom_density(fill = "skyblue", alpha = 0.6) +  # Adjust density plot appearance
+    geom_vline(data = filtered_data, aes(xintercept = tajD, color = filtered_data$replicon), linetype = "dashed") +  # Add vertical lines with color mapping
+    labs(title = "Tajima's D with top5 candidates and the pcut",x = "Tajima's D",
+          y = "Density") +  # Adjust axis labels
+    theme(plot.title = element_text(size = 16, face = "bold"),  # Adjust title appearance
+          axis.text = element_text(size = 10),  # Adjust axis text size
+           axis.title = element_text(size = 12, face = "bold"))+scale_color_manual(values = c("black", "firebrick", "forestgreen"))  # Customizing color palette
+
+
+  
+
+
+#changing the pcut and expanding beyond top5
+get_top_candidates_subset_and_combine.1 <- function(data) {
+  top_candidates_subset.1 <- subset(data, p_lrt <= 1e-5)
+  return(top_candidates_subset.1)
+}
+
+# Use lapply to apply the function to each data frame
+all_top_candidates_subsets.1 <- lapply(data_list, get_top_candidates_subset_and_combine.1)
+
+# Combine all subsets into a single data frame
+combined_data2 <- do.call(rbind, all_top_candidates_subsets.1)
+
+Candidates_pcut<-combined_data2%>% separate(chr,c('Organism','Replicon'))
+
+
+split_data <- strsplit(Candidates_pcut$description, ":")
+split_data <- sapply(split_data, function(Candidates_pcut) Candidates_pcut[1])
+split_data
+# Assuming split_data contains the locus tags you want to filter by
+filtered_data <- summarized_rhizobia_data[summarized_rhizobia_data$ncbi_locus_tag %in% split_data, ]
+
+# Extracting the tajD values from the filtered data
+filtered_tajD_values <- filtered_data$tajD
+
+#myplot
+#ggplot(summarized_rhizobia_data, aes(x = tajD)) +geom_density(alpha = 0.6) +geom_vline(data = data.frame(tajD = tajD_values), aes(xintercept = tajD), color = "red")
+#prettier plot
+
+# Set theme options
+theme_set(theme_minimal(base_size = 12))
+
+# Plotting the density and vertical lines
+ggplot(summarized_rhizobia_data, aes(x = tajD)) +
+     geom_density(fill = "skyblue", alpha = 0.6) +  # Adjust density plot appearance
+    geom_vline(data = filtered_data, aes(xintercept = tajD, color = filtered_data$replicon), linetype = "dashed") +  # Add vertical lines with color mapping
+    labs(title = "Tajima's D with pcut p_lrt <= 1e-5",x = "Tajima's D",
+          y = "Density") +  # Adjust axis labels
+    theme(plot.title = element_text(size = 16, face = "bold"),  # Adjust title appearance
+          axis.text = element_text(size = 10),  # Adjust axis text size
+           axis.title = element_text(size = 12, face = "bold"))+scale_color_manual(values = c("black", "firebrick", "forestgreen"))  # Customizing color palette
+
+
+##prs
+
+Candidates_prs<-Candidates_pcut%>% filter(!is.na(as.numeric(prs)))
+
+split_data <- strsplit(Candidates_prs$description, ":")
+split_data <- sapply(split_data, function(Candidates_prs) Candidates_prs[1])
+split_data
+# Assuming split_data contains the locus tags you want to filter by
+filtered_data <- summarized_rhizobia_data[summarized_rhizobia_data$ncbi_locus_tag %in% split_data, ]
+
+# Extracting the tajD values from the filtered data
+filtered_tajD_values <- filtered_data$tajD
+# Set theme options
+theme_set(theme_minimal(base_size = 12))
+
+# Plotting the density and vertical lines
+ggplot(summarized_rhizobia_data, aes(x = tajD)) +
+     geom_density(fill = "skyblue", alpha = 0.6) +  # Adjust density plot appearance
+    geom_vline(data = filtered_data, aes(xintercept = tajD, color = filtered_data$replicon), linetype = "dashed") +  # Add vertical lines with color mapping
+    labs(title = "Tajima's D with pcut and prs only",x = "Tajima's D",
+          y = "Density") +  # Adjust axis labels
+    theme(plot.title = element_text(size = 16, face = "bold"),  # Adjust title appearance
+          axis.text = element_text(size = 10),  # Adjust axis text size
+           axis.title = element_text(size = 12, face = "bold"))+scale_color_manual(values = c("black", "firebrick", "forestgreen"))  # Customizing color palette
+
+#faceting by replicons
+#original density plot 
+ggplot(summarized_rhizobia_data, aes(x = tajD))+geom_density(fill = "skyblue", alpha = 0.6)+ facet_wrap(vars(replicon))+geom_vline(data = filtered_data, aes(xintercept = tajD, color = filtered_data$replicon), linetype = "dashed") +  # Add vertical lines with color mapping
+    labs(title = "Tajima's D with prs and faceted",x = "Tajima's D",
+         y = "Density") +  # Adjust axis labels
+    theme(plot.title = element_text(size = 16, face = "bold"),  # Adjust title appearance
+          axis.text = element_text(size = 10),  # Adjust axis text size
+          axis.title = element_text(size = 12, face = "bold"))+scale_color_manual(values = c("black", "firebrick", "forestgreen"))  # Customizing color palette
+#overlay of the 3 replicons
+ggplot(summarized_rhizobia_data, aes(x=tajD,fill=replicon))+ geom_density(aes(group=replicon),alpha=0.5)+geom_vline(data = filtered_data, aes(xintercept = tajD, color = filtered_data$replicon), linetype = "dashed") +  # Add vertical lines with color mapping
+    labs(title = "Tajima's D with prs and overlayed",x = "Tajima's D",
+         y = "Density") +  # Adjust axis labels
+    theme(plot.title = element_text(size = 16, face = "bold"),  # Adjust title appearance
+          axis.text = element_text(size = 10),  # Adjust axis text size
+          axis.title = element_text(size = 12, face = "bold"))+scale_color_manual(values = c("black", "firebrick", "forestgreen"))  # Customizing color palette
+
+dev.off()
+```
 
 
 
