@@ -250,7 +250,7 @@ corrplot.mixed(correlation_matrix, number.cex=1,upper = "ellipse", lower = "numb
 dev.off()
 ```
 
-```{r Code for creating FigS3, echo=TRUE}
+```{r Code for creating FigS4, echo=TRUE}
 #Fig S4a
 Geno.Coef.Summary<-Geno.Coef.Summary %>% mutate(Predictor=substr(Predictor,5,14))
 Geno.Coef.Graphs<-rbind(Geno.Coef.Summary[,c(1,2,6,7)], Geno.Coef.RDA[,c(1,2,6,7)])
@@ -386,3 +386,198 @@ GWAS_traits<-tibble(strains=row.names(t(fit_mean_matrix)),A17=x$A17,latd.change=
 write.table (GWAS_traits,file="../tables/TraitsforGWAS_mean.txt",sep = "\t",row.names = FALSE)
 ```
 
+```{bash, engine.opts='-l'}
+#### Set requirements ####
+salloc -N 1 -n 20 --mem-per-cpu=2048 -t 8:00:00
+
+#First, create the gwas environment to install nessesary packages!!
+#conda list -e > spec-file.txt
+#conda create --name gwas_vcf --file spec-file.txt
+
+#### Activate environment ####
+conda activate gwas_vcf
+
+#### SETTINGS ####
+MIN_MAF=0.05
+MAX_MISSING=0.2
+N_PERMUTATIONS=1000
+
+
+#### Files needed ####
+GENOTYPES="ensifer_88_strains_normalized_for_gwas.vcf.gz" #SNPs file obatined from https://datadryad.org/stash/landing/show?id=doi%3A10.5061%2Fdryad.w3r2280sq
+PHENOTYPES='TraitsforGWAS_mean.tsv' # first column strain list, phenotypes begin at column 2, head should include phenotype names (i.e., strain, pheno1, pheno2 ...)
+STRAINS='strain_list.txt' #list of strains in phenotypes (i.e. column 1)
+LD_SITES='ld_sites.txt' #list of LD representative sites, user generated see below (line 27) # 26918 sites 
+
+
+ANNOTATION_FOR_VARIANTS="annotated_variants.closest.circular.tsv" # From Dryad or Brendan(?)
+chr_var="chr_one_variant.tsv" 
+psyma_var="psyma_one_variant.tsv" 
+psymb_var="psymb_one_variant.tsv" 
+
+nPHENOS=`awk -F'\t' '{print NF; exit}' $PHENOTYPES`
+pheno_names=($(awk 'NR==1{print}' $PHENOTYPES))
+
+#### Used to generate LD snps list ####
+# wget -O ensifer_ld_groups.zip https://datadryad.org/stash/downloads/file_stream/1823551
+# unzip ensifer_ld_groups.zip
+# awk 'NR == 1 || FNR > 1' ensifer_ld_groups/ld_group_assignments* > all_ld_group_assignments.tsv
+# awk '$7 == "1"' all_ld_group_assignments.tsv | cut -f 1,2 > ld_sites.txt
+
+
+#### Filter Genotypes ####
+
+bcftools view --samples-file "$STRAINS" "$GENOTYPES" -o filtered.vcf
+
+#### index for downstream filtering ####
+rm -f filtered.vcf.gz
+bgzip filtered.vcf && tabix -p vcf filtered.vcf.gz
+
+bcftools query -f '%POS\n' filtered.vcf.gz | wc -l  #254255
+bcftools query -f '%CHROM\n' filtered.vcf.gz | uniq
+
+
+#### Filter SNPs by LD snps ####
+bcftools view -R $LD_SITES filtered.vcf.gz | bcftools sort -o subset_LD.vcf
+rm -f subset_LD.vcf.gz
+bgzip subset_LD.vcf && tabix -p vcf subset_LD.vcf.gz # index for downstream filtering
+
+
+#### Filter sites based on output/chromosome ####
+bcftools view subset_LD.vcf.gz --regions USDA1106-chr,KH35c-chr,T073-chr -o chr_subset_LD.vcf
+bcftools view subset_LD.vcf.gz --regions USDA1106-psyma,T073-psyma,KH35c-psyma -o psyma_subset_LD.vcf
+bcftools view subset_LD.vcf.gz --regions USDA1106-psymb,T073-psymb,KH35c-psymb -o psymb_subset_LD.vcf
+
+#### Index ####
+rm -f chr_subset_LD.vcf.gz
+rm -f psyma_subset_LD.vcf.gz
+rm -f psymb_subset_LD.vcf.gz
+
+bgzip chr_subset_LD.vcf && tabix -p vcf chr_subset_LD.vcf.gz # index for downstream filtering
+bgzip psyma_subset_LD.vcf && tabix -p vcf psyma_subset_LD.vcf.gz # index for downstream filtering
+bgzip psymb_subset_LD.vcf && tabix -p vcf psymb_subset_LD.vcf.gz # index for downstream filtering
+
+
+
+#### Check filtering ####
+#sites
+bcftools query -f '%POS\n' ensifer_88_strains_normalized_for_gwas.vcf.gz | wc -l # 254255
+bcftools query -f '%POS\n' filtered.vcf.gz | wc -l # 254255 
+bcftools query -f '%POS\n' subset_LD.vcf.gz | wc -l # 30076
+bcftools query -f '%POS\n' chr_subset_LD.vcf.gz | wc -l # 1962
+bcftools query -f '%POS\n' psyma_subset_LD.vcf.gz | wc -l # 11137 
+bcftools query -f '%POS\n' psymb_subset_LD.vcf.gz | wc -l # 16929
+
+#genotypes
+bcftools query -l ensifer_88_strains_normalized_for_gwas.vcf.gz | wc -l #88
+bcftools query -l filtered.vcf.gz | wc -l # 86 
+bcftools query -l subset_LD.vcf.gz | wc -l # 86
+bcftools query -l chr_subset_LD.vcf.gz | wc -l # 86
+bcftools query -l psyma_subset_LD.vcf.gz | wc -l # 86
+bcftools query -l psymb_subset_LD.vcf.gz | wc -l # 86
+
+
+#### Subset phenotypes by strain_list ####
+grep -f $STRAINS $PHENOTYPES > phenos_subset.fam # 86 
+
+
+## Convert vcf to bed for GEMMA
+# chr
+plink --vcf chr_subset_LD.vcf.gz --make-bed --allow-extra-chr --allow-no-sex --maf 0.05 --geno --pheno "phenos_subset.fam" --all-pheno --out "chr_subset_LD_plink"
+
+# psyma
+plink --vcf psyma_subset_LD.vcf.gz --make-bed --allow-extra-chr --allow-no-sex --maf 0.05 --geno --pheno "phenos_subset.fam" --all-pheno --out "psyma_subset_LD_plink"
+
+# psymb
+plink --vcf psymb_subset_LD.vcf.gz --make-bed --allow-extra-chr --allow-no-sex --maf 0.05 --geno --pheno "phenos_subset.fam" --all-pheno --out "psymb_subset_LD_plink"
+
+## Relatedness matrix
+#"-gk 2" calculates the standardized relatedness matrix
+#Note: need to have the .fam file for it to run: e.g., cp subset_LD_plink.fam chr_subset_LD_plink.fam
+
+gemma -bfile chr_subset_LD_plink -p phenos_subset.fam -gk 2 -maf $MIN_MAF -miss $MAX_MISSING -o chr_subset_LD_ksmat
+gemma -bfile psyma_subset_LD_plink -p phenos_subset.fam -gk 2 -maf $MIN_MAF -miss $MAX_MISSING -o psyma_subset_LD_ksmat
+gemma -bfile psymb_subset_LD_plink -p phenos_subset.fam -gk 2 -maf $MIN_MAF -miss $MAX_MISSING -o psymb_subset_LD_ksmat
+
+
+#####################################################################################################################################################
+## LMM option in GEMMA
+#-n <number> specifies column corresponding to phenotype in .fam file.
+#-lmm option 4 includes all three stats tests (see GEMMA manual for more details)
+
+## This is the "real" gwas
+ for i in `seq 2 $nPHENOS`; # 
+ do
+  gemma -bfile chr_subset_LD_plink -p phenos_subset.fam -k ./output/chr_subset_LD_ksmat.sXX.txt \
+  -maf $MIN_MAF -miss "$MAX_MISSING" \
+  -lmm 4 -n $i -o chr_subset_LD_ulmm_trait_$i
+  echo "For chr, ran trait_$i through GEMMA"
+
+  gemma -bfile psyma_subset_LD_plink -p phenos_subset.fam -k ./output/psyma_subset_LD_ksmat.sXX.txt \
+  -maf $MIN_MAF -miss "$MAX_MISSING" \
+  -lmm 4 -n $i -o psyma_subset_LD_ulmm_trait_$i
+  echo "For psyma, ran trait_$i through GEMMA"
+
+  gemma -bfile psymb_subset_LD_plink -p phenos_subset.fam -k ./output/psymb_subset_LD_ksmat.sXX.txt \
+  -maf $MIN_MAF -miss "$MAX_MISSING" \
+  -lmm 4 -n $i -o psymb_subset_LD_ulmm_trait_$i
+  echo "For psymb, ran trait_$i through GEMMA" ;
+ done
+
+## adds a columnn to keep track of trait 
+for i in $(seq 2 $nPHENOS); # 2 through 4, or however many numbers of traits in $PHENOTYPES
+ do
+  awk -v i="$i" '{if (NR!=1) print $0, "\t trait_"i}' output/chr_subset_LD_ulmm_trait_$i.assoc.txt | sed '1i chr\tldg\tps\tn_miss\tallele1\tallele0\taf\tbeta\tse\tlogl_H1\tl_remle\tl_mle\tp_wald\tp_lrt\tp_score\trun' > output/chr_subset_LD_ulmm_trait_$i_2.assoc.txt
+  awk -v i="$i" '{if (NR!=1) print $0, "\t trait_"i}' output/psyma_subset_LD_ulmm_trait_$i.assoc.txt | sed '1i chr\tldg\tps\tn_miss\tallele1\tallele0\taf\tbeta\tse\tlogl_H1\tl_remle\tl_mle\tp_wald\tp_lrt\tp_score\trun' > output/psyma_subset_LD_ulmm_trait_$i_2.assoc.txt
+  awk -v i="$i" '{if (NR!=1) print $0, "\t trait_"i}' output/psymb_subset_LD_ulmm_trait_$i.assoc.txt | sed '1i chr\tldg\tps\tn_miss\tallele1\tallele0\taf\tbeta\tse\tlogl_H1\tl_remle\tl_mle\tp_wald\tp_lrt\tp_score\trun' > output/psymb_subset_LD_ulmm_trait_$i_2.assoc.txt
+  mv output/chr_subset_LD_ulmm_trait_$i_2.assoc.txt output/chr_subset_LD_ulmm_trait_$i.assoc.txt
+  mv output/psyma_subset_LD_ulmm_trait_$i_2.assoc.txt output/psyma_subset_LD_ulmm_trait_$i.assoc.txt
+  mv output/psymb_subset_LD_ulmm_trait_$i_2.assoc.txt output/psymb_subset_LD_ulmm_trait_$i.assoc.txt
+ done
+
+## This renames "trait_2, trait_3, etc." to the corresponding name within the phenotype file begining at column 2. 
+for str in ${pheno_names[@]}; do
+ echo $str
+done
+
+for i in $(seq 2 $nPHENOS); # or however many numbers of columns (i.e., traits) 
+ do
+  sed -i 's/ trait_'"${i}"'/'"${pheno_names[${i}-1]}"'/g' output/chr_subset_LD_ulmm_trait_$i.assoc.txt
+  sed -i 's/ trait_'"${i}"'/'"${pheno_names[${i}-1]}"'/g' output/psyma_subset_LD_ulmm_trait_$i.assoc.txt
+  sed -i 's/ trait_'"${i}"'/'"${pheno_names[${i}-1]}"'/g' output/psymb_subset_LD_ulmm_trait_$i.assoc.txt
+ done
+
+ #### annotate #### 
+rm -r annotation/
+mkdir -p "annotation"
+
+for i in $(seq 2 $nPHENOS); 
+    do
+        python merge.py "$chr_var" "$ANNOTATION_FOR_VARIANTS" "output/chr_subset_LD_ulmm_trait_$i.assoc.txt"
+        python merge.py "$psyma_var" "$ANNOTATION_FOR_VARIANTS" "output/psyma_subset_LD_ulmm_trait_$i.assoc.txt"  
+        python merge.py "$psymb_var" "$ANNOTATION_FOR_VARIANTS" "output/psymb_subset_LD_ulmm_trait_$i.assoc.txt"  
+    done                                           
+
+
+#rename annotation files
+for i in $(seq 2 $nPHENOS); # or however many numbers of columns (i.e., traits) 
+ do
+  mv annotation/merged_chr_subset_LD_ulmm_trait_$i.assoc.txt annotation/merged_chr_subset_LD_ulmm_trait_${pheno_names[${i}-1]}.tsv
+  mv annotation/merged_psyma_subset_LD_ulmm_trait_$i.assoc.txt annotation/merged_psyma_subset_LD_ulmm_trait_${pheno_names[${i}-1]}.tsv
+  mv annotation/merged_psymb_subset_LD_ulmm_trait_$i.assoc.txt annotation/merged_psymb_subset_LD_ulmm_trait_${pheno_names[${i}-1]}.tsv
+ done
+
+# #rename output files
+for i in $(seq 2 $nPHENOS); # or however many numbers of columns (i.e., traits) 
+ do
+  mv output/chr_subset_LD_ulmm_trait_$i.assoc.txt output/chr_subset_LD_ulmm_${pheno_names[${i}-1]}.assoc.txt
+  mv output/psyma_subset_LD_ulmm_trait_$i.assoc.txt output/psyma_subset_LD_ulmm_${pheno_names[${i}-1]}.assoc.txt
+  mv output/psymb_subset_LD_ulmm_trait_$i.assoc.txt output/psymb_subset_LD_ulmm_${pheno_names[${i}-1]}.assoc.txt
+  mv output/chr_subset_LD_ulmm_trait_$i.log.txt output/chr_subset_LD_ulmm_${pheno_names[${i}-1]}.log.txt
+  mv output/psyma_subset_LD_ulmm_trait_$i.log.txt output/psyma_subset_LD_ulmm_${pheno_names[${i}-1]}.log.txt
+  mv output/psymb_subset_LD_ulmm_trait_$i.log.txt output/psymb_subset_LD_ulmm_${pheno_names[${i}-1]}.log.txt
+ done
+
+
+awk '(NR == 1) || (FNR > 1)' output/*assoc.txt > output/all_assoc.txt
+```
