@@ -1,10 +1,11 @@
 ---
-title: "GWAS analyses for the NSFPGRP_HostMutants_C86meliloti dataset"
-author: "Sohini Guha"
+title: "In multi-strain inoculations, mutation of Medicago symbiosis genes creates a complex selective landscape for naturally-occurring genetic variation in rhizobia"
+author: Sohini Guha,Gina Bledsoe,Liana T. Burghardt
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
+Analysis file for "In multi-strain inoculations, mutation of Medicago symbiosis genes creates a complex selective landscape for naturally-occurring genetic variation in rhizobia"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -91,10 +92,6 @@ read_and_store_data <- function(file_paths) {
 # Read data frames and store in the list
 data_list <- lapply(file_paths, read_and_store_data)
 #top5_candidates
-get_top_candidates_subset_and_combine <- function(data) {
-  top_candidates_subset <- subset(data, pr >= 1 & pr <= 10)
-  return(top_candidates_subset)
-}
 
 # Use lapply to apply the function to each data frame
 all_top_candidates_subsets <- lapply(data_list, get_top_candidates_subset_and_combine)
@@ -103,7 +100,6 @@ combined_data <- do.call(rbind, all_top_candidates_subsets)
 #seperate the 'chr' col
 combined_top10_candidates_data<-combined_data%>% separate(chr,c('Organism','Replicon'))
 #Table for Fig S6,S7
-#write.table(combined_top10_candidates_data,file="../tables/SupplementalTable S7.tsv",sep = "\t",row.names = FALSE) 
 
 #select the top5 for fig6, supplement annotated heatmap and the crossranked tables
 #top5_candidates<-subset(combined_top10_candidates_data,pr>=1 & pr<=5)
@@ -190,12 +186,17 @@ merged_dnf5dnf2<-merge_GWAS_data("dnf5dnf2")
 merged_rdn1<-merge_GWAS_data("rdn1")
 merged_sunn1<-merge_GWAS_data("sunn1")
 merged_sunn4<-merge_GWAS_data("sunn4")
+```
+
+```{r Code for Table S8, echo=FALSE}
 #crossranked table based on the  beta:
 
 top5_candidates_crossranked_beta<-data.frame(group=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$ld_group,pr=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$pr,Location= top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$Replicon,Pval=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$p_lrt,Beta=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$beta,Br=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$br,WT=merged_A17[match(unique(top5_candidates$ld_group),merged_A17$ld_group),]$beta,hcl=merged_hcl[match(unique(top5_candidates$ld_group),merged_hcl$ld_group),]$beta,ipd3=merged_ipd3[match(unique(top5_candidates$ld_group),merged_ipd3$ld_group),]$beta,latd=merged_latd[match(unique(top5_candidates$ld_group),merged_latd$ld_group),]$beta,nad1=merged_nad1[match(unique(top5_candidates$ld_group),merged_nad1$ld_group),]$beta,dnf1=merged_dnf1[match(unique(top5_candidates$ld_group),merged_dnf1$ld_group),]$beta,dnf2=merged_dnf2[match(unique(top5_candidates$ld_group),merged_dnf2$ld_group),]$beta,dnf3=merged_dnf3[match(unique(top5_candidates$ld_group),merged_dnf3$ld_group),]$beta,dnf4=merged_dnf4[match(unique(top5_candidates$ld_group),merged_dnf4$ld_group),]$beta,dnf6=merged_dnf6[match(unique(top5_candidates$ld_group),merged_dnf6$ld_group),]$beta,dnf7=merged_dnf7[match(unique(top5_candidates$ld_group),merged_dnf7$ld_group),]$beta,dnf1dnf2=merged_dnf1dnf2[match(unique(top5_candidates$ld_group),merged_dnf1dnf2$ld_group),]$beta,dnf5dnf2=merged_dnf5dnf2[match(unique(top5_candidates$ld_group),merged_dnf5dnf2$ld_group),]$beta,rdn1=merged_rdn1[match(unique(top5_candidates$ld_group),merged_rdn1$ld_group),]$beta,sunn1=merged_sunn1[match(unique(top5_candidates$ld_group),merged_sunn1$ld_group),]$beta,sunn4=merged_sunn4[match(unique(top5_candidates$ld_group),merged_sunn4$ld_group),]$beta,Description=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$description)
- 
 
-write.table(top5_candidates_crossranked_beta,file="../tables/beta.tsv",sep = "\t",row.names = FALSE)
+#adding the alternate allele frequency of the ld groups
+beta_af<-data.frame(group=top5_candidates_crossranked_beta$group,Af=top5_candidates[match(unique(top5_candidates_crossranked_beta$group),top5_candidates$ld_group),]$af)
+top5_candidates_crossranked_beta<-merge(top5_candidates_crossranked_beta, beta_af,by="group")
+#write.table(top5_candidates_crossranked_beta,file="../tables/beta.tsv",sep = "\t",row.names = FALSE)
 
 #split the top5 candidate list based on the replicons
 top5_candidates<-split(top5_candidates,top5_candidates$Replicon)
@@ -219,7 +220,7 @@ top5_candidates_crossranked_psyma<-data.frame(group=top5_candidates$psyma[match(
 top5_candidates_crossranked<-rbind (top5_candidates_crossranked_chr,top5_candidates_crossranked_psyma,top5_candidates_crossranked_psymb)
 Rank_top10 <- rowSums(top5_candidates_crossranked[, -(1:6)] <= 10, na.rm = TRUE)
 top5_candidates_crossranked.1<-cbind(top5_candidates_crossranked,Rank_top10)
-
+top5_candidates_crossranked.1<-merge(top5_candidates_crossranked.1,beta_af,by="group")
 write.table(top5_candidates_crossranked.1,file="../tables/TableS8.tsv",sep = "\t",row.names = FALSE)
 
 ```
@@ -244,8 +245,7 @@ df <- function(replicon) {
   # Remove Description and irrelevant columns
  result3<- result %>%
     select(-c(1:6)) %>%select(-Description)%>%
-    select(-Rank_top10)
- 
+    select(-Rank_top10)%>% select(-Af)
   
   # Convert data to matrix
   data_matrix <- as.matrix(result3)
@@ -303,15 +303,15 @@ df <- function(replicon) {
   
   # Remove Description and irrelevant columns
   result_beta2 <- result_beta %>%
-    select(-c(1:7)) %>%
-    select(-Description)
+    select(-c(1:6)) %>%
+    select(-Description)%>% select(-Af)
  
   
   # Convert data to matrix
   data_matrix_beta <- as.matrix(result_beta2)
 
   # Reciprocal transformation
-  rownames(data_matrix_beta) <- result_beta$Beta
+  rownames(data_matrix_beta) <- result_beta$Af
 
   # Define color palette
   col_letters <- c("WT" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
@@ -359,7 +359,7 @@ df <- function(replicon) {
   # Remove Description and irrelevant columns
  result3<- result %>%
     select(-c(1:6)) %>%select(-Description)%>%
-    select(-Rank_top10)
+    select(-Rank_top10)%>% select(-Af)
  
   
   # Convert data to matrix
@@ -418,8 +418,8 @@ df <- function(replicon) {
   
   # Remove Description and irrelevant columns
   result_beta2 <- result_beta %>%
-    select(-c(1:7)) %>%
-    select(-Description)
+    select(-c(1:6)) %>%
+    select(-Description)%>% select(-Af)
  
   
   # Convert data to matrix
@@ -458,115 +458,3 @@ dev.off()
 
 ```
 
-```{r Code for ordering the beta heatmaps according to the prank heatmaps, echo=FALSE}
-###ordering
-# Function to generate FigS7 using the row order from FigS6
-df <- function(replicon) {
-  # Separate Location column into Organism and Replicon
- #top5_candidates_crossranked1  <- top5_candidates_crossranked %>%separate(Location, c("Organism", "Replicon"))
-  
-  # Filter the data for the specified replicon
-  result_beta <- top5_candidates_crossranked_beta[top5_candidates_crossranked_beta$Location == replicon, ]
-  result <- top5_candidates_crossranked.1[top5_candidates_crossranked.1$Location == replicon, ]
-  # Check if any rows are filtered
-  if (nrow(result_beta) == 0) {
-    stop("No data found for the specified replicon.")
-  }
-  
-  
-  ##creating the prank heatmaps
-  # Remove Description and irrelevant columns
- result3<- result %>%
-    select(-c(1:6)) %>%select(-Description)%>%
-    select(-Rank_top10)
- 
-  
-  # Convert data to matrix
-  data_matrix <- as.matrix(result3)
-
-  # Reciprocal transformation
-  data_matrix <- 1 / data_matrix
-  rownames(data_matrix) <- result$Description
-   # Define color palette
-  col_letters <- c("WT" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
-                   "nad1" = "#009E73", "dnf1" = "#009E73", "dnf2" = "#009E73", "dnf3" = "#009E73", 
-                   "dnf4" = "#009E73", "dnf6" = "#009E73", "dnf7" = "#009E73", "dnf1/dnf2" = "#009E73", 
-                   "dnf5/dnf2" = "#009E73", "rdn1" = "#E69F00", "sunn1" = "#E69F00", "sunn4" = "#E69F00")
-
-  
-  # Define color palette
-  pal1 <- colorRampPalette(c("lightgrey", "wheat", "gold", "orange", "darkorange", "red", "darkred"))(500)
-  
-  hv1 <- heatmap.2(data_matrix, Rowv = TRUE, Colv = TRUE, dendrogram = "row", col = pal1, 
-                    hclustfun = function(d) hclust(d, method = "ward.D2"), trace = "none", 
-                     scale = "none", cexCol = 1, cexRow = 0.5, key = TRUE, 
-                   key.xlab = "Rank", key.ylab = NA, tracecol = "black", keysize = 2, 
-                     symbreaks = FALSE, key.title = replicon, colCol = col_letters,
-                     margins = c(8, 15))
- 
-  # Extract the row order using hv1's rowInd
- 
- ClusterOrder <- row.names(data_matrix[hv1$rowInd, ])
-##creating the beta heatmaps
- #Remove Description and irrelevant columns for beta
- result_beta2 <- result_beta %>%
-    select(-c(1:7)) %>%
-    select(-Description)
-  # Convert data for beta values to matrix
-  data_matrix_beta <- as.matrix(result_beta2)
-  
-  #reorder matrix based on the row indices of the prank heatmap
-   reordered_matrix <- data_matrix_beta[order(data_matrix_beta[,nrow(data_matrix)],),]
-  
-  # Reciprocal transformation
-  rownames(reordered_matrix) <- result_beta$Description
-  
-  # Define color palette
-  col_letters <- c("WT" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
-                   "nad1" = "#009E73", "dnf1" = "#009E73", "dnf2" = "#009E73", "dnf3" = "#009E73", 
-                   "dnf4" = "#009E73", "dnf6" = "#009E73", "dnf7" = "#009E73", "dnf1/dnf2" = "#009E73", 
-                   "dnf5/dnf2" = "#009E73", "rdn1" = "#E69F00", "sunn1" = "#E69F00", "sunn4" = "#E69F00")
-
-  # Define color palette
-pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))
-  # Generate heatmap
-  heatmap.2(reordered_matrix, Rowv = FALSE,Colv=TRUE,dendrogram = "row", col = pal, 
-            hclustfun = function(d) hclust(d, method = "ward.D2"), trace = "none", 
-            scale = "none", cexCol = 1, cexRow = 0.5, key = TRUE, 
-            key.xlab = "Beta", key.ylab = NA, tracecol = "black", keysize = 2, 
-            symbreaks = FALSE, key.title = replicon, colCol = col_letters,
-            margins = c(8, 15))
-  
-  
-  
-  # Return the filtered data
-  return(result_beta)
-
-}
-pdf(file = "../figures/FigS7_ordered.pdf",width = 6.78, height = 6.78)
-df("chr")
-df("psyma")
-df("psymb")
-dev.off()
-
-```
-
-
-
-```{r Code for creating FigS8, echo=FALSE}
-pdf(file = "../figures/FigS8.pdf",width = 6.78, height = 6.78)
-ggplot(top5_candidates_crossranked.1, aes(x=Rank_top10, color=Location, fill=Location)) +
-    geom_histogram(position="dodge", bins=10, alpha=0.7) +
-    labs(x="Occurrence",
-         y="Rank_top10") +
-    theme_minimal(base_size=15) +
-    theme(axis.title.x = element_text(margin=margin(t=10)),
-         axis.title.y = element_text(margin=margin(r=10)),
-        legend.position = "top",
-        legend.title = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.grid.major = element_line(color="gray", size=0.5)) +
-    scale_fill_manual(values=c("black", "firebrick", "forestgreen")) +
-    scale_color_manual(values=c("black", "firebrick", "forestgreen"))
-dev.off()
-```

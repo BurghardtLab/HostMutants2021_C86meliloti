@@ -1,11 +1,11 @@
 ---
-title: "NSFPGRP_HostMutants_C86meliloti"
+title: "In multi-strain inoculations, mutation of Medicago symbiosis genes creates a complex selective landscape for naturally-occurring genetic variation in rhizobia"
 author: Sohini Guha,Gina Bledsoe,Liana T. Burghardt
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
-Analysis file for NSF Host Mutant C86 Sinorhizobium meliloti select and resequence project.
+Analysis file for "In multi-strain inoculations, mutation of Medicago symbiosis genes creates a complex selective landscape for naturally-occurring genetic variation in rhizobia"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -21,7 +21,6 @@ require(vegan)
 require(corrplot)
 knitr::opts_chunk$set(message = FALSE)
 ```
-
 
 ###Compiling the data for analysis
 
@@ -125,7 +124,7 @@ rda.model.type<-anova(rda_type, step=1000, perm.max=1000, by= "terms")
 rda.strainfitness<-data.frame(Response=c("nodule_isolate_fitness"),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(rda.model.geno$Variance,rda.model.type$Variance),PctExp=c(rda.model.geno$Variance/sum(rda.model.geno$Variance)*100,rda.model.type$Variance/sum(rda.model.type$Variance)*100),Df=c(rda.model.geno$Df,rda.model.type$Df),Fval=c(rda.model.geno$F,rda.model.type$F), Pval=c(rda.model.geno$`Pr(>F)`,rda.model.type$`Pr(>F)`),R.adj=c(round(RsquareAdj(rda_geno)$adj.r.squared,4),"NA","NA",round(RsquareAdj(rda_type)$adj.r.squared,4),"NA","NA")) #do we need to compile this in a table??
 ```
 
-```{r Write Function to run anova and summarize results each Phenotype, echo=TRUE}
+```{r Code for generating Table S2, echo=TRUE}
 
 extract.anova<- function(trait) {
 #Dropping rows with NA
@@ -153,7 +152,7 @@ ANOVA.Trait.Summary<-rbind(extract.anova("nodule_number_per_plant"),extract.anov
 write.table (ANOVA.Trait.Summary,file="../tables/TableS2.txt",sep = "\t",row.names = FALSE)
 ```
 
-```{r Statistical summary on geno coefficients, echo=FALSE}
+```{r Code for generating Tables S3 and S4, echo=FALSE}
 
 extract.coefs<-function(trait, predictor="geno", p.threshold=0.05) {
 
@@ -198,7 +197,7 @@ write.table (Type.Coef.Summary,file="../tables/TableS3.txt",sep = "\t",row.names
 write.table (Geno.Coef.Summary,file="../tables/TableS4.txt",sep = "\t",row.names = FALSE)
 ```
 
-```{r RDA Model results for Strain Isolate Fitness}
+```{r Code for creating Tables S5 and S6,echo=FALSE}
 
 extract.rda<-function(mygroup, predictor="geno", p.threshold=0.05) {
 
@@ -235,8 +234,8 @@ write.table (Geno.Coef.RDA,file="../tables/TableS6.txt",sep = "\t",row.names = F
 
 ```
 
-
 ###Visualizing Results
+
 ```{r Code for creating FigS2,echo=TRUE}
 # Correlation Plot
 pdf(file = "../figures/FigS2.pdf",width = 9, height = 9)
