@@ -1,11 +1,11 @@
 ---
-title: "In multi-strain inoculations, mutation of Medicago symbiosis genes creates a complex selective landscape for naturally-occurring genetic variation in rhizobia"
+title: "Mutations in legume symbiosis genes create a complex selective landscape for natural genetic variation in rhizobia during multi-strain inoculations"
 author: Sohini Guha,Gina Bledsoe,Liana T. Burghardt
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
-Analysis file for "In multi-strain inoculations, mutation of Medicago symbiosis genes creates a complex selective landscape for naturally-occurring genetic variation in rhizobia"
+Analysis file for "Mutations in legume symbiosis genes create a complex selective landscape for natural genetic variation in rhizobia during multi-strain inoculations"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)

@@ -1,4 +1,4 @@
-Raw data and code for the manuscript "In multi-strain inoculations, mutation of Medicago symbiosis genes creates a complex selective landscape for naturally-occurring genetic variation in rhizobia"
+Raw data and code for the manuscript "Mutations in legume symbiosis genes create a complex selective landscape for natural genetic variation in rhizobia during multi-strain inoculations"
 ================
 Sohini Guha,Gina Bledsoe,Liana T. Burghardt
 2023-06-30
@@ -7,8 +7,7 @@ Sohini Guha,Gina Bledsoe,Liana T. Burghardt
 
 This repository contains the raw data and scripts for running the analyses presenting in the following manuscript
 
-“In multi-strain inoculations, mutation of Medicago symbiosis genes creates a complex 1 
-selective landscape for naturally-occurring genetic variation in rhizobia”
+“Mutations in legume symbiosis genes create a complex selective landscape for natural genetic variation in rhizobia during multi-strain inoculations”
 
 This
 [folder](https://github.com/BurghardtLab/HostMutants2021_C86meliloti)
