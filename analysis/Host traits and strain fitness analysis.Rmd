@@ -286,34 +286,54 @@ dev.off()
 
 cbPalette <- c("#B23214","#56B4E9", "#009E73", "#E69F00")
 
-trait.boxplot<-function(trait,mypal=cbPalette,log=FALSE,trait_all=traits_all) {
-  trait_all$geno<-factor(trait_all$geno,levels = rev(levels(trait_all$geno))) # reorder factors
-  trait_all<-as.data.frame(trait_all[!is.na(trait_all[,trait]),])
-  mydata<-data.frame(geno=trait_all$geno, type=trait_all$type, mytrait=trait_all[,trait]) # create sub dataframe with only focal trait to make plotting easier
+trait.boxplot <- function(trait, mypal = cbPalette, log = FALSE, trait_all = traits_all) {
+  if (!trait %in% colnames(trait_all)) {
+    stop(paste("The specified trait column", trait, "does not exist in the data frame."))
+  }
   
-  ggplot(mydata,aes(x=geno,y=mytrait,fill=type))+
-        geom_boxplot(outlier.shape=NA,na.rm = TRUE,coef=0) +
-        geom_jitter() +
-        coord_flip() +
-        scale_fill_manual(values=mypal)  +
-        labs(x="Plant Host",y=c(paste(trait))) +
-        theme_classic() + 
-        theme(legend.position="top", text = element_text(size=18))
- 
+  # Replace NA with 0 for numeric columns
+  trait_all <- trait_all %>%
+    mutate(across(where(is.numeric), ~replace(., is.na(.), 0)))
+  
+  # Filter out rows with NA in 'type', 'geno', or the focal trait
+  trait_all <- trait_all %>%
+    filter(!is.na(type), !is.na(geno), !is.na(trait_all[[trait]])) %>%
+    mutate(
+      geno = factor(geno, levels = rev(levels(factor(geno)))),  # Reverse the order of factor levels for 'geno'
+      type = droplevels(factor(type))
+    )
+  
+  # Create a subset data frame for the focal trait
+  mydata <- data.frame(
+    geno = trait_all$geno,
+    type = trait_all$type,
+    mytrait = trait_all[[trait]]
+  )
+  
+  # Plot
+  ggplot(mydata, aes(x = geno, y = mytrait, fill = type)) +
+    geom_boxplot(outlier.shape = NA, na.rm = TRUE, coef = 0) +
+    geom_jitter(na.rm = TRUE) +
+    coord_flip() +  # Flip coordinates (for horizontal layout)
+    scale_fill_manual(values = mypal, na.translate = FALSE) + # Prevent 'NA' in the legend
+    labs(x = "Plant Host", y = trait) +
+    theme_classic() +
+    theme(legend.position = "top", text = element_text(size = 18))
 }
+
 
 pdf(file = "../figures/Fig2.pdf",width = 6, height = 6)
 trait.boxplot(trait = "nodule_number_per_plant")
-trait.boxplot(trait = "total_nodulated_area_per_plant")
-trait.boxplot(trait = "average_area_per_nodule")
+trait.boxplot(trait = "total_nodulated_area_per_plant", trait_all = traits_all[!traits_all$geno %in% c("dmi1-2", "dmi2-3", "dmi3-1"), ])
+trait.boxplot(trait = "average_area_per_nodule",trait_all = traits_all[!traits_all$geno %in% c("dmi1-2", "dmi2-3", "dmi3-1"), ])
 trait.boxplot(trait = "root_to_shoot_ratio")
 trait.boxplot(trait = "total_biomass_per_plant")
 dev.off()
 
 pdf(file = "../figures/Fig3.pdf",width = 6, height = 6)
-trait.boxplot(trait = "cfu_per_nodule_LOG10")
-trait.boxplot(trait = "cfu_per_plant_LOG10",trait_all = traits_all[traits_all$geno!="latd",]) ## we are sticking to this???
-trait.boxplot(trait = "nodule_isolate_diversity")
+trait.boxplot(trait = "cfu_per_nodule_LOG10",trait_all = traits_all[!traits_all$geno %in% c("dmi1-2", "dmi2-3", "dmi3-1"), ])
+trait.boxplot(trait = "cfu_per_plant_LOG10",trait_all = traits_all[!traits_all$geno %in% c("dmi1-2", "dmi2-3", "dmi3-1","latd"), ]) ## we are sticking to this???
+trait.boxplot(trait = "nodule_isolate_diversity",trait_all = traits_all[!traits_all$geno %in% c("dmi1-2", "dmi2-3", "dmi3-1"), ])
 dev.off()
 
 
