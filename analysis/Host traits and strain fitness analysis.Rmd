@@ -1,17 +1,15 @@
 ---
-title: "Mutations in legume symbiosis genes create a complex selective landscape for natural genetic variation in rhizobia during multi-strain inoculations"
-author: Sohini Guha,Gina Bledsoe,Liana T. Burghardt
+title: "Mutations in legume symbiosis genes create a complex selective landscape for rhizobial symbionts"
+author: Sohini Guha, Regina B. Bledsoe, Jeremy Sutherland, Brendan Epstein, Gwendolyn M. Fry, Nevin D. Young, Peter Tiffin, and Liana T. Burghardt
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
-Analysis file for "Mutations in legume symbiosis genes create a complex selective landscape for natural genetic variation in rhizobia during multi-strain inoculations"
+Analysis file for "Mutations in legume symbiosis genes create a complex selective landscape for rhizobial symbionts"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
-
-#Load packages needed. Tidyverse include dplyer
+#Load packages needed. 
 require(tidyverse)
 require(ggpubr)
 require(ggplot2)
@@ -19,27 +17,30 @@ require(RColorBrewer)
 require(gplots)
 require(vegan)
 require(corrplot)
+require(multcomp)
+require(purrr)
+require(ggrepel)
+require(tibble)
+require(stringr)
 knitr::opts_chunk$set(message = FALSE)
 ```
-
 ###Compiling the data for analysis
+```{r Merge all trait data sets, echo=TRUE}
+#Names of the Medicago genotypes in A17 background along with their genotype ids, disruption type and order-genotype_name.txt
+#Nodule numbers and individual nodule sizes for each sample- data_HostMutants2021_nod_counts.txt
+#Sample ids, replicates for each genotype,CFU per ml,aboveground biomass,belowground biomass for each sample-data_nsfpgrp_hostmutants_C86meliloti.txt
 
-```{r Code for creating FigS1, echo=TRUE}
+# Import the files
+
 # Strain frequency files - freq.tsv
-freq_all<-read.table("../data/freq.tsv", header=TRUE)
-genotype_name <- read.table("../data/genotype_name.txt",sep = "\t",header=TRUE)
+freq_all<-read.table("../data/Strain_frequency.tsv", header=TRUE)
+genotype_name <- read.table("../data/Host_genotype.txt",sep = "\t",header=TRUE)
 
 genotype_name<-as_tibble(genotype_name)%>% mutate(across(!order, as.factor)) %>% filter(genotype_id!="838")
 
 # Subset initial inoculum replications and calculate mean fitness across technical replicates
-freq_initial<- freq_all %>% filter(str_detect(sample_id, "M_C86_NL")) %>% select(!sample_id) %>% summarise_all(mean)
+freq_initial<- freq_all %>% filter(str_detect(sample_id, "M_C86_NL")) %>%  dplyr::select(!sample_id) %>% summarise_all(mean)
 
-# Graph the initial frequency histogram
-hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution")
-
-pdf(file = "../figures/FigS1.pdf",width = 6, height = 6)
-hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution", xlab="Isolate Frequency", ylab="Number of Isolates")
-dev.off()
 
 #Break apart sample_id string into genotype id and replicate and convert into factors
 freq_all<-freq_all %>% mutate(genotype_id = substr(sample_id, 3,5), rep = substr(sample_id, 6,6),.before = sample_id) %>% mutate(across(c(genotype_id,rep,sample_id), as.factor))
@@ -57,7 +58,7 @@ fit_all<-as_tibble(cbind(freq_all[,c(1:7)],log2(mapply("/", freq_all[,c(-1:-7)],
 #The lowest fitness values is Mag27 = -7.1 to substitute all INF with -8
 fit_all<-fit_all %>% mutate_if(is.numeric, ~ifelse(abs(.) == Inf,-8,.))
 
-write.table (fit_all,file="../data/Strain Fitness_MedicagoMutants_A17.txt",sep = "\t",row.names = FALSE)
+#write.table (fit_all,file="../data/Strain Fitness_MedicagoMutants_A17.txt",sep = "\t",row.names = FALSE)
 
 fit_all$geno<-factor(fit_all$geno)
 # Create a data frame with fitness means for each geno                            
@@ -67,14 +68,7 @@ fit_median<-fit_all %>% group_by(geno,type) %>% summarise(across(starts_with("MA
 # Calculate strain diversity and create a new dataset
 div_all<-rowwise(freq_all) %>% transmute(geno=geno,type=type, rep=rep,sample_id=substr(sample_id, 3,6), nodule_isolate_diversity=diversity(c_across(starts_with("MAG"))))
 
-```
 
-```{r Merge all trait data sets, echo=TRUE}
-#Names of the Medicago genotypes in A17 background along with their genotype ids, disruption type and order-genotype_name.txt
-#Nodule numbers and individual nodule sizes for each sample- data_HostMutants2021_nod_counts.txt
-#Sample ids, replicates for each genotype,CFU per ml,aboveground biomass,belowground biomass for each sample-data_nsfpgrp_hostmutants_C86meliloti.txt
-
-# Import the files
 data_HostMutants2021_nod_counts <- read.table("../data/data_HostMutants2021_nod_counts.txt",sep = "\t",header=TRUE)
 
 data_nsfpgrp_hostmutants_C86meliloti <- read.table("../data/data_nsfpgrp_hostmutants_C86meliloti.txt",sep = "\t",header=TRUE)
@@ -110,8 +104,8 @@ traits_all[is.na(traits_all) | traits_all == "NaN"] <- NA
 traits_all$type<-factor(traits_all$type, levels = c("WT","Early","Late","AON"))
 #Changing the order of the genotypes
 traits_all$geno<-factor(traits_all$geno,levels=c("A17", "dmi1-2","dmi2-3","dmi3-1","hcl","ipd3","latd", "nad1", "dnf1", "dnf2","dnf3", "dnf4","dnf6","dnf7", "dnf1/dnf2", "dnf5/dnf2", "rdn1", "sunn1","sunn4"))
+#write.table (traits_all,file="../tables/TableS1.txt",sep = "\t",row.names = FALSE)
 ```
-
 ### Statistical Analysis: Coeffecients from ANOVA's and RDAs
 
 ```{r Perform analogous RDA Permanova on strain fitness data}
@@ -121,10 +115,10 @@ rda.model.geno<-anova(rda_geno, step=1000, perm.max=1000, by= "terms")
 rda_type<-rda(fit_all[,c(8:93)]~type+rep,fit_all, scale=TRUE)
 rda.model.type<-anova(rda_type, step=1000, perm.max=1000, by= "terms") 
 
-rda.strainfitness<-data.frame(Response=c("nodule_isolate_fitness"),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(rda.model.geno$Variance,rda.model.type$Variance),PctExp=c(rda.model.geno$Variance/sum(rda.model.geno$Variance)*100,rda.model.type$Variance/sum(rda.model.type$Variance)*100),Df=c(rda.model.geno$Df,rda.model.type$Df),Fval=c(rda.model.geno$F,rda.model.type$F), Pval=c(rda.model.geno$`Pr(>F)`,rda.model.type$`Pr(>F)`),R.adj=c(round(RsquareAdj(rda_geno)$adj.r.squared,4),"NA","NA",round(RsquareAdj(rda_type)$adj.r.squared,4),"NA","NA")) #do we need to compile this in a table??
+rda.strainfitness<-data.frame(Response=c("nodule_isolate_fitness"),Predictor=c("Genotype","Replicate","Residual","Type","Replicate","Residual"),Sum.Sq=c(rda.model.geno$Variance,rda.model.type$Variance),PctExp=c(rda.model.geno$Variance/sum(rda.model.geno$Variance)*100,rda.model.type$Variance/sum(rda.model.type$Variance)*100),Df=c(rda.model.geno$Df,rda.model.type$Df),Fval=c(rda.model.geno$F,rda.model.type$F), Pval=c(rda.model.geno$`Pr(>F)`,rda.model.type$`Pr(>F)`),R.adj=c(round(RsquareAdj(rda_geno)$adj.r.squared,4),"NA","NA",round(RsquareAdj(rda_type)$adj.r.squared,4),"NA","NA")) 
 ```
 
-```{r Write Function to run anova and summarize results each Phenotype, echo=TRUE}
+```{r Write Function to run ANOVA and summarize results each Phenotype,echo=TRUE}
 
 extract.anova<- function(trait) {
 #Dropping rows with NA
@@ -152,50 +146,230 @@ ANOVA.Trait.Summary<-rbind(extract.anova("nodule_number_per_plant"),extract.anov
 write.table (ANOVA.Trait.Summary,file="../tables/TableS2.txt",sep = "\t",row.names = FALSE)
 ```
 
-```{r Statistical summary on geno coefficients, echo=FALSE}
+```{r Write Function to calculate Tukey and summarize results each Phenotype, echo=TRUE}
 
-extract.coefs<-function(trait, predictor="geno", p.threshold=0.05) {
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
+traits_to_plot <- c(
+  "nodule_number_per_plant",
+  "total_nodulated_area_per_plant",
+  "average_area_per_nodule",
+  "root_to_shoot_ratio",
+  "total_biomass_per_plant",
+  "cfu_per_nodule_LOG10",
+  "cfu_per_plant_LOG10",
+  "nodule_isolate_diversity"
+)
 
-# Step1: Remove rows with NA for the focal trait
-  my.data<-as.data.frame(traits_all[!is.na(traits_all[,trait]),]) 
-
-# Step2: Run a lm model with genotypes and replicate as predictors
-
-if(predictor=="geno")  {  
-    my.model <- lm(my.data[,trait] ~ geno + rep, data = my.data)
-}
+trait_boxplot_with_tukey_fdr_A17 <- function(trait, trait_all, mypal = cbPalette, log_transform = TRUE) {
+  if (!trait %in% colnames(trait_all)) {
+    stop(paste("Trait column", trait, "not found in data"))
+  }
   
-if(predictor=="type")  {
-  my.model<- lm(my.data[,trait] ~ type + rep, data = my.data)
+  data_clean <- trait_all %>%
+    filter(!is.na(type), !is.na(geno), !is.na(.data[[trait]])) %>%
+    mutate(
+      geno = factor(geno, levels = rev(levels(factor(geno)))),
+      type = droplevels(factor(type))
+    )
+  
+  data_clean <- data_clean %>%
+    mutate(mytrait = if (log_transform) log10(.data[[trait]] + 1e-6) else .data[[trait]])
+  
+  aov_model <- aov(mytrait ~ geno, data = data_clean)
+  tukey <- TukeyHSD(aov_model)
+  tukey_df <- as.data.frame(tukey$geno)
+  tukey_df$comparison <- rownames(tukey_df)
+  
+  # Filter only comparisons involving "A17"
+  tukey_df <- tukey_df %>% filter(str_detect(comparison, "A17"))
+  
+  # Prepare Tukey p_adj and significance stars
+  tukey_df <- tukey_df %>%
+    mutate(
+      trait = trait,
+      p_adj = `p adj`,
+      Significant = case_when(
+        p_adj < 0.001 ~ "***",
+        p_adj < 0.01 ~ "**",
+        p_adj < 0.05 ~ "*",
+        TRUE ~ ""
+      )
+    )
+  
+  # Extract other genotype from comparison for labeling
+  tukey_labels <- tukey_df %>%
+    mutate(
+      other_geno = ifelse(grepl("^A17-", comparison),
+                          sub("A17-", "", comparison),
+                          sub("-A17", "", comparison))
+    ) %>%
+    filter(Significant != "")
+  
+  label_data <- data_clean %>%
+    group_by(geno) %>%
+    summarize(y = max(mytrait, na.rm = TRUE)) %>%
+    inner_join(tukey_labels, by = c("geno" = "other_geno"))
+  
+  p <- ggplot(data_clean, aes(x = geno, y = mytrait, fill = type)) +
+    geom_boxplot(outlier.shape = NA, coef = 0) +
+    geom_jitter(width = 0.2, alpha = 0.6) +
+    coord_flip() +
+    scale_fill_manual(values = mypal, na.translate = FALSE) +
+    labs(x = "Plant Host", y = ifelse(log_transform, paste0("log10(", trait, ")"), trait)) +
+    theme_classic() +
+    theme(legend.position = "top", text = element_text(size = 18))
+  
+  if (nrow(label_data) > 0) {
+    p <- p + geom_text(data = label_data,
+                       aes(x = geno, y = y + 0.05 * max(data_clean$mytrait), label = Significant),
+                       inherit.aes = FALSE,
+                       size = 6)
+  }
+  
+  list(plot = p, tukey_df = tukey_df)
 }
 
-  # Step 3 Extract coeffecient dataframe and add column for row.names
-  my.coefs <- as.data.frame(summary(my.model)$coefficients) # covert to data fram
-  my.coefs <- data.frame (Trait=paste(trait),Predictor=row.names(my.coefs), my.coefs) # add the row names as column
-  colnames(my.coefs) <-c("Trait","Predictor","Coef", "St.error","t.value","P.value")# Create more meaningful column names
+all_tukey_results <- data.frame()
 
-# Step 4 Remove none geno predictors
-  my.coefs <-my.coefs[!my.coefs$Predictor %in% c("(Intercept)","repB","repC","repD","repE","repF"),] 
+pdf("../figures/traitswithTukey_A17only_stars_log10.pdf", width = 9, height = 9)
+for (t in traits_to_plot) {
+  res <- trait_boxplot_with_tukey_fdr_A17(trait = t, trait_all = traits_all, log_transform = TRUE)
+  print(res$plot)
+  all_tukey_results <- bind_rows(all_tukey_results, res$tukey_df)
+}
+dev.off()
 
-# Step 5: classify coeffecients
-  my.coefs$Class<-"None" #Set up dummy column to hold classifications
+write.table(all_tukey_results, "../tables/TableS3_log10.tsv",sep = "\t", quote = FALSE, row.names = FALSE)
 
-# Step 6 Modify catagorizations based on coef and pvalue. 
-  try(my.coefs[(my.coefs$Coef > 0 & my.coefs$P.value< p.threshold),]$Class<-"Up") 
-  try(my.coefs[(my.coefs$Coef < 0 & my.coefs$P.value< p.threshold),]$Class<-"Down") 
+##No transformation
 
-return(my.coefs)
+trait_boxplot_with_tukey_fdr_A17_noTransform <- function(trait, trait_all, mypal = cbPalette, log_transform = FALSE) {
+  if (!trait %in% colnames(trait_all)) {
+    stop(paste("Trait column", trait, "not found in data"))
+  }
+  
+  data_clean <- trait_all %>%
+    filter(!is.na(type), !is.na(geno), !is.na(.data[[trait]])) %>%
+    mutate(
+      geno = factor(geno, levels = rev(levels(factor(geno)))),
+      type = droplevels(factor(type))
+    )
+  
+  data_clean <- data_clean %>%
+    mutate(mytrait = if (log_transform) log2(.data[[trait]] + 1e-6) else .data[[trait]])
+  
+  aov_model <- aov(mytrait ~ geno, data = data_clean)
+  tukey <- TukeyHSD(aov_model)
+  tukey_df <- as.data.frame(tukey$geno)
+  tukey_df$comparison <- rownames(tukey_df)
+  
+  # Filter only comparisons involving "A17"
+  tukey_df <- tukey_df %>% filter(str_detect(comparison, "A17"))
+  
+  # Prepare Tukey p_adj and significance stars
+  tukey_df <- tukey_df %>%
+    mutate(
+      trait = trait,
+      p_adj = `p adj`,
+      Significant = case_when(
+        p_adj < 0.001 ~ "***",
+        p_adj < 0.01 ~ "**",
+        p_adj < 0.05 ~ "*",
+        TRUE ~ ""
+      )
+    )
+  
+  
+  # Extract other genotype from comparison for labeling
+  tukey_labels <- tukey_df %>%
+    mutate(
+      other_geno = ifelse(grepl("^A17-", comparison),
+                          sub("A17-", "", comparison),
+                          sub("-A17", "", comparison))
+    ) %>%
+    filter(Significant != "")
+  
+  label_data <- data_clean %>%
+    group_by(geno) %>%
+    summarize(y = max(mytrait, na.rm = TRUE)) %>%
+    inner_join(tukey_labels, by = c("geno" = "other_geno"))
+  
+  p <- ggplot(data_clean, aes(x = geno, y = mytrait, fill = type)) +
+    geom_boxplot(outlier.shape = NA, coef = 0) +
+    geom_jitter(width = 0.2, alpha = 0.6) +
+    coord_flip() +
+    scale_fill_manual(values = mypal, na.translate = FALSE) +
+    labs(x = "Plant Host", y = trait) +
+    theme_classic() +
+    theme(legend.position = "top", text = element_text(size = 18))
+  
+  if (nrow(label_data) > 0) {
+    p <- p + geom_text(data = label_data,
+                       aes(x = geno, y = y + 0.05 * max(data_clean$mytrait), label = Significant),
+                       inherit.aes = FALSE,
+                       size = 6)
+  }
+  
+  list(plot = p, tukey_df = tukey_df)
 }
 
-Geno.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant"),extract.coefs("average_area_per_nodule"),extract.coefs("total_nodulated_area_per_plant"),extract.coefs("total_biomass_per_plant"),extract.coefs("root_to_shoot_ratio"),extract.coefs("cfu_per_nodule_LOG10"),extract.coefs("cfu_per_plant_LOG10"),extract.coefs("nodule_isolate_diversity"))
+# Example usage without transformation:
+all_tukey_results_noTransform <- data.frame()
 
+pdf("../figures/traitswithTukey_A17only_stars_noTransform.pdf", width = 9, height = 9)
+for (t in traits_to_plot) {
+  res <- trait_boxplot_with_tukey_fdr_A17_noTransform(trait = t, trait_all = traits_all, log_transform = FALSE)
+  print(res$plot)
+  all_tukey_results_noTransform <- bind_rows(all_tukey_results_noTransform, res$tukey_df)
+}
+dev.off()
 
+write.table(all_tukey_results_noTransform,"../tables/TableS3.tsv",sep = "\t", quote = FALSE, row.names = FALSE)
 
-Type.Coef.Summary<-rbind(extract.coefs("nodule_number_per_plant",predictor="type"),extract.coefs("average_area_per_nodule",predictor="type"),extract.coefs("total_nodulated_area_per_plant",predictor="type"),extract.coefs("total_biomass_per_plant",predictor="type"),extract.coefs("root_to_shoot_ratio",predictor="type"),extract.coefs("cfu_per_nodule_LOG10",predictor="type"),extract.coefs("cfu_per_plant_LOG10",predictor="type"),extract.coefs("nodule_isolate_diversity",predictor="type"))
+#Tukey across the disruption stages
 
-write.table (Type.Coef.Summary,file="../tables/TableS3.txt",sep = "\t",row.names = FALSE)
-write.table (Geno.Coef.Summary,file="../tables/TableS4.txt",sep = "\t",row.names = FALSE)
+run_tukey <- function(trait) {
+  data <- traits_all %>%
+    filter(!is.na(type), !is.na(.data[[trait]])) %>%
+    mutate(type = droplevels(factor(type)))
+
+  aov_result <- aov(formula(paste(trait, "~ type")), data = data)
+  tukey <- TukeyHSD(aov_result)
+
+  tukey_df <- as.data.frame(tukey$type) %>%
+    rownames_to_column("comparison") %>%
+    mutate(
+      groups = strsplit(comparison, "-"),
+      groups_sorted = purrr::map_chr(groups, ~ paste(sort(.x), collapse = "-"))
+    )
+
+  tukey_df_filtered <- tukey_df %>%
+    filter(groups_sorted %in% c("AON-Early", "Early-Late", "AON-Late")) %>%
+    dplyr::select(-groups, -groups_sorted) %>%  
+    mutate(
+      trait = trait,
+      Signif = case_when(
+        `p adj` < 0.001 ~ "***",
+        `p adj` < 0.01  ~ "**",
+        `p adj` < 0.05  ~ "*",
+        TRUE            ~ ""
+      )
+    )
+
+  if (nrow(tukey_df_filtered) == 0) return(data.frame())
+  return(tibble::as_tibble(tukey_df_filtered))
+}
+
+# Run it
+tukey_results_type <- purrr::map_dfr(traits_to_plot, run_tukey)
+
+# View and export
+print(tukey_results_type, row.names = FALSE)
+write.csv(tukey_results_type, file = "../tables/tukey_type_stage_comparisons.csv", row.names = FALSE)
+
 ```
+
+
 
 ```{r RDA Model results for Strain Isolate Fitness}
 
@@ -228,61 +402,329 @@ Geno.Coef.RDA<-rbind(extract.rda("hcl"),extract.rda("ipd3"),extract.rda("latd"),
 
 Type.Coef.RDA<-rbind(extract.rda("AON",predictor="type"),extract.rda("Early",predictor = "type"),extract.rda("Late",predictor = "type"))
 
-write.table (Type.Coef.RDA,file="../tables/TableS5.txt",sep = "\t",row.names = FALSE)
-write.table (Geno.Coef.RDA,file="../tables/TableS6.txt",sep = "\t",row.names = FALSE)
+write.table (Type.Coef.RDA,file="../tables/TableS4.txt",sep = "\t",row.names = FALSE)
+write.table (Geno.Coef.RDA,file="../tables/TableS5.txt",sep = "\t",row.names = FALSE)
 
 
 ```
 
 ###Visualizing Results
 
-```{r Code for creating FigS2,echo=TRUE}
-# Correlation Plot
-pdf(file = "../figures/FigS2.pdf",width = 9, height = 9)
 
-traits_all.2<-traits_all%>% select(-sample_id,-rep,-genotype_id,-background,-date_biomass_harvested,-num_plants,-average_size,-percent_herbivory,-flowering,-num_plants_picked_nods,-above_biomass_g,-type,-below_biomass_g,-cfu_ml,-type,-Count,-total_area,-below_biomass_per_plant,-above_biomass_per_plant,-total_area)%>%group_by(geno)%>%summarise_if(is.numeric, mean, na.rm = TRUE)%>%filter(!geno %in% c("dmi1-2", "dmi2-3", "dmi3-1", "skl"))
-#converting it to a matrix
-traits_all.2<-as.matrix(traits_all.2[,-1])
-#corrplot
-correlation_matrix <- cor(traits_all.2, method = "pearson", use = "pairwise.complete.obs")
-corrplot.mixed(correlation_matrix, number.cex=1,upper = "ellipse", lower = "number",tl.pos = "lt", tl.col = "black",order = 'hclust', tl.offset=1, tl.srt = 90)
+```{r Code for creating FigS1 and FigS3, echo=TRUE}
+
+
+# Graph the initial frequency histogram
+hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution")
+
+pdf(file = "../figures/FigS1.pdf",width = 6, height = 6)
+hist(t(freq_initial),breaks = 10, main= "Initial strain frequency distribution", xlab="Isolate Frequency", ylab="Number of Isolates")
+dev.off()
+
+
+
+fit_all$geno<-factor(fit_all$geno)
+# Create a data frame with fitness means for each geno                            
+fit_mean<-fit_all %>% group_by(geno,type) %>% summarise(across(starts_with("MAG"),mean))
+fit_median<-fit_all %>% group_by(geno,type) %>% summarise(across(starts_with("MAG"),median))
+
+# Calculate strain diversity and create a new dataset
+div_all<-rowwise(freq_all) %>% transmute(geno=geno,type=type, rep=rep,sample_id=substr(sample_id, 3,6), nodule_isolate_diversity=diversity(c_across(starts_with("MAG"))))
+pdf(file = "../figures/FigS3.pdf",width = 6, height = 6)
+##rank order shifts
+
+
+# 1. Reshape to long format (strain-wise fitness)
+long_freq <- freq_all %>%
+  pivot_longer(
+    cols = starts_with("MAG"),
+    names_to = "strain",
+    values_to = "fitness"
+  )
+
+# 2. Compute median fitness per strain-genotype
+median_fitness <- long_freq %>%
+  group_by(geno, strain) %>%
+  summarize(median_fitness = median(fitness, na.rm = TRUE), .groups = "drop")
+
+# 3. Rank strains within each genotype (lower rank = higher fitness)
+ranked_fitness <- median_fitness %>%
+  group_by(geno) %>%
+  mutate(rank = dense_rank(desc(median_fitness))) %>%
+  ungroup()
+
+# 4. Get all unique genotypes and strains
+all_genos <- unique(ranked_fitness$geno)
+all_strains <- unique(ranked_fitness$strain)
+
+# 5. Create full grid to ensure all genotype-strain combinations exist
+full_grid <- expand_grid(geno = all_genos, strain = all_strains)
+
+# 6. Join to fill in NAs for missing combinations
+ranked_fitness_complete <- full_grid %>%
+  left_join(ranked_fitness, by = c("geno", "strain"))
+
+# 7. Order strains by their rank in A17 (for y-axis ordering)
+a17_order <- ranked_fitness %>%
+  filter(geno == "A17") %>%
+  arrange(rank) %>%
+  pull(strain) %>%
+  unique()
+
+# 8. Final dataset for plotting
+ranked_plot_data <- ranked_fitness_complete %>%
+  mutate(strain = factor(strain, levels = rev(a17_order)))
+
+# 9. Plot: gray = all genotypes, blue = A17
+ggplot(ranked_plot_data, aes(x = rank, y = strain)) +
+  
+  # Gray points for all genotypes except A17
+  geom_point(
+    data = filter(ranked_plot_data, geno != "A17"),
+    alpha = 0.3, size = 1.5, color = "gray40"
+  ) +
+  
+  # Blue points for A17
+  geom_point(
+    data = filter(ranked_plot_data, geno == "A17"),
+    size = 1.5, color = "#0072B2"
+  ) +
+
+  # Reverse x-axis so best fitness ranks (1) appear left
+  scale_x_reverse(limits = c(max(ranked_fitness$rank, na.rm = TRUE), 1), expand = c(0.01, 0.01)) +
+  
+  # Theme suitable for publication
+  theme_classic(base_size = 8) +
+  theme(
+    axis.text.y = element_text(size = 6),
+    axis.text.x = element_text(size = 6),
+    axis.title = element_text(size = 7),
+    plot.title = element_text(size = 8, face = "bold"),
+    panel.grid = element_blank(),
+    axis.ticks.length = unit(0.15, "cm")
+  ) +
+
+  # Labels
+  labs(
+    title = "Rank of Sinorhizobium Strains Across Host Genotypes",
+    x = "Relative Fitness Rank",
+    y = NULL
+  )
+
+dev.off()
+```
+```{r Code for creating Fig5B and Fig S2,echo=TRUE}
+df1  <- data.frame(geno=fit_all$geno,type=fit_all$type,summary(rda_geno)$site)    
+rda1_ev <-as.vector(eigenvals(rda_geno, model = c("constrained")))
+
+rdainfo<-data.frame(geno=levels(factor(fit_all$geno)),mycols=c("#B23214","#56B4E9","#56B4E9","#56B4E9","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#E69F00","#E69F00","#E69F00"), myshapes=c(19,19,18,17,19,18,17,1,2,3,4,5,6,19,18,17))
+
+pdf(file = "../figures/FigS2.pdf",width = 5, height = 5)
+
+ggplot(df1, aes(x=RDA1,y=RDA2,color=type))+
+  scale_color_manual(values=cbPalette)+
+  geom_text(aes(label=geno),size=3)+stat_ellipse(aes(group = geno), linetype = "solid", alpha = 0.3)+geom_hline(yintercept=0, linetype="dotted") +
+  geom_vline(xintercept=0, linetype="dotted") +
+  labs(x=paste("RDA 1 (",round(rda1_ev[1],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[2],2),"%)"), color="Type") +
+  theme_classic() + theme(legend.position="top", text = element_text(size=12))
+
+ggplot(df1, aes(x=RDA3,y=RDA4,color=type))+
+  scale_color_manual(values=cbPalette)+
+  geom_text(aes(label=geno),size=3) +
+  geom_hline(yintercept=0, linetype="dotted") +
+  geom_vline(xintercept=0, linetype="dotted") +
+  labs(x=paste("RDA 3 (",round(rda1_ev[3],2),"%)"),y=paste("RDA 4 (",round(rda1_ev[4],2),"%)"), color="Type") +
+  theme_classic() + theme(legend.position="top", text = element_text(size=12)) 
+
+
+
+# Define color palette
+cbPalette <- c("#B23214", "#56B4E9", "#009E73", "#E69F00")  # Update as needed
+
+pdf(file = "../figures/Fig5B.pdf",width = 9, height = 9)
+rda_summary <- df1 %>% group_by(geno) %>%summarise(mean_RDA1 = mean(RDA1), mean_RDA2 = mean(RDA2))
+traits_all.2<-traits_all%>%dplyr:: select(-sample_id,-rep,-genotype_id,-background,-date_biomass_harvested,-num_plants,-average_size,-percent_herbivory,-flowering,-num_plants_picked_nods,-above_biomass_g,-type,-below_biomass_g,-cfu_ml,-type,-Count,-total_area,-below_biomass_per_plant,-above_biomass_per_plant,-total_area)%>%group_by(geno)%>%summarise_if(is.numeric, mean, na.rm = TRUE)%>%filter(!geno %in% c("dmi1-2", "dmi2-3", "dmi3-1", "skl"))
+traits_all.3<-left_join(traits_all.2, rda_summary, by = "geno")
+traits_all.3<-as.matrix(traits_all.3[,-1])
+correlation_matrix <- cor(traits_all.3, method = "pearson", use = "pairwise.complete.obs")
+
+# Step 1: Compute correlation matrix
+correlation_matrix_reordered <- cor(traits_all.3, method = "pearson", use = "pairwise.complete.obs")
+
+# Step 2: Define custom order
+custom_order <- c(
+  "cfu_per_nodule_LOG10",
+  "cfu_per_plant_LOG10",
+  "nodule_isolate_diversity",
+  "mean_RDA1",
+  "mean_RDA2",
+  "nodule_number_per_plant",
+  "total_nodulated_area_per_plant",
+  "average_area_per_nodule",
+  "total_biomass_per_plant",
+  "root_to_shoot_ratio"
+)
+
+# Step 3: Define renamed labels (corrected)
+custom_order_renamed <- c(
+  "cfu_per_nodule_LOG10" = "CFU/nodule",
+  "cfu_per_plant_LOG10" = "CFU/plant",
+  "nodule_isolate_diversity" = "Nodule strain diversity",
+  "mean_RDA1" = "Strain Composition (RDA1)",
+  "mean_RDA2" = "Strain Composition (RDA2)",
+  "nodule_number_per_plant" = "Nodules/plant",
+  "total_nodulated_area_per_plant" = "Total nodulated area/plant",
+  "average_area_per_nodule" = "Average area/nodule",
+  "total_biomass_per_plant" = "Total biomass/plant",
+  "root_to_shoot_ratio" = "Root-to-shoot ratio"
+)
+
+# Apply new names directly to the matrix
+rownames(correlation_matrix_reordered) <- custom_order_renamed[custom_order]
+colnames(correlation_matrix_reordered) <- custom_order_renamed[custom_order]
+
+# Now plot
+corrplot(correlation_matrix_reordered,
+         method = "ellipse",
+         type = "upper",
+         addCoef.col = "black",
+         number.cex = 0.8,
+         tl.col = "black",
+         tl.srt = 45,
+         diag = FALSE)
+
 dev.off()
 ```
 
-```{r Code for creating FigS3, echo=TRUE}
-#Fig S4a
-Geno.Coef.Summary<-Geno.Coef.Summary %>% mutate(Predictor=substr(Predictor,5,14))
-Geno.Coef.Graphs<-rbind(Geno.Coef.Summary[,c(1,2,6,7)], Geno.Coef.RDA[,c(1,2,6,7)])
-Geno.Coef.Graphs$Class<-factor(Geno.Coef.Graphs$Class,levels=c("None","Up","Down","Change"))
-Geno.Coef.Graphs$Trait<-factor(Geno.Coef.Graphs$Trait,levels=c("nodule_number_per_plant","average_area_per_nodule","total_nodulated_area_per_plant","total_biomass_per_plant","root_to_shoot_ratio", "cfu_per_nodule_LOG10","cfu_per_plant_LOG10","nodule_isolate_diversity", "nodule_isolate_fitness"))
+```{r Code for creating Fig 5A, echo=FALSE}
 
-Coef.Prop.Figure<-ggplot(data = Geno.Coef.Graphs) + 
-  geom_bar(mapping = aes(x = Trait, fill = Class), position = "fill")+ 
-  theme_bw()+
-  coord_flip()+
-  scale_fill_manual(values=c('#F7F7F7','#B2182B', '#2166AC','darkgoldenrod'))+xlab ("")+ylab("Proportion of Genotypes")+theme_bw()
-
-pdf(file = "../figures/FigS4a.pdf",width = 6, height = 6)
-Coef.Prop.Figure
-dev.off()
-
-#Fig S4b
-Geno.Coef.Graphs$Class<-factor(Geno.Coef.Graphs$Class,levels=c("Down","None","Up","Change"))
-Geno_matrix<-Geno.Coef.Graphs %>% select(c(Trait,Predictor,Class)) %>% pivot_wider(names_from=c(Trait),values_from=c(Class)) %>% mutate(across(!Predictor,as.numeric)) %>%
-column_to_rownames(var="Predictor")
-#Create your palette
-pal = colorRampPalette(c('#2166AC', '#F7F7F7', '#B2182B','darkgoldenrod'))(4)
+# Load required libraries
 
 
+# --- Define custom color palette ---
+cbPalette <- c("#B23214", "#56B4E9", "#009E73", "#E69F00")
+pdf(file = "../figures/Fig 5A.pdf", width = 15, height = 12)
 
-col_letters = c("hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9", "nad1"="#009E73", "dnf1"="#009E73", "dnf2"="#009E73","dnf3"="#009E73", "dnf4"="#009E73","dnf6"="#009E73","dnf7"="#009E73", "dnf1/dnf2"="#009E73", "dnf5/dnf2"="#009E73", "rdn1"="#E69F00", "sunn1"="#E69F00","sunn4"="#E69F00","dmm1-2"="#56B4E9","dmi2-3"="#56B4E9","dmi3-1"="#56B4E9")
+# --- Traits to use ---
+traits_to_use <- c(
+  "nodule_number_per_plant",
+  "total_nodulated_area_per_plant",
+  "average_area_per_nodule",
+  "root_to_shoot_ratio",
+  "total_biomass_per_plant",
+  "cfu_per_nodule_LOG10",
+  "cfu_per_plant_LOG10",
+  "nodule_isolate_diversity"
+)
 
-pdf(file = "../figures/FigS4b.pdf",width = 6, height = 3)
-heatmap.2(t(as.matrix(Geno_matrix)),Rowv=FALSE, Colv=FALSE,dendrogram = "none",col=pal, trace="none", scale="none", cexCol = .75,cexRow = .75, key=FALSE,srtCol=45, margins=c(5,8), lwid = c(1,15), lhei = c(1,15),na.color='lightgrey',colCol = col_letters)
+# --- Step 1: Average 'latd' and 'rdn1' across pots ---
+avg_genos <- traits_all %>%
+  filter(geno %in% c("latd", "rdn1")) %>%
+  group_by(geno, type) %>%
+  summarise(across(all_of(traits_to_use), mean, na.rm = TRUE), .groups = "drop")
+
+# --- Step 2: Keep all other genotypes unaveraged ---
+other_genos <- traits_all %>%
+  filter(!geno %in% c("latd", "rdn1"))
+
+# --- Step 3: Combine averaged genotypes with other genotypes ---
+traits_combined <- bind_rows(avg_genos, other_genos)
+
+# --- Step 4: RDA summary per genotype ---
+rda_summary <- df1 %>%
+  group_by(geno) %>%
+  summarise(
+    mean_RDA1 = mean(RDA1, na.rm = TRUE),
+    mean_RDA2 = mean(RDA2, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# --- Step 5: Merge RDA + log-transform traits ---
+traits_with_rda <- traits_combined %>%
+  left_join(rda_summary, by = "geno") %>%
+  mutate(across(all_of(traits_to_use), ~ log2(. + 1e-6))) %>%
+  tidyr::drop_na(all_of(c(traits_to_use, "mean_RDA1", "mean_RDA2")))
+
+# --- Step 6: PCA input matrix ---
+pca_input <- dplyr::select(traits_with_rda, all_of(traits_to_use), mean_RDA1, mean_RDA2)
+
+# --- Step 7: PCA run ---
+pca_result <- prcomp(pca_input, center = TRUE, scale. = TRUE)
+var_explained <- (pca_result$sdev)^2 / sum((pca_result$sdev)^2)
+
+# --- Step 8: Sample scores (PC1/PC2) ---
+pca_coords <- data.frame(pca_result$x[, 1:2]) %>%
+  mutate(
+    geno = traits_with_rda$geno,
+    type = traits_with_rda$type
+  )
+
+# --- Step 9: Trait loadings for biplot arrows ---
+loadings <- data.frame(pca_result$rotation[, 1:2]) %>%
+  rownames_to_column("trait") %>%
+  mutate(trait = recode(trait,
+    cfu_per_nodule_LOG10 = "CFU/nodule",
+    cfu_per_plant_LOG10 = "CFU/plant",
+    nodule_number_per_plant = "Nodules/plant",
+    total_nodulated_area_per_plant = "Total nodulated area/plant",
+    average_area_per_nodule = "Average area/nodule",
+    total_biomass_per_plant = "Biomass/plant",
+    root_to_shoot_ratio = "Root-to-shoot ratio",
+    nodule_isolate_diversity = "Nodule strain diversity",
+    mean_RDA1 = "Strain Composition (RDA1)",
+    mean_RDA2 = "Strain Composition (RDA2)"
+  ))
+
+# --- Step 10: Plot PCA biplot ---
+arrow_mult <- 5
+label_mult <- 6
+
+ggplot(pca_coords, aes(x = PC1, y = PC2, color = type)) +
+  geom_vline(xintercept = 0, color = "gray60", linetype = "dashed") +
+  geom_hline(yintercept = 0, color = "gray60", linetype = "dashed") +
+  # Removed geom_point(size = 3, alpha = 0.85)
+  ggrepel::geom_text_repel(
+    aes(label = geno),
+    size = 5,
+    max.overlaps = Inf,
+    box.padding = 0.6,
+    point.padding = 0.5,
+    segment.size = NA
+  ) +
+  geom_segment(data = loadings,
+               aes(x = 0, y = 0, xend = PC1 * arrow_mult, yend = PC2 * arrow_mult),
+               arrow = arrow(length = unit(0.3, "cm")),
+               color = "black",
+               linewidth = 0.7) +
+  geom_text(data = loadings,
+            aes(x = PC1 * label_mult, y = PC2 * label_mult, label = trait),
+            hjust = 0.3, vjust = -0.3,
+            size = 5,
+            color = "black") +
+  coord_fixed() +
+  scale_color_manual(values = cbPalette) +
+  labs(
+    title = "PCA Biplot: Plant Traits + RDA (latd and rdn1 averaged only)",
+    x = paste0("PC1 (", round(var_explained[1] * 100, 1), "% variance)"),
+    y = paste0("PC2 (", round(var_explained[2] * 100, 1), "% variance)"),
+    color = "Type"
+  ) +
+  theme_classic(base_size = 16) +
+  theme(
+    axis.line = element_line(color = "black", linewidth = 0.6),
+    plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    legend.title = element_text(size = 14),
+    legend.text = element_text(size = 13)
+  )
+
+
 dev.off()
 ```
 
-```{r Code for creating Fig2 and Fig3, echo=TRUE}
+
+```{r Code for creating Fig2A-D and FigS6, echo=TRUE}
 
 cbPalette <- c("#B23214","#56B4E9", "#009E73", "#E69F00")
 
@@ -292,8 +734,10 @@ trait.boxplot <- function(trait, mypal = cbPalette, log = FALSE, trait_all = tra
   }
   
   # Replace NA with 0 for numeric columns
-  trait_all <- trait_all %>%
-    mutate(across(where(is.numeric), ~replace(., is.na(.), 0)))
+ trait_all <- trait_all %>% mutate(across(where(is.numeric), ~.))
+
+ # trait_all <- trait_all %>%
+    #mutate(across(where(is.numeric), ~replace(., is.na(.), 0)))
   
   # Filter out rows with NA in 'type', 'geno', or the focal trait
   trait_all <- trait_all %>%
@@ -310,8 +754,8 @@ trait.boxplot <- function(trait, mypal = cbPalette, log = FALSE, trait_all = tra
     mytrait = trait_all[[trait]]
   )
   
-  # Plot
-  ggplot(mydata, aes(x = geno, y = mytrait, fill = type)) +
+  # Base Plot
+  plot <- ggplot(mydata, aes(x = geno, y = mytrait, fill = type)) +
     geom_boxplot(outlier.shape = NA, na.rm = TRUE, coef = 0) +
     geom_jitter(na.rm = TRUE) +
     coord_flip() +  # Flip coordinates (for horizontal layout)
@@ -319,10 +763,38 @@ trait.boxplot <- function(trait, mypal = cbPalette, log = FALSE, trait_all = tra
     labs(x = "Plant Host", y = trait) +
     theme_classic() +
     theme(legend.position = "top", text = element_text(size = 18))
+  
+  # Custom y-axis for specific traits
+  if (trait == "nodule_isolate_diversity") {
+    plot <- plot + scale_y_continuous(
+      breaks = seq(3.5, 4.5, by = 0.25),  # Define breaks: 3.5, 3.75, 4.0, 4.25, 4.5
+      limits = c(3.5, 4.5)                # Set limits for the y-axis
+    )
+  } else if (trait == "cfu_per_nodule_LOG10") {
+    plot <- plot + scale_y_continuous(
+      breaks = seq(4.5, 6.5, by = 0.5),  # Define breaks: 5, 5.5, 6, 6.5
+      limits = c(4.5, 6.5)               # Set limits for the y-axis
+    )
+  } else if (trait == "cfu_per_plant_LOG10") {
+    plot <- plot + scale_y_continuous(
+      breaks = seq(7, 9.5, by = 0.5),  # Define breaks: 7, 7.5, 8, 8.5, 9
+      limits = c(7, 9.5)               # Set limits for the y-axis
+    )
+  }
+  
+  return(plot)
 }
 
 
-pdf(file = "../figures/Fig2.pdf",width = 6, height = 6)
+
+
+pdf(file = "../figures/Fig2A-D.pdf",width = 6, height = 6)
+trait.boxplot(trait = "cfu_per_nodule_LOG10",trait_all = traits_all[!traits_all$geno %in% c("dmi1-2", "dmi2-3", "dmi3-1"), ])
+trait.boxplot(trait = "cfu_per_plant_LOG10",trait_all = traits_all[!traits_all$geno %in% c("dmi1-2", "dmi2-3", "dmi3-1","latd"), ])
+trait.boxplot(trait = "nodule_isolate_diversity",trait_all = traits_all[!traits_all$geno %in% c("dmi1-2", "dmi2-3", "dmi3-1"), ])
+dev.off()
+
+pdf(file = "../figures/FigS6.pdf",width = 6, height = 6)
 trait.boxplot(trait = "nodule_number_per_plant")
 trait.boxplot(trait = "total_nodulated_area_per_plant", trait_all = traits_all[!traits_all$geno %in% c("dmi1-2", "dmi2-3", "dmi3-1"), ])
 trait.boxplot(trait = "average_area_per_nodule",trait_all = traits_all[!traits_all$geno %in% c("dmi1-2", "dmi2-3", "dmi3-1"), ])
@@ -330,16 +802,9 @@ trait.boxplot(trait = "root_to_shoot_ratio")
 trait.boxplot(trait = "total_biomass_per_plant")
 dev.off()
 
-pdf(file = "../figures/Fig3.pdf",width = 6, height = 6)
-trait.boxplot(trait = "cfu_per_nodule_LOG10",trait_all = traits_all[!traits_all$geno %in% c("dmi1-2", "dmi2-3", "dmi3-1"), ])
-trait.boxplot(trait = "cfu_per_plant_LOG10",trait_all = traits_all[!traits_all$geno %in% c("dmi1-2", "dmi2-3", "dmi3-1","latd"), ]) ## we are sticking to this???
-trait.boxplot(trait = "nodule_isolate_diversity",trait_all = traits_all[!traits_all$geno %in% c("dmi1-2", "dmi2-3", "dmi3-1"), ])
-dev.off()
-
-
 ```
 
-```{r Code for creating Fig4, echo=TRUE}
+```{r Code for creating Fig2E, echo=TRUE}
 
 pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))(length(seq(-7.9, 4, 0.1)))
 #pal = colorRampPalette(c('#2166AC','#F7F7F7', '#B2182B'))(length(seq(-7.9, 4, 0.1)))
@@ -347,16 +812,17 @@ pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))(length(seq(
 
 col_letters = c("A17"="#B23214","hcl"="#56B4E9","ipd3"="#56B4E9","latd"="#56B4E9", "nad1"="#009E73", "dnf1"="#009E73", "dnf2"="#009E73","dnf3"="#009E73", "dnf4"="#009E73","dnf6"="#009E73","dnf7"="#009E73", "dnf1/dnf2"="#009E73", "dnf5/dnf2"="#009E73", "rdn1"="#E69F00", "sunn1"="#E69F00","sunn4"="#E69F00")
 
-fit_mean_matrix<-fit_mean %>% select(!type) %>% column_to_rownames(var="geno")
-fit_median_matrix<-fit_median %>% select(!type) %>% column_to_rownames(var="geno")
-
-pdf(file = "../figures/Fig4.pdf",width = 5, height = 10)
+fit_mean_matrix<-fit_mean %>% dplyr::select(!type) %>% column_to_rownames(var="geno")
+fit_median_matrix<-fit_median %>% dplyr::select(!type) %>% column_to_rownames(var="geno")
+write.table (fit_median_matrix,file="../tables/Relative_strainfitness.txt",sep = "\t",row.names = FALSE)
+pdf(file = "../figures/Fig2E.pdf",width = 5, height = 10)
 heatmap.2(t(as.matrix(fit_mean_matrix)),Rowv=TRUE, Colv=TRUE,dendrogram = "both", col=pal,hclustfun = function(d) hclust(d,method="ward.D2"),trace="none", scale="none",cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Mean Fitness", key.ylab =NA, tracecol="black",symbreaks=FALSE,key.title = NA,colCol = col_letters) #color key helps me understand the dynamics.
 
 heatmap.2(t(as.matrix(fit_median_matrix)),Rowv=TRUE, Colv=TRUE, dendrogram = "both",col=pal,hclustfun = function(d) hclust(d,method="ward.D2"), trace="none", scale="none", cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE,key.title = NA,colCol = col_letters)
 
 myorder<-order(rank(fit_mean_matrix["A17",]))
-heatmap.2(t(as.matrix(fit_mean_matrix[,myorder])),Rowv=FALSE, Colv=TRUE, dendrogram = "column", hclustfun = function(d) hclust(d,method="ward.D2"), col=pal, trace="none", scale="none", cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Mean Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE, key.title = NA,colCol = col_letters)
+heatmap1<-heatmap.2(t(as.matrix(fit_mean_matrix[,myorder])),Rowv=FALSE, Colv=TRUE, dendrogram = "column", hclustfun = function(d) hclust(d,method="ward.D2"), col=pal, trace="none", scale="none", cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Mean Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE, key.title = NA,colCol = col_letters)
+
 
 myorder<-order(rank(fit_median_matrix["A17",]))
 heatmap.2(t(as.matrix(fit_median_matrix[,myorder])),Rowv=FALSE, Colv=TRUE, dendrogram = "column", hclustfun = function(d) hclust(d,method="ward.D2"),col=pal, trace="none", scale="none", cexCol = 1,cexRow = .5, key=TRUE,key.xlab = "Median Fitness", key.ylab =NA , tracecol="black",symbreaks=FALSE, key.title = NA,colCol = col_letters)
@@ -366,237 +832,121 @@ dev.off()
 
 ```
 
-```{r Code for creating FigS5,echo=TRUE}
 
-df1  <- data.frame(geno=fit_all$geno,type=fit_all$type,summary(rda_geno)$site)    
-rda1_ev <-as.vector(eigenvals(rda_geno, model = c("constrained")))
 
-rdainfo<-data.frame(geno=levels(factor(fit_all$geno)),mycols=c("#B23214","#56B4E9","#56B4E9","#56B4E9","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#009E73","#E69F00","#E69F00","#E69F00"), myshapes=c(19,19,18,17,19,18,17,1,2,3,4,5,6,19,18,17))
+```{R Code for creating Fig3A,echo=TRUE}
+pdf(file = "../figures/Fig3A.pdf",width = 5.75, height = 12)
+x<- as_tibble(t(fit_median_matrix)) 
+# Choices "latd","ipd3", "nad1","dnf2","dnf3","dnf6","dnf7","sunn4" 
 
-pdf(file = "../figures/FigS5.pdf",width = 5, height = 5)
+GWAS_traits<-tibble(strains=row.names(t(fit_mean_matrix)),latd=x$latd-x$A17,ipd3=x$ipd3-x$A17,nad1=x$nad1-x$A17,dnf2=x$dnf2-x$A17,dnf3=x$dnf3-x$A17,dnf6=x$dnf6-x$A17,dnf7=x$dnf7-x$A17,sunn4=x$sunn4-x$A17,sunn1=x$sunn1-x$A17,rdn1=x$rdn1-x$A17,hcl=x$hcl-x$A17,dnf1=x$dnf1-x$A17,dnf4=x$dnf4-x$A17,dnf5dnf2=x$`dnf5/dnf2`-x$A17,dnf1dnf2=x$`dnf1/dnf2`-x$A17)
 
-ggplot(df1, aes(x=RDA1,y=RDA2,color=type))+
-  scale_color_manual(values=cbPalette)+
-  geom_text(aes(label=geno),size=3) +
-  geom_hline(yintercept=0, linetype="dotted") +
-  geom_vline(xintercept=0, linetype="dotted") +
-  labs(x=paste("RDA 1 (",round(rda1_ev[1],2),"%)"),y=paste("RDA 2 (",round(rda1_ev[2],2),"%)"), color="Type") +
-  theme_classic() + theme(legend.position="top", text = element_text(size=12))
+write.table (GWAS_traits,file="../tables/Mean_strainfitnessshift.txt",sep = "\t",row.names = FALSE)
 
-ggplot(df1, aes(x=RDA3,y=RDA4,color=type))+
-  scale_color_manual(values=cbPalette)+
-  geom_text(aes(label=geno),size=3) +
-  geom_hline(yintercept=0, linetype="dotted") +
-  geom_vline(xintercept=0, linetype="dotted") +
-  labs(x=paste("RDA 3 (",round(rda1_ev[3],2),"%)"),y=paste("RDA 4 (",round(rda1_ev[4],2),"%)"), color="Type") +
-  theme_classic() + theme(legend.position="top", text = element_text(size=12)) 
+
+#Creating the heatmap for the strain fitness shifts
+
+data <- GWAS_traits
+# Omit the "strains" column
+GWAS_traits <- GWAS_traits[, !colnames(GWAS_traits) %in% "strains"]
+GWAS_traits <- as.matrix(sapply(GWAS_traits, as.numeric))
+row.names(GWAS_traits) <- data$strains
+
+
+
+# Enhanced color palette with more colors for more variation
+#pal <- colorRampPalette(c('#2166AC', '#3C8D99', '#6A9DC4', '#B2D7E8', '#F7F7F7', '#F4A582', '#D95F30', '#B2182B', '#660001'))(100)
+#pal <- colorRampPalette(c('#2166AC', '#3C8D99', '#6A9DC4', '#B2D7E8', '#F7F7F7', '#D6604D', '#B2182B', '#660001'))(100)
+pal <- colorRampPalette(c('#542788', '#8073AC', '#B2ABD2', '#F7F7F7', '#FDB863', '#E08214', '#B35806', '#7F3B08'))(100)
+
+#pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))(100)
+
+# Modify the breaks to span a wider range for smoother transitions between colors
+breaks <- seq(-3, 3, length.out = length(pal) + 1)
+
+
+# Define custom column colors (this remains the same as in your previous example)
+col_letters = c("A17"="#B23214", "hcl"="#56B4E9", "ipd3"="#56B4E9", 
+                "latd"="#56B4E9", "nad1"="#009E73", "dnf1"="#009E73", 
+                "dnf2"="#009E73", "dnf3"="#009E73", "dnf4"="#009E73", 
+                "dnf6"="#009E73", "dnf7"="#009E73", "dnf1dnf2"="#009E73", 
+                "dnf5dnf2"="#009E73", "rdn1"="#E69F00", "sunn1"="#E69F00", 
+                "sunn4"="#E69F00")
+# Map the colors from col_letters to the columns in GWAS_traits
+column_colors <- col_letters[colnames(GWAS_traits)]
+
+# Plot the heatmap with the updated color palette and breaks for more variation
+heatmap.2(GWAS_traits, 
+          trace = "none",  # No trace lines inside the heatmap
+          density.info = "density",  # Add density plot in the key
+          breaks = breaks,  # Define the breaks for the color scale
+          col = pal,  # Use the updated color palette
+          Rowv = TRUE, 
+          Colv = TRUE, 
+          dendrogram = "col",  # Show column dendrogram only (adjust as needed)
+          hclustfun = function(d) hclust(d, method = "ward.D2"),  # Clustering method
+          scale = "none",  # Do not scale the data (or use "row" if you want normalization)
+          cexCol = 1,  # Adjust column label size
+          cexRow = 0.6,  # Adjust row label size
+          key = TRUE,  # Show color scale
+          key.xlab = "Fitness Shifts",  # Label for the key's x-axis
+          key.ylab = NA,  # No label for the key's y-axis
+          tracecol = "black",  # Color of trace lines (if any)
+          symbreaks = FALSE,  # Do not use symmetric breaks
+          key.title = NA,  # No title for the key
+          colCol = column_colors,  # Apply the correct colors to columns
+          keysize = 1.2,  # Adjust key size
+          margins = c(10, 10))  # Adjust margins to accommodate row labels
 
 dev.off()
 
 ```
 
-```{R Subset data for GWAS Analysis}
+```{R Subset data for testing the malonylCOA mutant in A17, sunn4, dnf7 and dnf3}
+df <- read.csv("~/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini&Liana/GitHub/HostMutants2021_C86meliloti/data/Pervasivegene_MalonylCOA_validation.csv")
 
-x<- as_tibble(t(fit_mean_matrix)) 
-# Choices "latd","ipd3", "nad1","dnf2","dnf3","dnf6","dnf7","sunn4" 
+pdf(file = "../figures/Pervasivegene_validationplots.pdf",width = 4, height = 4)
 
-GWAS_traits<-tibble(strains=row.names(t(fit_mean_matrix)),A17=x$A17,latd.change=x$latd-x$A17,ipd3.change=x$ipd3-x$A17,nad1change=x$nad1-x$A17,dnf2.change=x$dnf2-x$A17,dnf3.change=x$dnf3-x$A17,dnf6.change=x$dnf6-x$A17,dnf7.change=x$dnf7-x$A17,sunn4.change=x$sunn4-x$A17,sunn1.change=x$sunn1-x$A17,rdn1.change=x$rdn1-x$A17,hcl.change=x$hcl-x$A17,dnf1.change=x$dnf1-x$A17,dnf4.change=x$dnf4-x$A17,dnf5dnf2.change=x$`dnf5/dnf2`-x$A17,dnf1dnf2.change=x$`dnf1/dnf2`-x$A17)
 
-write.table (GWAS_traits,file="../tables/TraitsforGWAS_mean.txt",sep = "\t",row.names = FALSE)
+#With the initial culture as a seperate columne
+
+# Subset relevant columns
+df2 <- df %>% dplyr::select(Host, Trt, LBMC, LBMC.gent.60.)
+
+# Clean the data: replace "#DIV/0!" with NA and convert LBMC & LBMC.gent.60. to numeric
+df2$LBMC <- as.numeric(ifelse(df2$LBMC == "#DIV/0!", NA, df2$LBMC))
+df2$LBMC.gent.60. <- as.numeric(ifelse(df2$LBMC.gent.60. == "#DIV/0!", NA, df2$LBMC.gent.60.))
+
+# Calculate log2 ratio
+df2$logratio <- log2(df2$LBMC.gent.60. / df2$LBMC)
+
+# Cap positive log ratios at 0 (since mutant should decrease or stay the same)
+df2$logratio[df2$logratio > 0] <- 0
+
+
+
+# --- Plot : Reference group = Initial Culture ---
+p2 <- ggplot(df2, aes(x = Host, y = 2^logratio, color = Host)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.2, alpha = 0.6) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(0, 2), breaks = c(0, 1, 2)) +
+  labs(x = "Plant Genotype",
+       y = "Proportion of Malonyl-COA Mutant",
+       title = "Malonyl-COA mutant competition outcome") +
+  stat_compare_means(label = "p.signif", method = "t.test",
+                     ref.group = "Initial Culture", var.equal = FALSE)
+
+
+
+print(p2)
+
+
+
+dev.off()
+
+
 ```
 
-```{bash, engine.opts='-l'}
-#### Set requirements ####
-salloc -N 1 -n 20 --mem-per-cpu=2048 -t 8:00:00
 
-#First, create the gwas environment to install nessesary packages!!
-#conda list -e > spec-file.txt
-#conda create --name gwas_vcf --file spec-file.txt
-
-#### Activate environment ####
-conda activate gwas_vcf
-
-#### SETTINGS ####
-MIN_MAF=0.05
-MAX_MISSING=0.2
-N_PERMUTATIONS=1000
-
-
-#### Files needed ####
-GENOTYPES="ensifer_88_strains_normalized_for_gwas.vcf.gz" #SNPs file obatined from https://datadryad.org/stash/landing/show?id=doi%3A10.5061%2Fdryad.w3r2280sq
-PHENOTYPES='TraitsforGWAS_mean.tsv' # first column strain list, phenotypes begin at column 2, head should include phenotype names (i.e., strain, pheno1, pheno2 ...)
-STRAINS='strain_list.txt' #list of strains in phenotypes (i.e. column 1)
-LD_SITES='ld_sites.txt' #list of LD representative sites, user generated see below (line 27) # 26918 sites 
-
-
-ANNOTATION_FOR_VARIANTS="annotated_variants.closest.circular.tsv" # From Dryad or Brendan(?)
-chr_var="chr_one_variant.tsv" 
-psyma_var="psyma_one_variant.tsv" 
-psymb_var="psymb_one_variant.tsv" 
-
-nPHENOS=`awk -F'\t' '{print NF; exit}' $PHENOTYPES`
-pheno_names=($(awk 'NR==1{print}' $PHENOTYPES))
-
-#### Used to generate LD snps list ####
-# wget -O ensifer_ld_groups.zip https://datadryad.org/stash/downloads/file_stream/1823551
-# unzip ensifer_ld_groups.zip
-# awk 'NR == 1 || FNR > 1' ensifer_ld_groups/ld_group_assignments* > all_ld_group_assignments.tsv
-# awk '$7 == "1"' all_ld_group_assignments.tsv | cut -f 1,2 > ld_sites.txt
-
-
-#### Filter Genotypes ####
-
-bcftools view --samples-file "$STRAINS" "$GENOTYPES" -o filtered.vcf
-
-#### index for downstream filtering ####
-rm -f filtered.vcf.gz
-bgzip filtered.vcf && tabix -p vcf filtered.vcf.gz
-
-bcftools query -f '%POS\n' filtered.vcf.gz | wc -l  #254255
-bcftools query -f '%CHROM\n' filtered.vcf.gz | uniq
-
-
-#### Filter SNPs by LD snps ####
-bcftools view -R $LD_SITES filtered.vcf.gz | bcftools sort -o subset_LD.vcf
-rm -f subset_LD.vcf.gz
-bgzip subset_LD.vcf && tabix -p vcf subset_LD.vcf.gz # index for downstream filtering
-
-
-#### Filter sites based on output/chromosome ####
-bcftools view subset_LD.vcf.gz --regions USDA1106-chr,KH35c-chr,T073-chr -o chr_subset_LD.vcf
-bcftools view subset_LD.vcf.gz --regions USDA1106-psyma,T073-psyma,KH35c-psyma -o psyma_subset_LD.vcf
-bcftools view subset_LD.vcf.gz --regions USDA1106-psymb,T073-psymb,KH35c-psymb -o psymb_subset_LD.vcf
-
-#### Index ####
-rm -f chr_subset_LD.vcf.gz
-rm -f psyma_subset_LD.vcf.gz
-rm -f psymb_subset_LD.vcf.gz
-
-bgzip chr_subset_LD.vcf && tabix -p vcf chr_subset_LD.vcf.gz # index for downstream filtering
-bgzip psyma_subset_LD.vcf && tabix -p vcf psyma_subset_LD.vcf.gz # index for downstream filtering
-bgzip psymb_subset_LD.vcf && tabix -p vcf psymb_subset_LD.vcf.gz # index for downstream filtering
-
-
-
-#### Check filtering ####
-#sites
-bcftools query -f '%POS\n' ensifer_88_strains_normalized_for_gwas.vcf.gz | wc -l # 254255
-bcftools query -f '%POS\n' filtered.vcf.gz | wc -l # 254255 
-bcftools query -f '%POS\n' subset_LD.vcf.gz | wc -l # 30076
-bcftools query -f '%POS\n' chr_subset_LD.vcf.gz | wc -l # 1962
-bcftools query -f '%POS\n' psyma_subset_LD.vcf.gz | wc -l # 11137 
-bcftools query -f '%POS\n' psymb_subset_LD.vcf.gz | wc -l # 16929
-
-#genotypes
-bcftools query -l ensifer_88_strains_normalized_for_gwas.vcf.gz | wc -l #88
-bcftools query -l filtered.vcf.gz | wc -l # 86 
-bcftools query -l subset_LD.vcf.gz | wc -l # 86
-bcftools query -l chr_subset_LD.vcf.gz | wc -l # 86
-bcftools query -l psyma_subset_LD.vcf.gz | wc -l # 86
-bcftools query -l psymb_subset_LD.vcf.gz | wc -l # 86
-
-
-#### Subset phenotypes by strain_list ####
-grep -f $STRAINS $PHENOTYPES > phenos_subset.fam # 86 
-
-
-## Convert vcf to bed for GEMMA
-# chr
-plink --vcf chr_subset_LD.vcf.gz --make-bed --allow-extra-chr --allow-no-sex --maf 0.05 --geno --pheno "phenos_subset.fam" --all-pheno --out "chr_subset_LD_plink"
-
-# psyma
-plink --vcf psyma_subset_LD.vcf.gz --make-bed --allow-extra-chr --allow-no-sex --maf 0.05 --geno --pheno "phenos_subset.fam" --all-pheno --out "psyma_subset_LD_plink"
-
-# psymb
-plink --vcf psymb_subset_LD.vcf.gz --make-bed --allow-extra-chr --allow-no-sex --maf 0.05 --geno --pheno "phenos_subset.fam" --all-pheno --out "psymb_subset_LD_plink"
-
-## Relatedness matrix
-#"-gk 2" calculates the standardized relatedness matrix
-#Note: need to have the .fam file for it to run: e.g., cp subset_LD_plink.fam chr_subset_LD_plink.fam
-
-gemma -bfile chr_subset_LD_plink -p phenos_subset.fam -gk 2 -maf $MIN_MAF -miss $MAX_MISSING -o chr_subset_LD_ksmat
-gemma -bfile psyma_subset_LD_plink -p phenos_subset.fam -gk 2 -maf $MIN_MAF -miss $MAX_MISSING -o psyma_subset_LD_ksmat
-gemma -bfile psymb_subset_LD_plink -p phenos_subset.fam -gk 2 -maf $MIN_MAF -miss $MAX_MISSING -o psymb_subset_LD_ksmat
-
-
-#####################################################################################################################################################
-## LMM option in GEMMA
-#-n <number> specifies column corresponding to phenotype in .fam file.
-#-lmm option 4 includes all three stats tests (see GEMMA manual for more details)
-
-## This is the "real" gwas
- for i in `seq 2 $nPHENOS`; # 
- do
-  gemma -bfile chr_subset_LD_plink -p phenos_subset.fam -k ./output/chr_subset_LD_ksmat.sXX.txt \
-  -maf $MIN_MAF -miss "$MAX_MISSING" \
-  -lmm 4 -n $i -o chr_subset_LD_ulmm_trait_$i
-  echo "For chr, ran trait_$i through GEMMA"
-
-  gemma -bfile psyma_subset_LD_plink -p phenos_subset.fam -k ./output/psyma_subset_LD_ksmat.sXX.txt \
-  -maf $MIN_MAF -miss "$MAX_MISSING" \
-  -lmm 4 -n $i -o psyma_subset_LD_ulmm_trait_$i
-  echo "For psyma, ran trait_$i through GEMMA"
-
-  gemma -bfile psymb_subset_LD_plink -p phenos_subset.fam -k ./output/psymb_subset_LD_ksmat.sXX.txt \
-  -maf $MIN_MAF -miss "$MAX_MISSING" \
-  -lmm 4 -n $i -o psymb_subset_LD_ulmm_trait_$i
-  echo "For psymb, ran trait_$i through GEMMA" ;
- done
-
-## adds a columnn to keep track of trait 
-for i in $(seq 2 $nPHENOS); # 2 through 4, or however many numbers of traits in $PHENOTYPES
- do
-  awk -v i="$i" '{if (NR!=1) print $0, "\t trait_"i}' output/chr_subset_LD_ulmm_trait_$i.assoc.txt | sed '1i chr\tldg\tps\tn_miss\tallele1\tallele0\taf\tbeta\tse\tlogl_H1\tl_remle\tl_mle\tp_wald\tp_lrt\tp_score\trun' > output/chr_subset_LD_ulmm_trait_$i_2.assoc.txt
-  awk -v i="$i" '{if (NR!=1) print $0, "\t trait_"i}' output/psyma_subset_LD_ulmm_trait_$i.assoc.txt | sed '1i chr\tldg\tps\tn_miss\tallele1\tallele0\taf\tbeta\tse\tlogl_H1\tl_remle\tl_mle\tp_wald\tp_lrt\tp_score\trun' > output/psyma_subset_LD_ulmm_trait_$i_2.assoc.txt
-  awk -v i="$i" '{if (NR!=1) print $0, "\t trait_"i}' output/psymb_subset_LD_ulmm_trait_$i.assoc.txt | sed '1i chr\tldg\tps\tn_miss\tallele1\tallele0\taf\tbeta\tse\tlogl_H1\tl_remle\tl_mle\tp_wald\tp_lrt\tp_score\trun' > output/psymb_subset_LD_ulmm_trait_$i_2.assoc.txt
-  mv output/chr_subset_LD_ulmm_trait_$i_2.assoc.txt output/chr_subset_LD_ulmm_trait_$i.assoc.txt
-  mv output/psyma_subset_LD_ulmm_trait_$i_2.assoc.txt output/psyma_subset_LD_ulmm_trait_$i.assoc.txt
-  mv output/psymb_subset_LD_ulmm_trait_$i_2.assoc.txt output/psymb_subset_LD_ulmm_trait_$i.assoc.txt
- done
-
-## This renames "trait_2, trait_3, etc." to the corresponding name within the phenotype file begining at column 2. 
-for str in ${pheno_names[@]}; do
- echo $str
-done
-
-for i in $(seq 2 $nPHENOS); # or however many numbers of columns (i.e., traits) 
- do
-  sed -i 's/ trait_'"${i}"'/'"${pheno_names[${i}-1]}"'/g' output/chr_subset_LD_ulmm_trait_$i.assoc.txt
-  sed -i 's/ trait_'"${i}"'/'"${pheno_names[${i}-1]}"'/g' output/psyma_subset_LD_ulmm_trait_$i.assoc.txt
-  sed -i 's/ trait_'"${i}"'/'"${pheno_names[${i}-1]}"'/g' output/psymb_subset_LD_ulmm_trait_$i.assoc.txt
- done
-
- #### annotate #### 
-rm -r annotation/
-mkdir -p "annotation"
-
-for i in $(seq 2 $nPHENOS); 
-    do
-        python merge.py "$chr_var" "$ANNOTATION_FOR_VARIANTS" "output/chr_subset_LD_ulmm_trait_$i.assoc.txt"
-        python merge.py "$psyma_var" "$ANNOTATION_FOR_VARIANTS" "output/psyma_subset_LD_ulmm_trait_$i.assoc.txt"  
-        python merge.py "$psymb_var" "$ANNOTATION_FOR_VARIANTS" "output/psymb_subset_LD_ulmm_trait_$i.assoc.txt"  
-    done                                           
-
-
-#rename annotation files
-for i in $(seq 2 $nPHENOS); # or however many numbers of columns (i.e., traits) 
- do
-  mv annotation/merged_chr_subset_LD_ulmm_trait_$i.assoc.txt annotation/merged_chr_subset_LD_ulmm_trait_${pheno_names[${i}-1]}.tsv
-  mv annotation/merged_psyma_subset_LD_ulmm_trait_$i.assoc.txt annotation/merged_psyma_subset_LD_ulmm_trait_${pheno_names[${i}-1]}.tsv
-  mv annotation/merged_psymb_subset_LD_ulmm_trait_$i.assoc.txt annotation/merged_psymb_subset_LD_ulmm_trait_${pheno_names[${i}-1]}.tsv
- done
-
-# #rename output files
-for i in $(seq 2 $nPHENOS); # or however many numbers of columns (i.e., traits) 
- do
-  mv output/chr_subset_LD_ulmm_trait_$i.assoc.txt output/chr_subset_LD_ulmm_${pheno_names[${i}-1]}.assoc.txt
-  mv output/psyma_subset_LD_ulmm_trait_$i.assoc.txt output/psyma_subset_LD_ulmm_${pheno_names[${i}-1]}.assoc.txt
-  mv output/psymb_subset_LD_ulmm_trait_$i.assoc.txt output/psymb_subset_LD_ulmm_${pheno_names[${i}-1]}.assoc.txt
-  mv output/chr_subset_LD_ulmm_trait_$i.log.txt output/chr_subset_LD_ulmm_${pheno_names[${i}-1]}.log.txt
-  mv output/psyma_subset_LD_ulmm_trait_$i.log.txt output/psyma_subset_LD_ulmm_${pheno_names[${i}-1]}.log.txt
-  mv output/psymb_subset_LD_ulmm_trait_$i.log.txt output/psymb_subset_LD_ulmm_${pheno_names[${i}-1]}.log.txt
- done
-
-
-awk '(NR == 1) || (FNR > 1)' output/*assoc.txt > output/all_assoc.txt
-```

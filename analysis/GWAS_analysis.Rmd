@@ -1,11 +1,11 @@
 ---
-title: "Mutations in legume symbiosis genes create a complex selective landscape for natural genetic variation in rhizobia during multi-strain inoculations"
-author: Sohini Guha,Gina Bledsoe,Liana T. Burghardt
+title: "Mutations in legume symbiosis genes create a complex selective landscape for rhizobial symbionts"
+author:  Sohini Guha, Regina B. Bledsoe, Jeremy Sutherland, Brendan Epstein, Gwendolyn M. Fry, Nevin D. Young, Peter Tiffin, and Liana T. Burghardt
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
-Analysis file for "Mutations in legume symbiosis genes create a complex selective landscape for natural genetic variation in rhizobia during multi-strain inoculations"
+Analysis file for "Mutations in legume symbiosis genes create a complex selective landscape for rhizobial symbionts"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -77,10 +77,10 @@ merged_chr_sunn4.change <- read.delim("../data/GWAS_data/annotation/merged_chr_s
 merged_chr_A17<-read.delim("../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_A17.tsv",header=TRUE)
 ```
 
-```{r Code for creating the tables for the top5 candidates: TableS7 and Table3, echo=FALSE}
+```{r Code for creating the tables for the top5 candidates: TableS6 and Table2, echo=FALSE}
 # List of file paths
 
- file_paths <- c("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_A17.tsv") #shorter 
+ file_paths <- c("../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psyma_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_psymb_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_ipd3.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_latd.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_hcl.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf3.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf4.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf6.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf7.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf1dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_dnf5dnf2.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_nad1change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_rdn1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn1.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_sunn4.change.tsv","../data/GWAS_data/annotation/merged_chr_subset_LD_ulmm_trait_A17.tsv")  
 # List to store data frames
 data_list <- list()
 
@@ -94,11 +94,11 @@ data_list <- lapply(file_paths, read_and_store_data)
 #top5_candidates
 
 # Use lapply to apply the function to each data frame
-all_top_candidates_subsets <- lapply(data_list, get_top_candidates_subset_and_combine)
+#all_top_candidates_subsets <- lapply(data_list, get_top_candidates_subset_and_combine)
 # Combine all subsets into a single data frame
-combined_data <- do.call(rbind, all_top_candidates_subsets)
+#combined_data <- do.call(rbind, all_top_candidates_subsets)
 #seperate the 'chr' col
-combined_top10_candidates_data<-combined_data%>% separate(chr,c('Organism','Replicon'))
+#combined_top10_candidates_data<-combined_data%>% separate(chr,c('Organism','Replicon'))
 #Table for Fig S6,S7
 
 #select the top5 for fig6, supplement annotated heatmap and the crossranked tables
@@ -117,19 +117,17 @@ top5_candidates.1<-combined_data2%>% separate(chr,c('Organism','Replicon'))
 #for crossranked table  and for the heatmaps ##no pcut,no small groups,unique
 
 #for Table S7
-top5_candidates<-top5_candidates.1%>%filter(!duplicated(ld_group))%>% select(-"replicon") 
-write.table(top5_candidates.1,file="../tables/TableS7.tsv",sep = "\t",row.names = FALSE) 
+top5_candidates<-top5_candidates.1%>%filter(!duplicated(ld_group))%>%dplyr::select(-"replicon") 
+write.table(top5_candidates.1,file="../tables/TableS6.tsv",sep = "\t",row.names = FALSE) 
 
 # for Table 3
 top5_candidates_prs<-subset(top5_candidates.1,prs>=1 & prs<=5)
 top5_candidates_prs.1<- top5_candidates_prs[top5_candidates_prs$p_lrt <= 1e-5, ]
 
-write.table(top5_candidates_prs.1,file="../tables/Table3.tsv",sep = "\t",row.names = FALSE)
+write.table(top5_candidates_prs.1,file="../tables/Table2.tsv",sep = "\t",row.names = FALSE)
 ```
 
-
-
-```{r Code for creating the cross-ranked candidates: TableS8, echo=FALSE}
+```{r Code for creating the cross-ranked candidates: TableS7, echo=FALSE}
 
 merge_GWAS_data <- function(gene){
     # Construct file paths based on gene  name
@@ -188,10 +186,10 @@ merged_sunn1<-merge_GWAS_data("sunn1")
 merged_sunn4<-merge_GWAS_data("sunn4")
 ```
 
-```{r Code for Table S8, echo=FALSE}
+```{r Code for Table S7, echo=FALSE}
 #crossranked table based on the  beta:
 
-top5_candidates_crossranked_beta<-data.frame(group=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$ld_group,pr=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$pr,Location= top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$Replicon,Pval=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$p_lrt,Beta=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$beta,Br=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$br,WT=merged_A17[match(unique(top5_candidates$ld_group),merged_A17$ld_group),]$beta,hcl=merged_hcl[match(unique(top5_candidates$ld_group),merged_hcl$ld_group),]$beta,ipd3=merged_ipd3[match(unique(top5_candidates$ld_group),merged_ipd3$ld_group),]$beta,latd=merged_latd[match(unique(top5_candidates$ld_group),merged_latd$ld_group),]$beta,nad1=merged_nad1[match(unique(top5_candidates$ld_group),merged_nad1$ld_group),]$beta,dnf1=merged_dnf1[match(unique(top5_candidates$ld_group),merged_dnf1$ld_group),]$beta,dnf2=merged_dnf2[match(unique(top5_candidates$ld_group),merged_dnf2$ld_group),]$beta,dnf3=merged_dnf3[match(unique(top5_candidates$ld_group),merged_dnf3$ld_group),]$beta,dnf4=merged_dnf4[match(unique(top5_candidates$ld_group),merged_dnf4$ld_group),]$beta,dnf6=merged_dnf6[match(unique(top5_candidates$ld_group),merged_dnf6$ld_group),]$beta,dnf7=merged_dnf7[match(unique(top5_candidates$ld_group),merged_dnf7$ld_group),]$beta,dnf1dnf2=merged_dnf1dnf2[match(unique(top5_candidates$ld_group),merged_dnf1dnf2$ld_group),]$beta,dnf5dnf2=merged_dnf5dnf2[match(unique(top5_candidates$ld_group),merged_dnf5dnf2$ld_group),]$beta,rdn1=merged_rdn1[match(unique(top5_candidates$ld_group),merged_rdn1$ld_group),]$beta,sunn1=merged_sunn1[match(unique(top5_candidates$ld_group),merged_sunn1$ld_group),]$beta,sunn4=merged_sunn4[match(unique(top5_candidates$ld_group),merged_sunn4$ld_group),]$beta,Description=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$description)
+top5_candidates_crossranked_beta<-data.frame(group=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$ld_group,pr=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$pr,Location= top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$Replicon,Pval=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$p_lrt,Beta=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$beta,Br=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$br,A17=merged_A17[match(unique(top5_candidates$ld_group),merged_A17$ld_group),]$beta,hcl=merged_hcl[match(unique(top5_candidates$ld_group),merged_hcl$ld_group),]$beta,ipd3=merged_ipd3[match(unique(top5_candidates$ld_group),merged_ipd3$ld_group),]$beta,latd=merged_latd[match(unique(top5_candidates$ld_group),merged_latd$ld_group),]$beta,nad1=merged_nad1[match(unique(top5_candidates$ld_group),merged_nad1$ld_group),]$beta,dnf1=merged_dnf1[match(unique(top5_candidates$ld_group),merged_dnf1$ld_group),]$beta,dnf2=merged_dnf2[match(unique(top5_candidates$ld_group),merged_dnf2$ld_group),]$beta,dnf3=merged_dnf3[match(unique(top5_candidates$ld_group),merged_dnf3$ld_group),]$beta,dnf4=merged_dnf4[match(unique(top5_candidates$ld_group),merged_dnf4$ld_group),]$beta,dnf6=merged_dnf6[match(unique(top5_candidates$ld_group),merged_dnf6$ld_group),]$beta,dnf7=merged_dnf7[match(unique(top5_candidates$ld_group),merged_dnf7$ld_group),]$beta,dnf1dnf2=merged_dnf1dnf2[match(unique(top5_candidates$ld_group),merged_dnf1dnf2$ld_group),]$beta,dnf5dnf2=merged_dnf5dnf2[match(unique(top5_candidates$ld_group),merged_dnf5dnf2$ld_group),]$beta,rdn1=merged_rdn1[match(unique(top5_candidates$ld_group),merged_rdn1$ld_group),]$beta,sunn1=merged_sunn1[match(unique(top5_candidates$ld_group),merged_sunn1$ld_group),]$beta,sunn4=merged_sunn4[match(unique(top5_candidates$ld_group),merged_sunn4$ld_group),]$beta,Description=top5_candidates[match(unique(top5_candidates$ld_group),top5_candidates$ld_group),]$description)
 
 #adding the alternate allele frequency of the ld groups
 beta_af<-data.frame(group=top5_candidates_crossranked_beta$group,Af=top5_candidates[match(unique(top5_candidates_crossranked_beta$group),top5_candidates$ld_group),]$af)
@@ -202,60 +200,46 @@ top5_candidates_crossranked_beta<-merge(top5_candidates_crossranked_beta, beta_a
 top5_candidates<-split(top5_candidates,top5_candidates$Replicon)
  
 #crossranked table of ld_groups on the chromosome based on the p-ranks:
-top5_candidates_crossranked_chr<-data.frame(group=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$ld_group,pr=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$pr,Location= top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$Replicon,Pval=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$p_lrt,Beta=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$beta,Br=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$br,WT= merged_chr_A17[match(unique(top5_candidates$chr$ld_group),merged_chr_A17$ld_group),]$pr,hcl= merged_chr_hcl.change[match(unique(top5_candidates$chr$ld_group),merged_chr_hcl.change$ld_group),]$pr,ipd3= merged_chr_ipd3.change[match(unique(top5_candidates$chr$ld_group),merged_chr_ipd3.change$ld_group),]$pr,latd=merged_chr_latd.change[match(unique(top5_candidates$chr$ld_group),merged_chr_latd.change$ld_group),]$pr,nad1= merged_chr_nad1.change[match(unique(top5_candidates$chr$ld_group),merged_chr_nad1.change$ld_group),]$pr,dnf1= merged_chr_dnf1.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf1.change$ld_group),]$pr,dnf2=merged_chr_dnf2.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf2.change$ld_group),]$pr,dnf3=merged_chr_dnf3.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf3.change$ld_group),]$pr,dnf4=merged_chr_dnf4.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf4.change$ld_group),]$pr,dnf6=merged_chr_dnf6.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf6.change$ld_group),]$pr,dnf7=merged_chr_dnf7.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf7.change$ld_group),]$pr,dnf1dnf2=merged_chr_dnf1dnf2.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf1dnf2.change$ld_group),]$pr,dnf5dnf2=merged_chr_dnf5dnf2.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf5dnf2.change$ld_group),]$pr,rdn1=merged_chr_rdn1.change[match(unique(top5_candidates$chr$ld_group),merged_chr_rdn1.change$ld_group),]$pr,sunn1=merged_chr_sunn1.change[match(unique(top5_candidates$chr$ld_group),merged_chr_sunn1.change$ld_group),]$pr,sunn4=merged_chr_sunn4.change[match(unique(top5_candidates$chr$ld_group),merged_chr_sunn4.change$ld_group),]$pr,Description=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$description)
+top5_candidates_crossranked_chr<-data.frame(group=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$ld_group,pr=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$pr,Location= top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$Replicon,Pval=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$p_lrt,Beta=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$beta,Br=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$br,A17= merged_chr_A17[match(unique(top5_candidates$chr$ld_group),merged_chr_A17$ld_group),]$pr,hcl= merged_chr_hcl.change[match(unique(top5_candidates$chr$ld_group),merged_chr_hcl.change$ld_group),]$pr,ipd3= merged_chr_ipd3.change[match(unique(top5_candidates$chr$ld_group),merged_chr_ipd3.change$ld_group),]$pr,latd=merged_chr_latd.change[match(unique(top5_candidates$chr$ld_group),merged_chr_latd.change$ld_group),]$pr,nad1= merged_chr_nad1.change[match(unique(top5_candidates$chr$ld_group),merged_chr_nad1.change$ld_group),]$pr,dnf1= merged_chr_dnf1.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf1.change$ld_group),]$pr,dnf2=merged_chr_dnf2.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf2.change$ld_group),]$pr,dnf3=merged_chr_dnf3.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf3.change$ld_group),]$pr,dnf4=merged_chr_dnf4.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf4.change$ld_group),]$pr,dnf6=merged_chr_dnf6.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf6.change$ld_group),]$pr,dnf7=merged_chr_dnf7.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf7.change$ld_group),]$pr,dnf1dnf2=merged_chr_dnf1dnf2.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf1dnf2.change$ld_group),]$pr,dnf5dnf2=merged_chr_dnf5dnf2.change[match(unique(top5_candidates$chr$ld_group),merged_chr_dnf5dnf2.change$ld_group),]$pr,rdn1=merged_chr_rdn1.change[match(unique(top5_candidates$chr$ld_group),merged_chr_rdn1.change$ld_group),]$pr,sunn1=merged_chr_sunn1.change[match(unique(top5_candidates$chr$ld_group),merged_chr_sunn1.change$ld_group),]$pr,sunn4=merged_chr_sunn4.change[match(unique(top5_candidates$chr$ld_group),merged_chr_sunn4.change$ld_group),]$pr,Description=top5_candidates$chr[match(unique(top5_candidates$chr$ld_group),top5_candidates$chr$ld_group),]$description)
 
 
 
 #crossranked table of ld_groups on the psymb based on the p-ranks
 
 
-top5_candidates_crossranked_psymb<-data.frame(group=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$ld_group,pr=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$pr,Location= top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$Replicon,Pval=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$p_lrt,Beta=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$beta,Br=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$br,WT= merged_psymb_A17[match(unique(top5_candidates$psymb$ld_group),merged_psymb_A17$ld_group),]$pr,hcl= merged_psymb_hcl.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_hcl.change$ld_group),]$pr,ipd3= merged_psymb_ipd3.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_ipd3.change$ld_group),]$pr,latd=merged_psymb_latd.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_latd.change$ld_group),]$pr,nad1= merged_psymb_nad1.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_nad1.change$ld_group),]$pr,dnf1= merged_psymb_dnf1.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf1.change$ld_group),]$pr,dnf2=merged_psymb_dnf2.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf2.change$ld_group),]$pr,dnf3=merged_psymb_dnf3.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf3.change$ld_group),]$pr,dnf4=merged_psymb_dnf4.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf4.change$ld_group),]$pr,dnf6=merged_psymb_dnf6.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf6.change$ld_group),]$pr,dnf7=merged_psymb_dnf7.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf7.change$ld_group),]$pr,dnf1dnf2=merged_psymb_dnf1dnf2.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf1dnf2.change$ld_group),]$pr,dnf5dnf2=merged_psymb_dnf5dnf2.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf5dnf2.change$ld_group),]$pr,rdn1=merged_psymb_rdn1.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_rdn1.change$ld_group),]$pr,sunn1=merged_psymb_sunn1.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_sunn1.change$ld_group),]$pr,sunn4=merged_psymb_sunn4.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_sunn4.change$ld_group),]$pr,Description=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$description)
+top5_candidates_crossranked_psymb<-data.frame(group=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$ld_group,pr=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$pr,Location= top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$Replicon,Pval=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$p_lrt,Beta=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$beta,Br=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$br,A17= merged_psymb_A17[match(unique(top5_candidates$psymb$ld_group),merged_psymb_A17$ld_group),]$pr,hcl= merged_psymb_hcl.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_hcl.change$ld_group),]$pr,ipd3= merged_psymb_ipd3.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_ipd3.change$ld_group),]$pr,latd=merged_psymb_latd.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_latd.change$ld_group),]$pr,nad1= merged_psymb_nad1.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_nad1.change$ld_group),]$pr,dnf1= merged_psymb_dnf1.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf1.change$ld_group),]$pr,dnf2=merged_psymb_dnf2.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf2.change$ld_group),]$pr,dnf3=merged_psymb_dnf3.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf3.change$ld_group),]$pr,dnf4=merged_psymb_dnf4.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf4.change$ld_group),]$pr,dnf6=merged_psymb_dnf6.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf6.change$ld_group),]$pr,dnf7=merged_psymb_dnf7.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf7.change$ld_group),]$pr,dnf1dnf2=merged_psymb_dnf1dnf2.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf1dnf2.change$ld_group),]$pr,dnf5dnf2=merged_psymb_dnf5dnf2.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_dnf5dnf2.change$ld_group),]$pr,rdn1=merged_psymb_rdn1.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_rdn1.change$ld_group),]$pr,sunn1=merged_psymb_sunn1.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_sunn1.change$ld_group),]$pr,sunn4=merged_psymb_sunn4.change[match(unique(top5_candidates$psymb$ld_group),merged_psymb_sunn4.change$ld_group),]$pr,Description=top5_candidates$psymb[match(unique(top5_candidates$psymb$ld_group),top5_candidates$psymb$ld_group),]$description)
 
 #crossranked table of ld_groups on the psyma based on the p-ranks
 
 
-top5_candidates_crossranked_psyma<-data.frame(group=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$ld_group,pr=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$pr,Location= top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$Replicon,Pval=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$p_lrt,Beta=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$beta,Br=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$br,WT= merged_psyma_A17[match(unique(top5_candidates$psyma$ld_group),merged_psyma_A17$ld_group),]$pr,hcl= merged_psyma_hcl.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_hcl.change$ld_group),]$pr,ipd3= merged_psyma_ipd3.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_ipd3.change$ld_group),]$pr,latd=merged_psyma_latd.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_latd.change$ld_group),]$pr,nad1= merged_psyma_nad1.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_nad1.change$ld_group),]$pr,dnf1= merged_psyma_dnf1.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf1.change$ld_group),]$pr,dnf2=merged_psyma_dnf2.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf2.change$ld_group),]$pr,dnf3=merged_psyma_dnf3.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf3.change$ld_group),]$pr,dnf4=merged_psyma_dnf4.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf4.change$ld_group),]$pr,dnf6=merged_psyma_dnf6.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf6.change$ld_group),]$pr,dnf7=merged_psyma_dnf7.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf7.change$ld_group),]$pr,dnf1dnf2=merged_psyma_dnf1dnf2.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf1dnf2.change$ld_group),]$pr,dnf5dnf2=merged_psyma_dnf5dnf2.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf5dnf2.change$ld_group),]$pr,rdn1=merged_psyma_rdn1.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_rdn1.change$ld_group),]$pr,sunn1=merged_psyma_sunn1.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_sunn1.change$ld_group),]$pr,sunn4=merged_psyma_sunn4.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_sunn4.change$ld_group),]$pr,Description=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$description)
+top5_candidates_crossranked_psyma<-data.frame(group=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$ld_group,pr=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$pr,Location= top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$Replicon,Pval=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$p_lrt,Beta=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$beta,Br=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$br,A17= merged_psyma_A17[match(unique(top5_candidates$psyma$ld_group),merged_psyma_A17$ld_group),]$pr,hcl= merged_psyma_hcl.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_hcl.change$ld_group),]$pr,ipd3= merged_psyma_ipd3.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_ipd3.change$ld_group),]$pr,latd=merged_psyma_latd.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_latd.change$ld_group),]$pr,nad1= merged_psyma_nad1.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_nad1.change$ld_group),]$pr,dnf1= merged_psyma_dnf1.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf1.change$ld_group),]$pr,dnf2=merged_psyma_dnf2.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf2.change$ld_group),]$pr,dnf3=merged_psyma_dnf3.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf3.change$ld_group),]$pr,dnf4=merged_psyma_dnf4.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf4.change$ld_group),]$pr,dnf6=merged_psyma_dnf6.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf6.change$ld_group),]$pr,dnf7=merged_psyma_dnf7.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf7.change$ld_group),]$pr,dnf1dnf2=merged_psyma_dnf1dnf2.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf1dnf2.change$ld_group),]$pr,dnf5dnf2=merged_psyma_dnf5dnf2.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_dnf5dnf2.change$ld_group),]$pr,rdn1=merged_psyma_rdn1.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_rdn1.change$ld_group),]$pr,sunn1=merged_psyma_sunn1.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_sunn1.change$ld_group),]$pr,sunn4=merged_psyma_sunn4.change[match(unique(top5_candidates$psyma$ld_group),merged_psyma_sunn4.change$ld_group),]$pr,Description=top5_candidates$psyma[match(unique(top5_candidates$psyma$ld_group),top5_candidates$psyma$ld_group),]$description)
 
 
 top5_candidates_crossranked<-rbind (top5_candidates_crossranked_chr,top5_candidates_crossranked_psyma,top5_candidates_crossranked_psymb)
 Rank_top10 <- rowSums(top5_candidates_crossranked[, -(1:6)] <= 10, na.rm = TRUE)
 top5_candidates_crossranked.1<-cbind(top5_candidates_crossranked,Rank_top10)
 top5_candidates_crossranked.1<-merge(top5_candidates_crossranked.1,beta_af,by="group")
-write.table(top5_candidates_crossranked.1,file="../tables/TableS8.tsv",sep = "\t",row.names = FALSE)
+write.table(top5_candidates_crossranked.1,file="../tables/TableS7.tsv",sep = "\t",row.names = FALSE)
 
 ```
 
+```{r Code for FigS4, echo=FALSE}
+pdf(file = "../figures/FigS5.pdf",width = 6.78, height = 6.78)
 
 
-```{r Code for FigS6 and FigS7, echo=FALSE}
-##Adding the ranks in the prank heatmaps
-
-df <- function(replicon) {
-  # Separate Location column into Organism and Replicon
- #top5_candidates_crossranked1  <- top5_candidates_crossranked %>%separate(Location, c("Organism", "Replicon"))
-  top5_candidates_crossranked.1
-  # Filter the data for the specified replicon
-  result <- top5_candidates_crossranked.1[top5_candidates_crossranked.1$Location == replicon, ]
-
-  # Check if any rows are filtered
-  if (nrow(result) == 0) {
-    stop("No data found for the specified replicon.")
-  }
-  
-  # Remove Description and irrelevant columns
- result3<- result %>%
-    select(-c(1:6)) %>%select(-Description)%>%
-    select(-Rank_top10)%>% select(-Af)
-  
-  # Convert data to matrix
-  data_matrix <- as.matrix(result3)
+result.psyma <- top5_candidates_crossranked.1[top5_candidates_crossranked.1$Location == "psyma", ]
+result.psyma.1<- result.psyma %>%
+    dplyr::select(-c(1:6)) %>%dplyr::select(-Description)%>%
+    dplyr::select(-Rank_top10)%>% dplyr::select(-Af)
+# Convert data to matrix
+  data_matrix <- as.matrix(result.psyma.1)
 
   # Reciprocal transformation
   data_matrix <- 1 / data_matrix
-  rownames(data_matrix) <- result$Rank_top10
+  rownames(data_matrix) <- result.psyma$Description
 
   # Define color palette
-  col_letters <- c("WT" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
+  col_letters <- c("A17" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
                    "nad1" = "#009E73", "dnf1" = "#009E73", "dnf2" = "#009E73", "dnf3" = "#009E73", 
                    "dnf4" = "#009E73", "dnf6" = "#009E73", "dnf7" = "#009E73", "dnf1/dnf2" = "#009E73", 
                    "dnf5/dnf2" = "#009E73", "rdn1" = "#E69F00", "sunn1" = "#E69F00", "sunn4" = "#E69F00")
@@ -264,113 +248,60 @@ df <- function(replicon) {
   pal <- colorRampPalette(c("lightgrey", "wheat", "gold", "orange", "darkorange", "red", "darkred"))(500)
   
   # Generate heatmap
-  heatmap.2(data_matrix, Rowv = TRUE,Colv=TRUE,dendrogram = "row", col = pal, 
+  heatmap1<-heatmap.2(data_matrix, Rowv = TRUE,Colv=TRUE,dendrogram = "row", col = pal, 
             hclustfun = function(d) hclust(d, method = "ward.D2"), trace = "none", 
             scale = "none", cexCol = 1, cexRow = 0.5, key = TRUE, 
             key.xlab = "Rank", key.ylab = NA, tracecol = "black", keysize = 2, 
-            symbreaks = FALSE, key.title = replicon, colCol = col_letters,
-            margins = c(8, 15))
+            symbreaks = FALSE, key.title = "psyma", colCol = col_letters,
+            margins = c(5, 10))
+  #save the heatmap to an object.
+
+result.psyma.beta <- top5_candidates_crossranked_beta[top5_candidates_crossranked_beta$Location == "psyma", ]
+result.psyma.beta.2 <- result.psyma.beta %>%
+    dplyr::select(-c(1:6)) %>% 
+    dplyr::select(-Description)%>% dplyr::select(-Af)
+
+pval_order<-heatmap1$rowInd
+#rownames(data_matrix_beta) <- rev(result.psyma$Description)
+#row_order <- rev(rownames(data_matrix)[heatmap1$rowInd])
+data_matrix_beta <- as.matrix(result.psyma.beta.2[pval_order,])
+data_matrix_beta <- data_matrix_beta[nrow(data_matrix_beta):1, ]
+
+#rownames(data_matrix_beta) <- rev(result.psyma$Description)
+
+rownames(data_matrix_beta)<- rev(rownames(data_matrix)[heatmap1$rowInd])
   
-  
-  
-  # Return the filtered data
-  return(result3)
-
-}
-
-pdf(file = "../figures/FigS6.pdf",width = 6.78, height = 6.78)
-
-
-df("chr")
-df("psyma")
-df("psymb")
-dev.off()
-
-#Adding the beta values in the beta heatmaps
-pdf(file = "../figures/FigS7.pdf",width = 6.78, height = 6.78)
-
-df <- function(replicon) {
-  # Separate Location column into Organism and Replicon
- #top5_candidates_crossranked1  <- top5_candidates_crossranked %>%separate(Location, c("Organism", "Replicon"))
-  
-  # Filter the data for the specified replicon
-  result_beta <- top5_candidates_crossranked_beta[top5_candidates_crossranked_beta$Location == replicon, ]
-
-  # Check if any rows are filtered
-  if (nrow(result_beta) == 0) {
-    stop("No data found for the specified replicon.")
-  }
-  
-  # Remove Description and irrelevant columns
-  result_beta2 <- result_beta %>%
-    select(-c(1:6)) %>%
-    select(-Description)%>% select(-Af)
- 
-  
-  # Convert data to matrix
-  data_matrix_beta <- as.matrix(result_beta2)
-
-  # Reciprocal transformation
-  rownames(data_matrix_beta) <- result_beta$Af
-
   # Define color palette
-  col_letters <- c("WT" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
+  col_letters <- c("A17" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
                    "nad1" = "#009E73", "dnf1" = "#009E73", "dnf2" = "#009E73", "dnf3" = "#009E73", 
                    "dnf4" = "#009E73", "dnf6" = "#009E73", "dnf7" = "#009E73", "dnf1/dnf2" = "#009E73", 
                    "dnf5/dnf2" = "#009E73", "rdn1" = "#E69F00", "sunn1" = "#E69F00", "sunn4" = "#E69F00")
 
   # Define color palette
 pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))
+#rownames(data_matrix_beta) <- result.psyma$Description
   # Generate heatmap
-  heatmap.2(data_matrix_beta, Rowv = TRUE,Colv=TRUE,dendrogram = "row", col = pal, 
+  heatmap.2(data_matrix_beta, Rowv = FALSE,Colv=TRUE,dendrogram = "none", col = pal, 
             hclustfun = function(d) hclust(d, method = "ward.D2"), trace = "none", 
             scale = "none", cexCol = 1, cexRow = 0.5, key = TRUE, 
             key.xlab = "Beta", key.ylab = NA, tracecol = "black", keysize = 2, 
-            symbreaks = FALSE, key.title = replicon, colCol = col_letters,
-            margins = c(8, 15))
+            symbreaks = FALSE, colCol = col_letters,
+            margins = c(5, 10))
   
-  
-  
-  # Return the filtered data
-  return(result_beta)
-
-}
-
-df("chr")
-df("psyma")
-df("psymb")
-dev.off()
-
-
-#adding description to the pranks heatmap
-
-df <- function(replicon) {
-  # Separate Location column into Organism and Replicon
- #top5_candidates_crossranked1  <- top5_candidates_crossranked %>%separate(Location, c("Organism", "Replicon"))
-  top5_candidates_crossranked.1
-  # Filter the data for the specified replicon
-  result <- top5_candidates_crossranked.1[top5_candidates_crossranked.1$Location == replicon, ]
-
-  # Check if any rows are filtered
-  if (nrow(result) == 0) {
-    stop("No data found for the specified replicon.")
-  }
-  
-  # Remove Description and irrelevant columns
- result3<- result %>%
-    select(-c(1:6)) %>%select(-Description)%>%
-    select(-Rank_top10)%>% select(-Af)
- 
-  
-  # Convert data to matrix
-  data_matrix <- as.matrix(result3)
+  ##psymb
+  result.psymb <- top5_candidates_crossranked.1[top5_candidates_crossranked.1$Location == "psymb", ]
+result.psymb.1<- result.psymb %>%
+    dplyr::select(-c(1:6)) %>%dplyr::select(-Description)%>%
+    dplyr::select(-Rank_top10)%>% dplyr::select(-Af)
+# Convert data to matrix
+  data_matrix <- as.matrix(result.psymb.1)
 
   # Reciprocal transformation
   data_matrix <- 1 / data_matrix
-  rownames(data_matrix) <- result$Description
+  rownames(data_matrix) <- result.psymb$Description
 
   # Define color palette
-  col_letters <- c("WT" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
+  col_letters <- c("A17" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
                    "nad1" = "#009E73", "dnf1" = "#009E73", "dnf2" = "#009E73", "dnf3" = "#009E73", 
                    "dnf4" = "#009E73", "dnf6" = "#009E73", "dnf7" = "#009E73", "dnf1/dnf2" = "#009E73", 
                    "dnf5/dnf2" = "#009E73", "rdn1" = "#E69F00", "sunn1" = "#E69F00", "sunn4" = "#E69F00")
@@ -379,82 +310,103 @@ df <- function(replicon) {
   pal <- colorRampPalette(c("lightgrey", "wheat", "gold", "orange", "darkorange", "red", "darkred"))(500)
   
   # Generate heatmap
-  heatmap.2(data_matrix, Rowv = TRUE,Colv=TRUE,dendrogram = "row", col = pal, 
+  heatmap1<-heatmap.2(data_matrix, Rowv = TRUE,Colv=TRUE,dendrogram = "row", col = pal, 
             hclustfun = function(d) hclust(d, method = "ward.D2"), trace = "none", 
             scale = "none", cexCol = 1, cexRow = 0.5, key = TRUE, 
             key.xlab = "Rank", key.ylab = NA, tracecol = "black", keysize = 2, 
-            symbreaks = FALSE, key.title = replicon, colCol = col_letters,
-            margins = c(8, 15))
-  
-  
-  
-  # Return the filtered data
-  return(result3)
+            symbreaks = FALSE, key.title = "psymb", colCol = col_letters,
+            margins = c(5, 10))
+  #save the heatmap to an object.
 
-}
+result.psymb.beta <- top5_candidates_crossranked_beta[top5_candidates_crossranked_beta$Location == "psymb", ]
+result.psymb.beta.2 <- result.psymb.beta %>%
+    dplyr::select(-c(1:6)) %>% 
+    dplyr::select(-Description)%>%dplyr::select(-Af)
 
-pdf(file = "../figures/FigS6_description.pdf",width = 6.78, height = 6.78)
-
-
-df("chr")
-df("psyma")
-df("psymb")
-dev.off()
-
-#adding description to the beta heatmap
-pdf(file = "../figures/FigS7_description.pdf",width = 6.78, height = 6.78)
-
-df <- function(replicon) {
-  # Separate Location column into Organism and Replicon
- #top5_candidates_crossranked1  <- top5_candidates_crossranked %>%separate(Location, c("Organism", "Replicon"))
-  
-  # Filter the data for the specified replicon
-  result_beta <- top5_candidates_crossranked_beta[top5_candidates_crossranked_beta$Location == replicon, ]
-
-  # Check if any rows are filtered
-  if (nrow(result_beta) == 0) {
-    stop("No data found for the specified replicon.")
-  }
-  
-  # Remove Description and irrelevant columns
-  result_beta2 <- result_beta %>%
-    select(-c(1:6)) %>%
-    select(-Description)%>% select(-Af)
- 
-  
-  # Convert data to matrix
-  data_matrix_beta <- as.matrix(result_beta2)
-
-  # Reciprocal transformation
-  rownames(data_matrix_beta) <- result_beta$Description
+pval_order<-heatmap1$rowInd
+data_matrix_beta <- as.matrix(result.psymb.beta.2[pval_order,])
+data_matrix_beta <- data_matrix_beta[nrow(data_matrix_beta):1, ]
+rownames(data_matrix_beta)<- rev(rownames(data_matrix)[heatmap1$rowInd])
   
   # Define color palette
-  col_letters <- c("WT" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
+  col_letters <- c("A17" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
                    "nad1" = "#009E73", "dnf1" = "#009E73", "dnf2" = "#009E73", "dnf3" = "#009E73", 
                    "dnf4" = "#009E73", "dnf6" = "#009E73", "dnf7" = "#009E73", "dnf1/dnf2" = "#009E73", 
                    "dnf5/dnf2" = "#009E73", "rdn1" = "#E69F00", "sunn1" = "#E69F00", "sunn4" = "#E69F00")
 
   # Define color palette
 pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))
-  # Generate heatmap
-  heatmap.2(data_matrix_beta, Rowv = TRUE,Colv=TRUE,dendrogram = "row", col = pal, 
+
+heatmap.2(data_matrix_beta, Rowv = FALSE,Colv=TRUE,dendrogram = "none", col = pal, 
             hclustfun = function(d) hclust(d, method = "ward.D2"), trace = "none", 
             scale = "none", cexCol = 1, cexRow = 0.5, key = TRUE, 
             key.xlab = "Beta", key.ylab = NA, tracecol = "black", keysize = 2, 
-            symbreaks = FALSE, key.title = replicon, colCol = col_letters,
-            margins = c(8, 15))
+            symbreaks = FALSE, colCol = col_letters,
+            margins = c(5, 10))
+
+
+##chr
+result.chr <- top5_candidates_crossranked.1[top5_candidates_crossranked.1$Location == "chr", ]
+result.chr.1<- result.chr %>%
+    dplyr::select(-c(1:6)) %>%dplyr::select(-Description)%>%
+    dplyr::select(-Rank_top10)%>% dplyr::select(-Af)
+# Convert data to matrix
+  data_matrix <- as.matrix(result.chr.1)
+
+  # Reciprocal transformation
+  data_matrix <- 1 / data_matrix
+  rownames(data_matrix) <- result.chr$Description
+
+  # Define color palette
+  col_letters <- c("A17" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
+                   "nad1" = "#009E73", "dnf1" = "#009E73", "dnf2" = "#009E73", "dnf3" = "#009E73", 
+                   "dnf4" = "#009E73", "dnf6" = "#009E73", "dnf7" = "#009E73", "dnf1/dnf2" = "#009E73", 
+                   "dnf5/dnf2" = "#009E73", "rdn1" = "#E69F00", "sunn1" = "#E69F00", "sunn4" = "#E69F00")
+
+  # Define color palette
+  pal <- colorRampPalette(c("lightgrey", "wheat", "gold", "orange", "darkorange", "red", "darkred"))(500)
+  
+  # Generate heatmap
+  heatmap1<-heatmap.2(data_matrix, Rowv = TRUE,Colv=TRUE,dendrogram = "row", col = pal, 
+            hclustfun = function(d) hclust(d, method = "ward.D2"), trace = "none", 
+            scale = "none", cexCol = 1, cexRow = 0.5, key = TRUE, 
+            key.xlab = "Rank", key.ylab = NA, tracecol = "black", keysize = 2, 
+            symbreaks = FALSE, key.title = "chr", colCol = col_letters,
+            margins = c(5, 10))
+  #save the heatmap to an object.
+
+result.chr.beta <- top5_candidates_crossranked_beta[top5_candidates_crossranked_beta$Location == "chr", ]
+result.chr.beta.2 <- result.chr.beta %>%
+    dplyr::select(-c(1:6)) %>% 
+    dplyr::select(-Description)%>% dplyr::select(-Af)
+
+pval_order<-heatmap1$rowInd
+#rownames(data_matrix_beta) <- rev(result.psyma$Description)
+#row_order <- rev(rownames(data_matrix)[heatmap1$rowInd])
+data_matrix_beta <- as.matrix(result.chr.beta.2[pval_order,])
+data_matrix_beta <- data_matrix_beta[nrow(data_matrix_beta):1, ]
+
+#rownames(data_matrix_beta) <- rev(result.psyma$Description)
+
+rownames(data_matrix_beta)<- rev(rownames(data_matrix)[heatmap1$rowInd])
+  
+  # Define color palette
+  col_letters <- c("A17" = "#B23214", "hcl" = "#56B4E9", "ipd3" = "#56B4E9", "latd" = "#56B4E9", 
+                   "nad1" = "#009E73", "dnf1" = "#009E73", "dnf2" = "#009E73", "dnf3" = "#009E73", 
+                   "dnf4" = "#009E73", "dnf6" = "#009E73", "dnf7" = "#009E73", "dnf1/dnf2" = "#009E73", 
+                   "dnf5/dnf2" = "#009E73", "rdn1" = "#E69F00", "sunn1" = "#E69F00", "sunn4" = "#E69F00")
+
+  # Define color palette
+pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))
+#rownames(data_matrix_beta) <- result.psyma$Description
+  # Generate heatmap
+  heatmap.2(data_matrix_beta, Rowv = FALSE,Colv=TRUE,dendrogram = "none", col = pal, 
+            hclustfun = function(d) hclust(d, method = "ward.D2"), trace = "none", 
+            scale = "none", cexCol = 1, cexRow = 0.5, key = TRUE, 
+            key.xlab = "Beta", key.ylab = NA, tracecol = "black", keysize = 2, 
+            symbreaks = FALSE, colCol = col_letters,
+            margins = c(5, 10))
   
   
-  
-  # Return the filtered data
-  return(result_beta)
-
-}
-
-df("chr")
-df("psyma")
-df("psymb")
-dev.off()
-
+  dev.off()
 ```
-
