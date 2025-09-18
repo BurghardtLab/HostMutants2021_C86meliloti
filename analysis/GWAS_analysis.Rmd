@@ -16,6 +16,7 @@ require(ggplot2)
 require(RColorBrewer)
 require(gplots)
 require(vegan)
+require(CMplot)
 knitr::opts_chunk$set(message = FALSE)
 ```
 
@@ -409,4 +410,147 @@ pal = colorRampPalette(c('#2166AC',"#89ADD0", '#F7F7F7', '#B2182B'))
   
   
   dev.off()
+```
+
+```{r Code for Manhattan Plot, echo=FALSE}
+data <- read.csv("../data/GWAS_data/p_val_for_plotting.csv")
+head(data)
+colnames(data)
+figures <- "/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini_Liana/GitHub/HostMutants2021_C86meliloti/figures"
+# -----------------------------
+# 0️⃣ Define colors for traits
+colors_16 <- c("#0000ff", "#000000", "#5C5A5A", "#feb300", "#00aeae", "#ffff00", "#F5E4E4", "#ff4600", 
+                "#53a1f0", "#e9c6ac", "#9d22f3", "#3d389a", "#95ef57", "#f311c1", "#0a82f0", "#cd93aa") 
+
+# -----------------------------
+# 1️⃣ Extract trait names from first row (columns 5:20)
+trait_names <- as.character(data[1, 5:20])
+
+# -----------------------------
+# 2️⃣ Remove first row (only contains trait names)
+data_clean <- data[-1, ]
+
+# -----------------------------
+# 3️⃣ Convert trait columns to numeric
+data_clean[, 5:20] <- lapply(data_clean[, 5:20], function(x) as.numeric(as.character(x)))
+
+# Optional: check for NAs
+if(any(is.na(data_clean[, 5:20]))) {
+  warning("Some trait columns contain NA values after conversion.")
+}
+
+# -----------------------------
+# 4️⃣ Assign trait names as column names
+colnames(data_clean)[5:20] <- trait_names
+
+# -----------------------------
+# 5️⃣ Ensure Position is numeric
+data_clean$Position <- as.numeric(as.character(data_clean$Position))
+
+# -----------------------------
+# 6️⃣ Map Chromosome based on SNP names
+data_clean$Chromosome <- ifelse(
+  grepl("chr", data_clean$SNP, ignore.case = TRUE), "chr",
+  ifelse(grepl("psyma", data_clean$SNP, ignore.case = TRUE), "pSymA",
+         ifelse(grepl("psymb", data_clean$SNP, ignore.case = TRUE), "pSymB", NA))
+)
+
+# -----------------------------
+# 7️⃣ Build cmdata for CMplot
+cmdata <- data_clean[, c("SNP", "Chromosome", "Position", trait_names)]
+
+
+# -----------------------------
+# 8️⃣ Plot with CMplot
+CMplot(cmdata,
+       plot.type="m",
+       col="grey",
+       multraits=TRUE,
+       threshold=1e-5,
+       threshold.lty=2,
+       threshold.lwd=1.5,
+       threshold.col="black",
+       amplify=TRUE,
+       chr.den.col=NULL,
+       signal.col=colors_16,
+       signal.cex=1,
+       file="jpg",
+       file.name="man",
+       dpi=300,
+       file.output=TRUE,
+       verbose=TRUE,
+       points.alpha=225,  # integer 0-255
+       legend.ncol=3,
+       legend.pos="middle")
+
+
+
+
+```
+
+
+```{r Code for Q-Q Plot, echo=FALSE}
+data <- read.csv("../data/GWAS_data/p_val_for_plotting.csv")
+head(data)
+colnames(data)
+
+# -----------------------------
+# 0️⃣ Define colors for traits
+colors_16 <- c("#0000ff", "#000000", "#5C5A5A", "#feb300", "#00aeae", "#ffff00", "#F5E4E4", "#ff4600", 
+                "#53a1f0", "#e9c6ac", "#9d22f3", "#3d389a", "#95ef57", "#f311c1", "#0a82f0", "#cd93aa") 
+
+# -----------------------------
+# 1️⃣ Extract trait names from first row (columns 5:20)
+trait_names <- as.character(data[1, 5:20])
+
+# -----------------------------
+# 2️⃣ Remove first row (only contains trait names)
+data_clean <- data[-1, ]
+
+# -----------------------------
+# 3️⃣ Convert trait columns to numeric
+data_clean[, 5:20] <- lapply(data_clean[, 5:20], function(x) as.numeric(as.character(x)))
+
+# Optional: check for NAs
+if(any(is.na(data_clean[, 5:20]))) {
+  warning("Some trait columns contain NA values after conversion.")
+}
+
+# -----------------------------
+# 4️⃣ Assign trait names as column names
+colnames(data_clean)[5:20] <- trait_names
+
+# -----------------------------
+# 5️⃣ Ensure Position is numeric
+data_clean$Position <- as.numeric(as.character(data_clean$Position))
+
+# -----------------------------
+# 6️⃣ Map Chromosome based on SNP names
+data_clean$Chromosome <- ifelse(
+  grepl("chr", data_clean$SNP, ignore.case = TRUE), "chr",
+  ifelse(grepl("psyma", data_clean$SNP, ignore.case = TRUE), "pSymA",
+         ifelse(grepl("psymb", data_clean$SNP, ignore.case = TRUE), "pSymB", NA))
+)
+
+# -----------------------------
+# 7️⃣ Build cmdata for CMplot
+cmdata <- data_clean[, c("SNP", "Chromosome", "Position", trait_names)]
+
+
+CMplot(cmdata,
+       plot.type="q",
+       col=colors_16,
+       multraits=TRUE,
+       conf.int=FALSE,
+       box=FALSE,
+       axis.cex=1,
+       file="jpg",
+       file.name="output_file_qq",  # saves as qq.jpg
+       dpi=300,
+       file.output=TRUE,
+       verbose=TRUE,
+       ylim=c(0,12),
+       width=7,
+       height=7)
+
 ```

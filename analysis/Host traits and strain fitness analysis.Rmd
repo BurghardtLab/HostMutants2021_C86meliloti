@@ -836,13 +836,17 @@ dev.off()
 
 ```{R Code for creating Fig3A,echo=TRUE}
 pdf(file = "../figures/Fig3A.pdf",width = 5.75, height = 12)
-x<- as_tibble(t(fit_median_matrix)) 
-# Choices "latd","ipd3", "nad1","dnf2","dnf3","dnf6","dnf7","sunn4" 
+x<- as_tibble(t(fit_mean_matrix)) 
+ 
 
 GWAS_traits<-tibble(strains=row.names(t(fit_mean_matrix)),latd=x$latd-x$A17,ipd3=x$ipd3-x$A17,nad1=x$nad1-x$A17,dnf2=x$dnf2-x$A17,dnf3=x$dnf3-x$A17,dnf6=x$dnf6-x$A17,dnf7=x$dnf7-x$A17,sunn4=x$sunn4-x$A17,sunn1=x$sunn1-x$A17,rdn1=x$rdn1-x$A17,hcl=x$hcl-x$A17,dnf1=x$dnf1-x$A17,dnf4=x$dnf4-x$A17,dnf5dnf2=x$`dnf5/dnf2`-x$A17,dnf1dnf2=x$`dnf1/dnf2`-x$A17)
 
 write.table (GWAS_traits,file="../tables/Mean_strainfitnessshift.txt",sep = "\t",row.names = FALSE)
 
+# When the trait is just the fitness 
+GWAS_traits_justfitness<-tibble(strains=row.names(t(fit_mean_matrix)),A17=x$A17,latd=x$latd,ipd3=x$ipd3,nad1=x$nad1,dnf2=x$dnf2,dnf3=x$dnf3,dnf6=x$dnf6,dnf7=x$dnf7,sunn4=x$sunn4,sunn1=x$sunn1,rdn1=x$rdn1,hcl=x$hcl,dnf1=x$dnf1,dnf4=x$dnf4,dnf5dnf2=x$`dnf5/dnf2`,dnf1dnf2=x$`dnf1/dnf2`)
+
+write.table (GWAS_traits_justfitness,file="../tables/Mean_strainfitness.txt",sep = "\t",row.names = FALSE)
 
 #Creating the heatmap for the strain fitness shifts
 
@@ -948,5 +952,22 @@ dev.off()
 
 
 ```
+```{R Mapping}
 
+df1 <- read.delim("../data/M843A_vs_A17.paf", header=FALSE, fill=TRUE, sep="\t")
+                # Column mapping for PAF:
+# V1 = query (contig)
+# V2 = query length
+# V3 = query start
+# V4 = query end
+# V5 = strand (+/-)
+# V6 = target (reference)
+# V7 = target length
+# V8 = target start
+# V9 = target end
 
+ggplot(df1, aes(x=V8, y=V3, color=V5)) +
+  geom_point(alpha=0.6) +
+  theme_bw() +
+  labs(x="Reference position", y="Contig position", color="Strand")
+```

@@ -1,0 +1,329 @@
+---
+title: "Mutations in legume symbiosis genes create a complex selective landscape for rhizobial symbionts"
+author:  Sohini Guha, Regina B. Bledsoe, Jeremy Sutherland, Brendan Epstein, Gwendolyn M. Fry, Nevin D. Young, Peter Tiffin, and Liana T. Burghardt
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+Analysis file for "Mutations in legume symbiosis genes create a complex selective landscape for rhizobial symbionts"
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#Load packages needed. Tidyverse include dplyer
+require(tidyverse)
+require(ggpubr)
+require(ggplot2)
+require(RColorBrewer)
+require(gplots)
+require(vegan)
+knitr::opts_chunk$set(message = FALSE)
+```
+
+```{r setup,Import the data include=FALSE}
+##Importing the GWAS files
+
+#psymb
+merged_psyma_ipd3.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_ipd3.tsv", header=TRUE)
+merged_psyma_latd.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_latd.tsv",header=TRUE)
+merged_psyma_hcl.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_hcl.tsv",header=TRUE)
+merged_psyma_dnf1.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf1.tsv",header=TRUE)
+merged_psyma_dnf2.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf2.tsv",header=TRUE)
+merged_psyma_dnf3.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf3.tsv",header=TRUE)
+merged_psyma_dnf4.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf4.tsv",header=TRUE)
+merged_psyma_dnf6.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf6.tsv",header=TRUE)
+merged_psyma_dnf7.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf7.tsv",header=TRUE)
+merged_psyma_dnf1dnf2.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf1dnf2.tsv",header=TRUE)
+merged_psyma_dnf5dnf2.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.tsv",header=TRUE)
+merged_psyma_nad1.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_nad1.tsv",header=TRUE)
+merged_psyma_rdn1.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_rdn1.tsv",header=TRUE)
+merged_psyma_sunn1.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_sunn1.tsv",header=TRUE)
+merged_psyma_sunn4.change <- read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_sunn4.tsv",header=TRUE)
+merged_psyma_A17<-read.delim("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_A17.tsv",header=TRUE)
+
+#psymb
+merged_psymb_ipd3.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_ipd3.tsv", header=TRUE)
+merged_psymb_latd.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_latd.tsv",header=TRUE)
+merged_psymb_hcl.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_hcl.tsv",header=TRUE)
+merged_psymb_dnf1.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf1.tsv",header=TRUE)
+merged_psymb_dnf2.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf2.tsv",header=TRUE)
+merged_psymb_dnf3.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf3.tsv",header=TRUE)
+merged_psymb_dnf4.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf4.tsv",header=TRUE)
+merged_psymb_dnf6.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf6.tsv",header=TRUE)
+merged_psymb_dnf7.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf7.tsv",header=TRUE)
+merged_psymb_dnf1dnf2.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf1dnf2.tsv",header=TRUE)
+merged_psymb_dnf5dnf2.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf5dnf2.tsv",header=TRUE)
+merged_psymb_nad1.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_nad1.tsv",header=TRUE)
+merged_psymb_rdn1.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_rdn1.tsv",header=TRUE)
+merged_psymb_sunn1.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_sunn1.tsv",header=TRUE)
+merged_psymb_sunn4.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_sunn4.tsv",header=TRUE)
+merged_psymb_A17<-read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_A17.tsv",header=TRUE)
+
+#psymbomosome 
+merged_chr_ipd3.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_ipd3.tsv", header=TRUE)
+merged_chr_latd.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_latd.tsv",header=TRUE)
+merged_chr_hcl.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_hcl.tsv",header=TRUE)
+merged_chr_dnf1.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf1.tsv",header=TRUE)
+merged_chr_dnf2.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf2.tsv",header=TRUE)
+merged_chr_dnf3.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf3.tsv",header=FALSE)
+merged_chr_dnf4.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf4.tsv",header=TRUE)
+merged_chr_dnf6.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf6.tsv",header=TRUE)
+merged_chr_dnf7.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf7.tsv",header=TRUE)
+merged_chr_dnf1dnf2.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf1dnf2.tsv",header=TRUE)
+merged_chr_dnf5dnf2.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf5dnf2.tsv",header=TRUE)
+merged_chr_nad1.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_nad1.tsv",header=TRUE)
+merged_chr_rdn1.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_rdn1.tsv",header=TRUE)
+merged_chr_sunn1.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_sunn1.tsv",header=TRUE)
+merged_chr_sunn4.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_sunn4.tsv",header=TRUE)
+merged_chr_A17<-read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_A17.tsv",header=TRUE)
+
+
+
+```
+
+```{r Code for creating the tables for the top5 candidates: TableS6 and Table2, echo=FALSE}
+# List of file paths
+
+ file_paths <- c("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_ipd3.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_latd.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_hcl.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf2.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf3.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf4.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf6.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf7.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_nad1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_rdn1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_sunn1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_sunn4.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_ipd3.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_latd.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_hcl.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf2.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf3.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf4.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf6.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf7.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf1dnf2.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf5dnf2.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_nad1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_rdn1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_sunn1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_sunn4.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_ipd3.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_latd.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_hcl.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf1.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf2.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf3.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf4.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf6.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf7.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf1dnf2.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf5dnf2.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_nad1.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_rdn1.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_sunn1.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_sunn4.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_A17.tsv")  
+# List to store data frames
+data_list <- list()
+
+read_and_store_data <- function(file_paths) {
+  data <- read.delim(file_paths, header = TRUE)
+  return(data)
+}
+
+# Read data frames and store in the list
+data_list <- lapply(file_paths, read_and_store_data)
+#top5_candidates
+
+# Use lapply to apply the function to each data frame
+#all_top_candidates_subsets <- lapply(data_list, get_top_candidates_subset_and_combine)
+# Combine all subsets into a single data frame
+#combined_data <- do.call(rbind, all_top_candidates_subsets)
+#seperate the 'chr' col
+#combined_top10_candidates_data<-combined_data%>% separate(chr,c('Organism','Replicon'))
+#Table for Fig S6,S7
+
+#select the top5 for fig6, supplement annotated heatmap and the crossranked tables
+#top5_candidates<-subset(combined_top10_candidates_data,pr>=1 & pr<=5)
+get_top_candidates_pr <- function(df) {
+  df %>%
+    filter(pr >= 1 & pr <= 5) %>%        # top 5 per trait
+    distinct(ld_snps, .keep_all = TRUE) # remove duplicate SNPs
+}
+
+# Function to get top 5 candidates for Table 3 based on PRS + significance
+get_top_candidates_prs <- function(df) {
+  df %>%
+    filter(prs >= 1 & prs <= 5) %>%      # top 5 cross-ranked
+    filter(p_lrt <= 1e-5) %>%            # significant SNPs
+    distinct(ld_snps, .keep_all = TRUE)  # remove duplicate SNPs
+}
+
+# Apply to your list of data frames
+top_candidates_list_pr <- lapply(data_list, get_top_candidates_pr)
+top_candidates_list_prs <- lapply(data_list, get_top_candidates_prs)
+
+# Combine all traits
+combined_top5 <- bind_rows(top_candidates_list_pr)
+combined_top5_prs <- bind_rows(top_candidates_list_prs)
+#TableS7
+write.table(combined_top5,file="../Tables/strainfitness/top5candidates.tsv",sep = "\t",row.names = FALSE) 
+
+
+#Table3
+write.table(combined_top5_prs,file="../Tables/strainfitness/top5candidates_prs.tsv",sep = "\t",row.names = FALSE)
+```
+
+```{r Code for manhattanplots, echo=FALSE}
+library(dplyr)
+library(qqman)
+library(ggplot2)
+library(scales)  # for hue_pal()
+
+
+
+
+
+#template
+#data <- read.csv('p_val_for_plotting.csv')
+#head(data)
+#colnames(data)
+
+#colors_16 = c("#0000ff", "#000000", "#5C5A5A", "#feb300", "#00aeae", "#ffff00", "#F5E4E4", "#ff4600", 
+             # "#53a1f0", "#e9c6ac", "#9d22f3", "#3d389a", "#95ef57", "#f311c1", "#0a82f0", "#cd93aa") 
+
+#CMplot(data[,1:19], plot.type="m",col="grey",multraits=TRUE,
+       #threshold=c(1e-5),threshold.lty=c(2), 
+      # threshold.lwd=c(1.5), threshold.col=c("black"),amplify=TRUE,
+       #chr.den.col=NULL, signal.col=colors_16 ,signal.cex=1, 
+       #file="jpg",file.name="man",dpi=300,file.output=TRUE,verbose=TRUE,
+      # points.alpha=225,legend.ncol=3, legend.pos="middle")
+
+#CMplot(data,plot.type="q",col=colors_16,multraits=TRUE,
+      # conf.int=FALSE,box=FALSE,axis.cex=1,file="jpg",file.name="qq",dpi=300,file.output=TRUE,
+       #verbose=TRUE,ylim=c(0,12),width=7,height=7)
+
+
+
+# ===== CONFIG =====
+p_cutoff <-1e-6
+gap_size <- 1e6
+output_dir <- "../Figures/strainfitness/manhattan_plots"
+dir.create(output_dir, showWarnings = FALSE)
+
+# ===== Function: Prepare data per genotype =====
+prepare_manhattan <- function(df, trait_name) {
+    chr_df   <- df %>% filter(replicon == "chr")
+    psyma_df <- df %>% filter(replicon == "psyma")
+    psymb_df <- df %>% filter(replicon == "psymb")
+    
+    chr_df$CHR   <- 1
+    psyma_df$CHR <- 2
+    psymb_df$CHR <- 3
+    
+    chr_df   <- chr_df %>% transmute(SNP = ldg, CHR, BP = ps, P = p_lrt)
+    psyma_df <- psyma_df %>% transmute(SNP = ldg, CHR, BP = ps, P = p_lrt)
+    psymb_df <- psymb_df %>% transmute(SNP = ldg, CHR, BP = ps, P = p_lrt)
+    
+    df_out <- bind_rows(chr_df, psyma_df, psymb_df) %>%
+        filter(!is.na(BP), !is.na(P)) %>%
+        distinct(CHR, BP, .keep_all = TRUE)
+    
+    chr_max   <- max(df_out$BP[df_out$CHR==1])
+    psyma_max <- max(df_out$BP[df_out$CHR==2])
+    
+    df_out <- df_out %>%
+        mutate(BP_plot = case_when(
+            CHR == 1 ~ BP,
+            CHR == 2 ~ BP + chr_max + gap_size,
+            CHR == 3 ~ BP + chr_max + gap_size + psyma_max + gap_size
+        ))
+    
+    df_out$trait <- trait_name
+    return(df_out)
+}
+
+# ===== Prepare data for all genotypes =====
+genotype_names <- names(merged_trait_list)
+
+all_data <- lapply(genotype_names, function(name) {
+    prepare_manhattan(merged_trait_list[[name]], name)
+}) %>% bind_rows()
+
+# ===== Compute chromosome midpoints for x-axis =====
+chr_max   <- max(all_data$BP[all_data$CHR == 1])
+psyma_max <- max(all_data$BP[all_data$CHR == 2])
+psymb_max <- max(all_data$BP[all_data$CHR == 3])
+
+offsets <- c(0, chr_max + gap_size, chr_max + gap_size + psyma_max + gap_size)
+midpoints <- c(
+    chr_max / 2,
+    offsets[2] + psyma_max / 2,
+    offsets[3] + psymb_max / 2
+)
+labels <- c("chr", "psymA", "psymB")
+
+# ===== Generate color palette =====
+all_traits <- unique(all_data$trait)
+color_vals <- hue_pal()(length(all_traits))   # handles 20+ genotypes
+names(color_vals) <- all_traits
+color_vals["A17"] <- "black"                 # A17 always black
+
+# ===== Overlay Manhattan Plot =====
+all_data$logP <- -log10(all_data$P)
+
+overlay_plot <- ggplot(all_data, aes(x=BP_plot, y=logP, color=trait)) +
+    # Below cutoff: grey
+    geom_point(data = subset(all_data, logP <= -log10(p_cutoff)),
+               aes(x=BP_plot, y=logP),
+               color="grey70", alpha=0.6, size=0.7) +
+    # Above cutoff: colored by trait
+    geom_point(data = subset(all_data, logP > -log10(p_cutoff)),
+               aes(x=BP_plot, y=logP),
+               size=1.2, alpha=0.9) +
+    geom_hline(yintercept=-log10(p_cutoff), linetype="dashed", color="black") +
+    scale_x_continuous(breaks = midpoints, labels = labels) +
+    scale_color_manual(values = color_vals) +
+    labs(x=NULL, y="-log10(P)", title="Overlayed Manhattan Plot") +
+    theme_minimal(base_size = 14) +
+    theme(panel.grid = element_blank(),
+          axis.line = element_line(color="black"),
+          axis.ticks.x = element_blank(),
+          legend.position = "right")
+
+# ===== Save =====
+pdf(file.path(output_dir, "manhattan_overlay.pdf"), width=12, height=6)
+print(overlay_plot)
+dev.off()
+```
+
+```{r Code for effect size comparison, echo=FALSE}
+ library(ggplot2)
+ library(ggrepel)
+ 
+ # Assume your columns are: # beta_reference: effect size in reference (A17)
+ # beta_mutant: effect size in mutant
+ # Gene: candidate gene name
+library(ggrepel)
+# 5. Split Reference (A17) vs Mutants
+# -----------------------------
+reference_snps <- combined_top5 %>% filter(run == "A17")
+mutant_snps    <- combined_top5 %>% filter(run != "A17")
+# Common vs unique SNPs
+# -----------------------------
+# 6. Identify common and unique SNPs
+# -----------------------------
+# Common SNPs (present in both)
+common_snps <- inner_join(mutant_snps, reference_snps,
+                          by = "ld_snps",
+                          suffix = c("_mutant", "_reference"),
+                          relationship = "many-to-many")  # allow duplicates
+write.table(common_snps, file = "../Tables/strainfitness/common_snps.tsv",
+            sep = "\t", row.names = FALSE)
+write.table(reference_snps %>% filter(ld_snps %in% unique_reference),
+            file = "../Tables/strainfitness/unique_reference_snps.tsv",
+            sep = "\t", row.names = FALSE)
+write.table(mutant_snps %>% filter(ld_snps %in% unique_mutant),
+            file = "../Tables/strainfitness/unique_mutant_snps.tsv",
+            sep = "\t", row.names = FALSE)
+
+
+
+library(ggplot2)
+library(ggrepel)  # for non-overlapping labels with boxes
+
+# Flag SNPs with stronger effect in mutant
+common_snps$highlight <- common_snps$beta_mutant > common_snps$beta_reference
+
+ggplot(common_snps, aes(x = beta_reference, y = beta_mutant)) +
+    # Background SNPs
+    geom_point(data = subset(common_snps, !highlight),
+               color = "grey80", size = 1.5, alpha = 0.6) +
+    # Darker points for SNPs stronger in mutant
+    geom_point(data = subset(common_snps, highlight),
+               color = "grey30", size = 1.8, alpha = 0.9) +
+    # Diagonal y=x line
+    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black") +
+    # Labels in grey boxes with rounded edges
+    geom_label_repel(aes(label = run_mutant),  # replace with your column name
+                     data = subset(common_snps, highlight),
+                     fill = "grey80",      # background color of the label
+                     color = "black",      # text color
+                     size = 3,
+                     label.padding = unit(0.25, "lines"),  # padding inside box
+                     label.r = unit(0.15, "lines"),        # rounded corners
+                     box.padding = 0.5,
+                     max.overlaps = 20) +
+    labs(
+        title = "Mutant vs Reference SNP Effect Sizes",
+        x = "Effect size in A17",
+        y = "Effect size in mutant lines"
+    ) +
+    theme_minimal() +
+    theme(
+        text = element_text(size = 12),
+        plot.title = element_text(hjust = 0.5)
+    )
+
+```
