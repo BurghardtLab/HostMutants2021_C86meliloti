@@ -1,0 +1,8 @@
+Category	Count_ld_group
+Total ld_group in strainfitness	112
+Total ld_group in strainfitnessshift	113
+Common_between_hosts_strainfitness	13
+Unique_to_mutants_strainfitness	99
+Unique_to_strainfitness_wrt_strainfitnessshift	94
+Unique_to_strainfitnessshift_wrt_strainfitness	95
+Common_between_strainfitness_and_shift	18

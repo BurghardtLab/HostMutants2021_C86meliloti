@@ -1,11 +1,9 @@
 ---
-title: "Mutations in legume symbiosis genes create a complex selective landscape for rhizobial symbionts"
-author:  Sohini Guha, Regina B. Bledsoe, Jeremy Sutherland, Brendan Epstein, Gwendolyn M. Fry, Nevin D. Young, Peter Tiffin, and Liana T. Burghardt
+title: "Mutations in legume genes that influence symbiosis create a complex selective landscape for rhizobial symbionts"
+author:  Sohini Guha, Regina B. Bledsoe, Jeremy Sutherland, Brendan Epstein, Gwendolyn M. Fry, Vikram Venugopal, Siva Sankari, Alejandra Gil Polo1, Garrett Levin, Barney Geddes, Nevin D. Young, Peter Tiffin, and Liana T. Burghardt
 date: "`r Sys.Date()`"
 output: html_document
 ---
-
-Analysis file for "Mutations in legume symbiosis genes create a complex selective landscape for rhizobial symbionts"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -16,6 +14,7 @@ require(ggplot2)
 require(RColorBrewer)
 require(gplots)
 require(vegan)
+require(CMplot)
 knitr::opts_chunk$set(message = FALSE)
 ```
 
@@ -58,7 +57,7 @@ merged_psymb_sunn1.change <- read.delim("../data/GWAS_data/annotation1/merged_ps
 merged_psymb_sunn4.change <- read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_sunn4.tsv",header=TRUE)
 merged_psymb_A17<-read.delim("../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_A17.tsv",header=TRUE)
 
-#psymbomosome 
+#chromosome 
 merged_chr_ipd3.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_ipd3.tsv", header=TRUE)
 merged_chr_latd.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_latd.tsv",header=TRUE)
 merged_chr_hcl.change <- read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_hcl.tsv",header=TRUE)
@@ -83,7 +82,7 @@ merged_chr_A17<-read.delim("../data/GWAS_data/annotation1/merged_chr_subset_LD_u
 ```{r Code for creating the tables for the top5 candidates: TableS6 and Table2, echo=FALSE}
 # List of file paths
 
- file_paths <- c("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_ipd3.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_latd.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_hcl.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf2.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf3.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf4.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf6.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf7.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_nad1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_rdn1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_sunn1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_sunn4.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_ipd3.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_latd.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_hcl.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf2.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf3.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf4.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf6.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf7.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf1dnf2.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf5dnf2.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_nad1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_rdn1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_sunn1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_sunn4.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_ipd3.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_latd.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_hcl.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf1.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf2.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf3.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf4.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf6.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf7.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf1dnf2.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf5dnf2.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_nad1.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_rdn1.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_sunn1.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_sunn4.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_A17.tsv")  
+ file_paths <- c("../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_ipd3.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_latd.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_hcl.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf2.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf3.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf4.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf6.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf7.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf1dnf2.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_nad1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_rdn1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_sunn1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_sunn4.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_ipd3.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_latd.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_hcl.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf2.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf3.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf4.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf6.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf7.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf1dnf2.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf5dnf2.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_nad1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_rdn1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_sunn1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_sunn4.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_ipd3.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_latd.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_hcl.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf1.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf2.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf3.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf4.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf6.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf7.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf1dnf2.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf5dnf2.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_nad1.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_rdn1.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_sunn1.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_sunn4.tsv","../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_A17.tsv")  
 # List to store data frames
 data_list <- list()
 
@@ -133,132 +132,13 @@ write.table(combined_top5,file="../Tables/strainfitness/top5candidates.tsv",sep 
 
 #Table3
 write.table(combined_top5_prs,file="../Tables/strainfitness/top5candidates_prs.tsv",sep = "\t",row.names = FALSE)
+
+
 ```
 
-```{r Code for manhattanplots, echo=FALSE}
-library(dplyr)
-library(qqman)
-library(ggplot2)
-library(scales)  # for hue_pal()
 
 
-
-
-
-#template
-#data <- read.csv('p_val_for_plotting.csv')
-#head(data)
-#colnames(data)
-
-#colors_16 = c("#0000ff", "#000000", "#5C5A5A", "#feb300", "#00aeae", "#ffff00", "#F5E4E4", "#ff4600", 
-             # "#53a1f0", "#e9c6ac", "#9d22f3", "#3d389a", "#95ef57", "#f311c1", "#0a82f0", "#cd93aa") 
-
-#CMplot(data[,1:19], plot.type="m",col="grey",multraits=TRUE,
-       #threshold=c(1e-5),threshold.lty=c(2), 
-      # threshold.lwd=c(1.5), threshold.col=c("black"),amplify=TRUE,
-       #chr.den.col=NULL, signal.col=colors_16 ,signal.cex=1, 
-       #file="jpg",file.name="man",dpi=300,file.output=TRUE,verbose=TRUE,
-      # points.alpha=225,legend.ncol=3, legend.pos="middle")
-
-#CMplot(data,plot.type="q",col=colors_16,multraits=TRUE,
-      # conf.int=FALSE,box=FALSE,axis.cex=1,file="jpg",file.name="qq",dpi=300,file.output=TRUE,
-       #verbose=TRUE,ylim=c(0,12),width=7,height=7)
-
-
-
-# ===== CONFIG =====
-p_cutoff <-1e-6
-gap_size <- 1e6
-output_dir <- "../Figures/strainfitness/manhattan_plots"
-dir.create(output_dir, showWarnings = FALSE)
-
-# ===== Function: Prepare data per genotype =====
-prepare_manhattan <- function(df, trait_name) {
-    chr_df   <- df %>% filter(replicon == "chr")
-    psyma_df <- df %>% filter(replicon == "psyma")
-    psymb_df <- df %>% filter(replicon == "psymb")
-    
-    chr_df$CHR   <- 1
-    psyma_df$CHR <- 2
-    psymb_df$CHR <- 3
-    
-    chr_df   <- chr_df %>% transmute(SNP = ldg, CHR, BP = ps, P = p_lrt)
-    psyma_df <- psyma_df %>% transmute(SNP = ldg, CHR, BP = ps, P = p_lrt)
-    psymb_df <- psymb_df %>% transmute(SNP = ldg, CHR, BP = ps, P = p_lrt)
-    
-    df_out <- bind_rows(chr_df, psyma_df, psymb_df) %>%
-        filter(!is.na(BP), !is.na(P)) %>%
-        distinct(CHR, BP, .keep_all = TRUE)
-    
-    chr_max   <- max(df_out$BP[df_out$CHR==1])
-    psyma_max <- max(df_out$BP[df_out$CHR==2])
-    
-    df_out <- df_out %>%
-        mutate(BP_plot = case_when(
-            CHR == 1 ~ BP,
-            CHR == 2 ~ BP + chr_max + gap_size,
-            CHR == 3 ~ BP + chr_max + gap_size + psyma_max + gap_size
-        ))
-    
-    df_out$trait <- trait_name
-    return(df_out)
-}
-
-# ===== Prepare data for all genotypes =====
-genotype_names <- names(merged_trait_list)
-
-all_data <- lapply(genotype_names, function(name) {
-    prepare_manhattan(merged_trait_list[[name]], name)
-}) %>% bind_rows()
-
-# ===== Compute chromosome midpoints for x-axis =====
-chr_max   <- max(all_data$BP[all_data$CHR == 1])
-psyma_max <- max(all_data$BP[all_data$CHR == 2])
-psymb_max <- max(all_data$BP[all_data$CHR == 3])
-
-offsets <- c(0, chr_max + gap_size, chr_max + gap_size + psyma_max + gap_size)
-midpoints <- c(
-    chr_max / 2,
-    offsets[2] + psyma_max / 2,
-    offsets[3] + psymb_max / 2
-)
-labels <- c("chr", "psymA", "psymB")
-
-# ===== Generate color palette =====
-all_traits <- unique(all_data$trait)
-color_vals <- hue_pal()(length(all_traits))   # handles 20+ genotypes
-names(color_vals) <- all_traits
-color_vals["A17"] <- "black"                 # A17 always black
-
-# ===== Overlay Manhattan Plot =====
-all_data$logP <- -log10(all_data$P)
-
-overlay_plot <- ggplot(all_data, aes(x=BP_plot, y=logP, color=trait)) +
-    # Below cutoff: grey
-    geom_point(data = subset(all_data, logP <= -log10(p_cutoff)),
-               aes(x=BP_plot, y=logP),
-               color="grey70", alpha=0.6, size=0.7) +
-    # Above cutoff: colored by trait
-    geom_point(data = subset(all_data, logP > -log10(p_cutoff)),
-               aes(x=BP_plot, y=logP),
-               size=1.2, alpha=0.9) +
-    geom_hline(yintercept=-log10(p_cutoff), linetype="dashed", color="black") +
-    scale_x_continuous(breaks = midpoints, labels = labels) +
-    scale_color_manual(values = color_vals) +
-    labs(x=NULL, y="-log10(P)", title="Overlayed Manhattan Plot") +
-    theme_minimal(base_size = 14) +
-    theme(panel.grid = element_blank(),
-          axis.line = element_line(color="black"),
-          axis.ticks.x = element_blank(),
-          legend.position = "right")
-
-# ===== Save =====
-pdf(file.path(output_dir, "manhattan_overlay.pdf"), width=12, height=6)
-print(overlay_plot)
-dev.off()
-```
-
-```{r Code for effect size comparison, echo=FALSE}
+```{r Code for finding common and unique SNPS, echo=FALSE}
  library(ggplot2)
  library(ggrepel)
  
@@ -268,62 +148,277 @@ dev.off()
 library(ggrepel)
 # 5. Split Reference (A17) vs Mutants
 # -----------------------------
+# Split data by host type
 reference_snps <- combined_top5 %>% filter(run == "A17")
 mutant_snps    <- combined_top5 %>% filter(run != "A17")
-# Common vs unique SNPs
-# -----------------------------
-# 6. Identify common and unique SNPs
-# -----------------------------
-# Common SNPs (present in both)
-common_snps <- inner_join(mutant_snps, reference_snps,
-                          by = "ld_snps",
-                          suffix = c("_mutant", "_reference"),
-                          relationship = "many-to-many")  # allow duplicates
-write.table(common_snps, file = "../Tables/strainfitness/common_snps.tsv",
-            sep = "\t", row.names = FALSE)
-write.table(reference_snps %>% filter(ld_snps %in% unique_reference),
-            file = "../Tables/strainfitness/unique_reference_snps.tsv",
-            sep = "\t", row.names = FALSE)
-write.table(mutant_snps %>% filter(ld_snps %in% unique_mutant),
+
+# Find common SNPs (present in both A17 and at least one mutant host)
+common_ids <- intersect(reference_snps$ld_snps, mutant_snps$ld_snps)
+
+# Filter only those from the combined dataset
+common_snps <- combined_top5 %>% 
+  filter(ld_snps %in% common_ids)
+
+# Write to file
+write.table(common_snps,
+            file = "../Tables/strainfitness/common_snps.tsv",
+            sep = "\t", row.names = FALSE, quote = FALSE)
+
+##Unique SNPs per host mutant
+
+unique_mutant_snps <- anti_join(
+  mutant_snps, reference_snps,
+  by = "ld_snps"
+)
+
+# Write out the result
+dir.create("../Tables/strainfitness", recursive = TRUE, showWarnings = FALSE)
+write.table(unique_mutant_snps,
             file = "../Tables/strainfitness/unique_mutant_snps.tsv",
-            sep = "\t", row.names = FALSE)
+            sep = "\t", row.names = FALSE, quote = FALSE)
 
 
+##Unique SNPs to strain fitness and strain fitness shift
+df1 <- read.table("../Tables/strainfitness/top5candidates.tsv", sep="\t", header=TRUE)
+df1<-df1%>% filter(run != "A17")
+df2 <- read.table("../Tables/TableS6.tsv", sep="\t", header=TRUE)
+df2<-df2%>% filter(run != "A17")
 
-library(ggplot2)
-library(ggrepel)  # for non-overlapping labels with boxes
+# Unique to df1
+unique_df1 <- anti_join(df1, df2, by = "ld_snps")
 
-# Flag SNPs with stronger effect in mutant
-common_snps$highlight <- common_snps$beta_mutant > common_snps$beta_reference
+# Unique to df2
+unique_df2 <- anti_join(df2, df1, by = "ld_snps")
 
-ggplot(common_snps, aes(x = beta_reference, y = beta_mutant)) +
-    # Background SNPs
-    geom_point(data = subset(common_snps, !highlight),
-               color = "grey80", size = 1.5, alpha = 0.6) +
-    # Darker points for SNPs stronger in mutant
-    geom_point(data = subset(common_snps, highlight),
-               color = "grey30", size = 1.8, alpha = 0.9) +
-    # Diagonal y=x line
-    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black") +
-    # Labels in grey boxes with rounded edges
-    geom_label_repel(aes(label = run_mutant),  # replace with your column name
-                     data = subset(common_snps, highlight),
-                     fill = "grey80",      # background color of the label
-                     color = "black",      # text color
-                     size = 3,
-                     label.padding = unit(0.25, "lines"),  # padding inside box
-                     label.r = unit(0.15, "lines"),        # rounded corners
-                     box.padding = 0.5,
-                     max.overlaps = 20) +
-    labs(
-        title = "Mutant vs Reference SNP Effect Sizes",
-        x = "Effect size in A17",
-        y = "Effect size in mutant lines"
-    ) +
-    theme_minimal() +
-    theme(
-        text = element_text(size = 12),
-        plot.title = element_text(hjust = 0.5)
+dir.create("../Tables/strainfitness", recursive = TRUE, showWarnings = FALSE)
+
+write.table(unique_df1,
+            file = "../Tables/strainfitness/unique_in_strainfitness.tsv",
+            sep = "\t", row.names = FALSE, quote = FALSE)
+
+write.table(unique_df2,
+            file = "../Tables/strainfitness/unique_in_strainfitnessshift.tsv",
+            sep = "\t", row.names = FALSE, quote = FALSE)
+
+
+common_snps.1 <- inner_join(df1, df2, by = "ld_snps")
+common_snps.1 <- df1 %>% 
+  filter(ld_snps %in% df2$ld_snps)
+write.table(common_snps.1,
+             file = "../Tables/strainfitness/common_snps_strainfitness_strainfitnessshift.tsv",
+            sep = "\t", row.names = FALSE, quote = FALSE)
+# Count SNPs in each category
+count_common_host      <- nrow(common_snps)
+count_unique_mutant    <- nrow(unique_mutant_snps)
+count_unique_df1       <- nrow(unique_df1)
+count_unique_df2       <- nrow(unique_df2)
+count_common_strainfit <- nrow(common_snps.1)
+
+# NEW: Total SNP counts in each dataset (common + unique)
+count_total_df1 <- nrow(df1)
+count_total_df2 <- nrow(df2)
+
+# Combine into a summary table
+counts_summary <- data.frame(
+  Category = c("Common_between_hosts_strainfitness",
+               "Unique_to_mutants_strainfitness",
+               "Unique_to_strainfitness_wrt_straifitnessshift",
+               "Unique_to_strainfitnessshift_wrt_strainfitness",
+               "Common_between_strainfitness_and_shift",
+               "Total_strainfitness_SNPs",
+               "Total_strainfitnessshift_SNPs"),
+  Count = c(count_common_host,
+            count_unique_mutant,
+            count_unique_df1,
+            count_unique_df2,
+            count_common_strainfit,
+            count_total_df1,
+            count_total_df2)
+)
+
+# Print to console
+print(counts_summary)
+
+# Write to file
+write.table(counts_summary,
+            file = "../Tables/strainfitness/snp_counts_summary.tsv",
+            sep = "\t", row.names = FALSE, quote = FALSE)
+library(dplyr)
+# Total ld_groups in strain fitness
+total_ld_df1 <- df1 %>% summarise(Total_ld_group = n_distinct(ld_group)) %>% pull()
+
+# Total ld_groups in strain fitness shift
+total_ld_df2 <- df2 %>% summarise(Total_ld_group = n_distinct(ld_group)) %>% pull()
+
+# Print results
+cat("Total ld_groups in strain fitness (df1):", total_ld_df1, "\n")
+cat("Total ld_groups in strain fitness shift (df2):", total_ld_df2, "\n")
+# 1. Common SNPs between hosts
+count_ld_common_host <- common_snps %>% summarise(Count_ld_group = n_distinct(ld_group)) %>% pull()
+
+# 2. Unique SNPs in mutant hosts
+count_ld_unique_mutant <- unique_mutant_snps %>% summarise(Count_ld_group = n_distinct(ld_group)) %>% pull()
+
+# 3. Unique to df1 (strainfitness wrt shift)
+count_ld_unique_df1 <- unique_df1 %>% summarise(Count_ld_group = n_distinct(ld_group)) %>% pull()
+
+# 4. Unique to df2 (strainfitness shift wrt df1)
+count_ld_unique_df2 <- unique_df2 %>% summarise(Count_ld_group = n_distinct(ld_group)) %>% pull()
+
+# 5. Common between df1 and df2
+count_ld_common_strainfit <- common_snps.1 %>% summarise(Count_ld_group = n_distinct(ld_group)) %>% pull()
+
+# Combine counts into a summary table
+ld_group_summary <- data.frame(
+  Category = c("Total ld_group in strainfitness","Total ld_group in strainfitnessshift","Common_between_hosts_strainfitness",
+               "Unique_to_mutants_strainfitness",
+               "Unique_to_strainfitness_wrt_strainfitnessshift",
+               "Unique_to_strainfitnessshift_wrt_strainfitness",
+               "Common_between_strainfitness_and_shift"),
+  Count_ld_group = c(total_ld_df1,total_ld_df2,count_ld_common_host,
+                     count_ld_unique_mutant,
+                     count_ld_unique_df1,
+                     count_ld_unique_df2,
+                     count_ld_common_strainfit)
+)
+
+# Print to console
+print(ld_group_summary)
+
+# Write to file
+write.table(ld_group_summary,
+            file = "../Tables/strainfitness/ld_group_counts_summary.tsv",
+            sep = "\t", row.names = FALSE, quote = FALSE)
+
+```
+
+```{r Code for manhattanplots for paper, echo=FALSE}
+
+library(dplyr)
+library(tidyr)
+
+data_list_named <- Map(function(df, file) {
+    df <- df %>%
+        mutate(
+            Chromosome = sapply(strsplit(chr, "-"), `[`, 2),  # extract part after '-'
+            Position = ldg                                      # rename ldg to Position
+        )
+     
+     df$Trait <- gsub(".*_trait_|\\.tsv$", "", basename(file))  # extract trait from filename
+    return(df)
+ }, data_list, file_paths)
+
+
+ combined_gwas <- bind_rows(data_list_named)
+
+# Now select and pivot
+gwas_wide <- combined_gwas %>%
+    dplyr::select(ldg, Chromosome, ps, Trait, p_lrt) %>%  # use actual column names
+   distinct() %>% pivot_wider(
+         names_from = Trait,
+        values_from = p_lrt,
     )
+ # Optional: rename ldg to LD_group
+gwas_wide <- gwas_wide %>% rename(SNP = ldg, Position=ps)
+desired_order <- c("Chromosome","SNP", "Position",
+                   "A17", "dnf1", "dnf1dnf2", "dnf2", "dnf3", "dnf4",
+                   "dnf5dnf2", "dnf6", "dnf7",
+                   "hcl", "ipd3", "latd", "nad1", "rdn1", "sunn1", "sunn4")
+
+gwas_wide <- gwas_wide[, desired_order]
+gwas_wide$Chromosome <- factor(gwas_wide$Chromosome,
+                               levels = c("chr", "pSymA", "pSymB"))
+
+# (Optional) Check to confirm
+levels(gwas_wide$Chromosome)
+
+ # Check result
+head(gwas_wide)
+colnames(gwas_wide)
+figures <- "/Users/sohiniguha/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/Sohini_Liana/GitHub/HostMutants2021_C86meliloti/strainfitness/figures"
+# -----------------------------
+# 0️⃣ Define colors for traits
+colors_16 <- c("#0000ff", "#000000", "#5C5A5A", "#feb300", "#00aeae", "#ffff00", "#F5E4E4", "#ff4600", 
+                "#53a1f0", "#e9c6ac", "#9d22f3", "#3d389a", "#95ef57", "#f311c1", "#0a82f0", "#cd93aa") 
+
+# -----------------------------
+# 1️⃣ Extract trait names from first row (columns 5:20)
+trait_names <- colnames(gwas_wide)[4:19]
+
+# -----------------------------
+# 2️⃣ Remove first row (only contains trait names)
+data_clean <- gwas_wide[-1, ]
+
+# -----------------------------
+# 3️⃣ Convert trait columns to numeric
+data_clean[, 4:19] <- lapply(data_clean[, 4:19], function(x) as.numeric(as.character(x)))
+
+# Optional: check for NAs
+if(any(is.na(data_clean[, 4:19]))) {
+  warning("Some trait columns contain NA values after conversion.")
+}
+
+# -----------------------------
+# 4️⃣ Assign trait names as column names
+colnames(data_clean)[4:19] <- trait_names
+
+# -----------------------------
+# 5️⃣ Ensure Position is numeric
+data_clean$Position <- as.numeric(as.character(data_clean$Position))
+
+# -----------------------------
+# 6️⃣ Map Chromosome based on SNP names
+data_clean$Chromosome <- ifelse(
+  grepl("chr", data_clean$SNP, ignore.case = TRUE), "chr",
+  ifelse(grepl("psyma", data_clean$SNP, ignore.case = TRUE), "pSymA",
+         ifelse(grepl("psymb", data_clean$SNP, ignore.case = TRUE), "pSymB", NA))
+)
+
+# -----------------------------
+# 7️⃣ Build cmdata for CMplot
+cmdata <- data_clean[, c("SNP", "Chromosome", "Position", trait_names)]
+cmdata$Chromosome <- factor(cmdata$Chromosome,
+                               levels = c("chr", "pSymA", "pSymB"))
+cmdata <- cmdata[order(cmdata$Chromosome, cmdata$Position), ]
+# -----------------------------
+# 8️⃣ Plot with CMplot
+CMplot(cmdata,
+       plot.type="m",
+       col="grey",
+       multraits=TRUE,
+       threshold=1e-5,
+       threshold.lty=2,
+       threshold.lwd=1.5,
+       threshold.col="black",
+       amplify=TRUE,
+       chr.den.col=NULL,
+       signal.col=colors_16,
+       signal.cex=1,
+       file="jpg",
+       file.name="Strainfitness_manhattanplot",
+       dpi=300,
+       file.output=TRUE,
+       verbose=TRUE,
+       points.alpha=225,  # integer 0-255
+       legend.ncol=3,
+       legend.pos="middle")
+
+
+##Q-Qplot 
+CMplot(cmdata,
+       plot.type="q",
+       col=colors_16,
+       multraits=TRUE,
+       conf.int=FALSE,
+       box=FALSE,
+       axis.cex=1,
+       file="jpg",
+       file.name="Strainfitness_output_file_qq",  # saves as qq.jpg
+       dpi=300,
+       file.output=TRUE,
+       verbose=TRUE,
+       ylim=c(0,12),
+       width=7,
+       height=7)
 
 ```

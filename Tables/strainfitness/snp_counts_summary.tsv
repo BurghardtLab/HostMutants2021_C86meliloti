@@ -1,0 +1,8 @@
+Category	Count
+Common_between_hosts_strainfitness	1834
+Unique_to_mutants_strainfitness	1037
+Unique_to_strainfitness_wrt_straifitnessshift	1030
+Unique_to_strainfitnessshift_wrt_strainfitness	3071
+Common_between_strainfitness_and_shift	1529
+Total_strainfitness_SNPs	2559
+Total_strainfitnessshift_SNPs	4022
