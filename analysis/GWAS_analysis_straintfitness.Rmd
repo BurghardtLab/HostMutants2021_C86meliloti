@@ -130,167 +130,13 @@ combined_top5_prs <- bind_rows(top_candidates_list_prs)
 write.table(combined_top5,file="../Tables/strainfitness/top5candidates.tsv",sep = "\t",row.names = FALSE) 
 
 
-#Table3
+
 write.table(combined_top5_prs,file="../Tables/strainfitness/top5candidates_prs.tsv",sep = "\t",row.names = FALSE)
 
 
-```
-
-
-
-```{r Code for finding common and unique SNPS, echo=FALSE}
- library(ggplot2)
- library(ggrepel)
- 
- # Assume your columns are: # beta_reference: effect size in reference (A17)
- # beta_mutant: effect size in mutant
- # Gene: candidate gene name
-library(ggrepel)
-# 5. Split Reference (A17) vs Mutants
-# -----------------------------
-# Split data by host type
-reference_snps <- combined_top5 %>% filter(run == "A17")
-mutant_snps    <- combined_top5 %>% filter(run != "A17")
-
-# Find common SNPs (present in both A17 and at least one mutant host)
-common_ids <- intersect(reference_snps$ld_snps, mutant_snps$ld_snps)
-
-# Filter only those from the combined dataset
-common_snps <- combined_top5 %>% 
-  filter(ld_snps %in% common_ids)
-
-# Write to file
-write.table(common_snps,
-            file = "../Tables/strainfitness/common_snps.tsv",
-            sep = "\t", row.names = FALSE, quote = FALSE)
-
-##Unique SNPs per host mutant
-
-unique_mutant_snps <- anti_join(
-  mutant_snps, reference_snps,
-  by = "ld_snps"
-)
-
-# Write out the result
-dir.create("../Tables/strainfitness", recursive = TRUE, showWarnings = FALSE)
-write.table(unique_mutant_snps,
-            file = "../Tables/strainfitness/unique_mutant_snps.tsv",
-            sep = "\t", row.names = FALSE, quote = FALSE)
-
-
-##Unique SNPs to strain fitness and strain fitness shift
-df1 <- read.table("../Tables/strainfitness/top5candidates.tsv", sep="\t", header=TRUE)
-df1<-df1%>% filter(run != "A17")
-df2 <- read.table("../Tables/TableS6.tsv", sep="\t", header=TRUE)
-df2<-df2%>% filter(run != "A17")
-
-# Unique to df1
-unique_df1 <- anti_join(df1, df2, by = "ld_snps")
-
-# Unique to df2
-unique_df2 <- anti_join(df2, df1, by = "ld_snps")
-
-dir.create("../Tables/strainfitness", recursive = TRUE, showWarnings = FALSE)
-
-write.table(unique_df1,
-            file = "../Tables/strainfitness/unique_in_strainfitness.tsv",
-            sep = "\t", row.names = FALSE, quote = FALSE)
-
-write.table(unique_df2,
-            file = "../Tables/strainfitness/unique_in_strainfitnessshift.tsv",
-            sep = "\t", row.names = FALSE, quote = FALSE)
-
-
-common_snps.1 <- inner_join(df1, df2, by = "ld_snps")
-common_snps.1 <- df1 %>% 
-  filter(ld_snps %in% df2$ld_snps)
-write.table(common_snps.1,
-             file = "../Tables/strainfitness/common_snps_strainfitness_strainfitnessshift.tsv",
-            sep = "\t", row.names = FALSE, quote = FALSE)
-# Count SNPs in each category
-count_common_host      <- nrow(common_snps)
-count_unique_mutant    <- nrow(unique_mutant_snps)
-count_unique_df1       <- nrow(unique_df1)
-count_unique_df2       <- nrow(unique_df2)
-count_common_strainfit <- nrow(common_snps.1)
-
-# NEW: Total SNP counts in each dataset (common + unique)
-count_total_df1 <- nrow(df1)
-count_total_df2 <- nrow(df2)
-
-# Combine into a summary table
-counts_summary <- data.frame(
-  Category = c("Common_between_hosts_strainfitness",
-               "Unique_to_mutants_strainfitness",
-               "Unique_to_strainfitness_wrt_straifitnessshift",
-               "Unique_to_strainfitnessshift_wrt_strainfitness",
-               "Common_between_strainfitness_and_shift",
-               "Total_strainfitness_SNPs",
-               "Total_strainfitnessshift_SNPs"),
-  Count = c(count_common_host,
-            count_unique_mutant,
-            count_unique_df1,
-            count_unique_df2,
-            count_common_strainfit,
-            count_total_df1,
-            count_total_df2)
-)
-
-# Print to console
-print(counts_summary)
-
-# Write to file
-write.table(counts_summary,
-            file = "../Tables/strainfitness/snp_counts_summary.tsv",
-            sep = "\t", row.names = FALSE, quote = FALSE)
-library(dplyr)
-# Total ld_groups in strain fitness
-total_ld_df1 <- df1 %>% summarise(Total_ld_group = n_distinct(ld_group)) %>% pull()
-
-# Total ld_groups in strain fitness shift
-total_ld_df2 <- df2 %>% summarise(Total_ld_group = n_distinct(ld_group)) %>% pull()
-
-# Print results
-cat("Total ld_groups in strain fitness (df1):", total_ld_df1, "\n")
-cat("Total ld_groups in strain fitness shift (df2):", total_ld_df2, "\n")
-# 1. Common SNPs between hosts
-count_ld_common_host <- common_snps %>% summarise(Count_ld_group = n_distinct(ld_group)) %>% pull()
-
-# 2. Unique SNPs in mutant hosts
-count_ld_unique_mutant <- unique_mutant_snps %>% summarise(Count_ld_group = n_distinct(ld_group)) %>% pull()
-
-# 3. Unique to df1 (strainfitness wrt shift)
-count_ld_unique_df1 <- unique_df1 %>% summarise(Count_ld_group = n_distinct(ld_group)) %>% pull()
-
-# 4. Unique to df2 (strainfitness shift wrt df1)
-count_ld_unique_df2 <- unique_df2 %>% summarise(Count_ld_group = n_distinct(ld_group)) %>% pull()
-
-# 5. Common between df1 and df2
-count_ld_common_strainfit <- common_snps.1 %>% summarise(Count_ld_group = n_distinct(ld_group)) %>% pull()
-
-# Combine counts into a summary table
-ld_group_summary <- data.frame(
-  Category = c("Total ld_group in strainfitness","Total ld_group in strainfitnessshift","Common_between_hosts_strainfitness",
-               "Unique_to_mutants_strainfitness",
-               "Unique_to_strainfitness_wrt_strainfitnessshift",
-               "Unique_to_strainfitnessshift_wrt_strainfitness",
-               "Common_between_strainfitness_and_shift"),
-  Count_ld_group = c(total_ld_df1,total_ld_df2,count_ld_common_host,
-                     count_ld_unique_mutant,
-                     count_ld_unique_df1,
-                     count_ld_unique_df2,
-                     count_ld_common_strainfit)
-)
-
-# Print to console
-print(ld_group_summary)
-
-# Write to file
-write.table(ld_group_summary,
-            file = "../Tables/strainfitness/ld_group_counts_summary.tsv",
-            sep = "\t", row.names = FALSE, quote = FALSE)
 
 ```
+
 
 ```{r Code for manhattanplots for paper, echo=FALSE}
 
@@ -422,3 +268,213 @@ CMplot(cmdata,
        height=7)
 
 ```
+
+```{r Code for creating the cross-ranked candidates: TableS7, echo=FALSE}
+
+merge_GWAS_data <- function(gene){
+    # Construct file paths based on gene  name
+    file_paths <- list(
+  A17=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_A17.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_A17.tsv"),
+  hcl=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_hcl.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_hcl.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_hcl.tsv"),
+  ipd3=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_ipd3.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_ipd3.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_ipd3.tsv"),
+  nad1=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_nad1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_nad1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_nad1.tsv"),
+  latd=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_latd.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_latd.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_latd.tsv"),
+  dnf1=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf1.tsv"),
+  dnf2=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf2.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf2.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf2.tsv"),
+dnf3=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf3.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf3.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf3.tsv"),
+dnf4=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf4.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf4.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf4.tsv"),
+  dnf6=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf6.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf6.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf6.tsv"),
+  dnf7=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf7.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf7.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf7.tsv"),
+  dnf1dnf2=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf1dnf2.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf1dnf2.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf1dnf2.tsv"),
+dnf5dnf2=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_dnf5dnf2.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_dnf5dnf2.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_dnf5dnf2.tsv"),
+rdn1=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_rdn1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_rdn1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_rdn1.tsv"),
+sunn1=c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_sunn1.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_sunn1.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_sunn1.tsv"),
+sunn4= c("../data/GWAS_data/annotation1/merged_chr_subset_LD_ulmm_trait_sunn4.tsv","../data/GWAS_data/annotation1/merged_psyma_subset_LD_ulmm_trait_sunn4.tsv","../data/GWAS_data/annotation1/merged_psymb_subset_LD_ulmm_trait_sunn4.tsv")
+        
+    )
+    
+    # Check if gene argument is valid
+    if (!(gene %in% c("A17","hcl","ipd3","latd","nad1","dnf1","dnf2","dnf3","dnf4","dnf6","dnf7","dnf1dnf2","dnf5dnf2","rdn1","sunn1","sunn4"))) {
+        stop("Gene argument must be one of: A17,hcl,ipd3,latd,nad1,dnf1,dnf2,dnf3,dnf4,dnf6,dnf7,dnf1dnf2,dnf5dnf2,rdn1,sunn1,sunn4")
+    }
+    
+    # Read the corresponding files for the given gene
+    data <- lapply(file_paths[[gene]], read.delim, header = TRUE)
+    
+    # Merge the data
+    merged_data <- do.call(rbind, data)
+    
+    return(merged_data)
+    
+}    
+
+
+
+merged_A17 <- merge_GWAS_data("A17")
+merged_hcl<-merge_GWAS_data("hcl")
+merged_ipd3<-merge_GWAS_data("ipd3")
+merged_latd<-merge_GWAS_data("latd")
+merged_nad1<-merge_GWAS_data("nad1")
+merged_dnf1<-merge_GWAS_data("dnf1")
+merged_dnf2<-merge_GWAS_data("dnf2")
+merged_dnf3<-merge_GWAS_data("dnf3")
+merged_dnf4<-merge_GWAS_data("dnf4")
+merged_dnf6<-merge_GWAS_data("dnf6")
+merged_dnf7<-merge_GWAS_data("dnf7")
+merged_dnf1dnf2<-merge_GWAS_data("dnf1dnf2")
+merged_dnf5dnf2<-merge_GWAS_data("dnf5dnf2")
+merged_rdn1<-merge_GWAS_data("rdn1")
+merged_sunn1<-merge_GWAS_data("sunn1")
+merged_sunn4<-merge_GWAS_data("sunn4")
+
+```
+
+```{r Code for creating overlap plot, echo=FALSE}
+# =========================================================
+# Overlap analysis: Strain fitness vs Strain fitness shift
+# =========================================================
+
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(ggplot2)
+
+# -----------------------------
+# 1️⃣ Define merged list
+# -----------------------------
+merged_list <- list(
+  A17      = merged_A17,
+  dnf1     = merged_dnf1,
+  dnf1dnf2 = merged_dnf1dnf2,
+  dnf2     = merged_dnf2,
+  dnf3     = merged_dnf3,
+  dnf4     = merged_dnf4,
+  dnf5dnf2 = merged_dnf5dnf2,
+  dnf6     = merged_dnf6,
+  dnf7     = merged_dnf7,
+  hcl      = merged_hcl,
+  ipd3     = merged_ipd3,
+  latd     = merged_latd,
+  nad1     = merged_nad1,
+  rdn1     = merged_rdn1,
+  sunn1    = merged_sunn1,
+  sunn4    = merged_sunn4
+)
+
+library(dplyr)
+library(ggplot2)
+
+# -----------------------------
+# 1️⃣ Define cutoffs
+# -----------------------------
+cutoffs <- c(
+  ceiling(0.001 * nrow(merged_A17)),  # 0.1%
+  ceiling(0.01 * nrow(merged_A17)),   # 1%
+  ceiling(0.1 * nrow(merged_A17))     # 10%
+)
+
+# -----------------------------
+# 2️⃣ Assign proper top_n to strain fitness shift
+# -----------------------------
+overlap_strainfitnessshift <- overlap_strainfitnessshift %>%
+  mutate(
+    dataset = "Strain fitness shift",
+    top_n = rep(cutoffs, each = nrow(overlap_strainfitnessshift)/length(cutoffs))
+  )
+
+# -----------------------------
+# 3️⃣ Combine datasets
+# -----------------------------
+combined_overlap_df <- bind_rows(
+  overlap_all %>% mutate(dataset = "Strain fitness"),
+  overlap_strainfitnessshift
+)
+
+# -----------------------------
+# 4️⃣ Define host colors
+# -----------------------------
+hosts <- c(
+  "A17", "dnf1", "dnf1dnf2", "dnf2", "dnf3", "dnf4",
+  "dnf5dnf2", "dnf6", "dnf7",
+  "hcl", "ipd3", "latd", "nad1", "rdn1", "sunn1", "sunn4"
+)
+
+host_colors <- c(
+  "#0000ff", "#000000", "#5C5A5A", "#feb300", "#00aeae", "#ffff00",
+  "#F5E4E4", "#ff4600", "#53a1f0",
+  "#e9c6ac", "#9d22f3", "#3d389a", "#95ef57", "#f311c1", "#0a82f0", "#cd93aa"
+)
+host_color_map <- setNames(host_colors, hosts)
+
+# -----------------------------
+# 5️⃣ Create facet labels
+# -----------------------------
+facet_labels <- setNames(
+  c("Top 0.1% SNPs", "Top 1% SNPs", "Top 10% SNPs"),
+  as.character(cutoffs)
+)
+
+# -----------------------------
+# 6️⃣ Convert columns to factors for plotting
+# -----------------------------
+combined_overlap_df <- combined_overlap_df %>%
+  mutate(
+    top_n = factor(top_n, levels = cutoffs),
+    dataset = factor(dataset, levels = c("Strain fitness", "Strain fitness shift"))
+  )
+
+# -----------------------------
+# 7️⃣ Plot
+# -----------------------------
+p<-ggplot(combined_overlap_df, aes(x = dataset, y = overlap_pct)) +
+  geom_boxplot(
+    width = 0.25,
+    outlier.shape = NA,
+    color = "black",
+    fill = "grey90",
+    linewidth = 0.6
+  ) +
+  geom_jitter(
+    aes(color = host),
+    position = position_jitter(width = 0.08, height = 0),
+    size = 2.5,
+    alpha = 0.7
+  ) +
+  geom_hline(
+    data = combined_overlap_df %>%
+      group_by(dataset, top_n) %>%
+      summarise(median_obs = median(overlap_pct, na.rm = TRUE), .groups = "drop"),
+    aes(yintercept = median_obs),
+    linetype = "dashed",
+    color = "black",
+    linewidth = 0.8
+  ) +
+  facet_wrap(~ top_n, scales = "fixed", labeller = labeller(top_n = facet_labels)) +
+  scale_color_manual(values = host_color_map) +
+  scale_y_continuous(
+    limits = c(0, 100),
+    expand = expansion(mult = c(0.02, 0.05))
+  ) +
+  labs(
+    y = "% overlap with A17 within top SNPs",
+    x = NULL
+  ) +
+  theme_classic(base_size = 14) +
+  theme(
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1, vjust = 1),
+    axis.line = element_line(linewidth = 0.6),
+    legend.position = "right"
+  )
+ggsave(
+  filename = "../Figures/strain_overlap_plot.pdf",
+  plot = p,
+  width = 10,
+  height = 6
+)
+
+
+```
+
+
+
+

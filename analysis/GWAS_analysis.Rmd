@@ -116,7 +116,7 @@ top5_candidates.1<-combined_data2%>% separate(chr,c('Organism','Replicon'))
 
 #for crossranked table  and for the heatmaps ##no pcut,no small groups,unique
 
-#for Table S7
+#for Table S6
 top5_candidates<-top5_candidates.1%>%filter(!duplicated(ld_group))%>%dplyr::select(-"replicon") 
 write.table(top5_candidates.1,file="../tables/TableS6.tsv",sep = "\t",row.names = FALSE) 
 
@@ -125,6 +125,7 @@ top5_candidates_prs<-subset(top5_candidates.1,prs>=1 & prs<=5)
 top5_candidates_prs.1<- top5_candidates_prs[top5_candidates_prs$p_lrt <= 1e-5, ]
 
 write.table(top5_candidates_prs.1,file="../tables/Table2.tsv",sep = "\t",row.names = FALSE)
+
 ```
 
 ```{r Code for creating the cross-ranked candidates: TableS7, echo=FALSE}
@@ -184,6 +185,47 @@ merged_dnf5dnf2<-merge_GWAS_data("dnf5dnf2")
 merged_rdn1<-merge_GWAS_data("rdn1")
 merged_sunn1<-merge_GWAS_data("sunn1")
 merged_sunn4<-merge_GWAS_data("sunn4")
+
+
+
+```
+
+```{r Code for creating overlap, echo=FALSE}
+##calculate the percent overlap
+cutoffs <- c(                    #
+             ceiling(0.001 * nrow(merged_A17)),  # 0.1%
+             ceiling(0.01 * nrow(merged_A17)),ceiling(0.1 * nrow(merged_A17)))   
+
+get_overlap <- function(top_n) {
+
+  top_A17 <- merged_A17 %>%
+    arrange(pr) %>%
+    slice_head(n = top_n) %>%
+    pull(ld_snps)
+
+  lapply(names(merged_list), function(host) {
+
+    if (host == "A17") return(NULL)
+
+    top_target <- merged_list[[host]] %>%
+      arrange(pr) %>%
+      slice_head(n = top_n) %>%
+      pull(ld_snps)
+
+    tibble(
+      host = host,
+      top_n = top_n,
+      overlap_n = length(intersect(top_A17, top_target)),
+      overlap_pct = overlap_n / length(top_A17) * 100
+    )
+  }) %>% bind_rows()
+}
+
+overlap_all_fitness_shift <- lapply(cutoffs, get_overlap) %>% bind_rows()
+overlap_all_fitness_shift
+
+write.csv(overlap_all_fitness_shift, "../Tables/overlap_df_strainfitness_shift.csv", row.names = FALSE)
+
 ```
 
 ```{r Code for Table S7, echo=FALSE}
@@ -220,6 +262,8 @@ Rank_top10 <- rowSums(top5_candidates_crossranked[, -(1:6)] <= 10, na.rm = TRUE)
 top5_candidates_crossranked.1<-cbind(top5_candidates_crossranked,Rank_top10)
 top5_candidates_crossranked.1<-merge(top5_candidates_crossranked.1,beta_af,by="group")
 write.table(top5_candidates_crossranked.1,file="../tables/TableS7.tsv",sep = "\t",row.names = FALSE)
+
+
 
 ```
 
