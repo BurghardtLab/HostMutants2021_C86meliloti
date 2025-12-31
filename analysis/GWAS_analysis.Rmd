@@ -191,10 +191,34 @@ merged_sunn4<-merge_GWAS_data("sunn4")
 ```
 
 ```{r Code for creating overlap, echo=FALSE}
+
+# -----------------------------
+# 1️⃣ Define merged list
+# -----------------------------
+merged_list <- list(
+  A17      = merged_A17,
+  dnf1     = merged_dnf1,
+  dnf1dnf2 = merged_dnf1dnf2,
+  dnf2     = merged_dnf2,
+  dnf3     = merged_dnf3,
+  dnf4     = merged_dnf4,
+  dnf5dnf2 = merged_dnf5dnf2,
+  dnf6     = merged_dnf6,
+  dnf7     = merged_dnf7,
+  hcl      = merged_hcl,
+  ipd3     = merged_ipd3,
+  latd     = merged_latd,
+  nad1     = merged_nad1,
+  rdn1     = merged_rdn1,
+  sunn1    = merged_sunn1,
+  sunn4    = merged_sunn4
+)
+
+
+
 ##calculate the percent overlap
 cutoffs <- c(                    #
-             ceiling(0.001 * nrow(merged_A17)),  # 0.1%
-             ceiling(0.01 * nrow(merged_A17)),ceiling(0.1 * nrow(merged_A17)))   
+             ceiling(0.001 * nrow(merged_A17)))
 
 get_overlap <- function(top_n) {
 
